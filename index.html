@@ -1666,13 +1666,30 @@
                     firebase.initializeApp(firebaseConfig);
                     const db = firebase.database();
 
+                    // Global root sync listener for all villagers
                     db.ref('flood_status').on('value', (snapshot) => {
                         const data = snapshot.val();
                         if (data) {
-                            if (data.alertLevel) applySimLevelUI(data.alertLevel);
+                            if (data.alertLevel && data.alertLevel !== currentAlertLevel) {
+                                applySimLevelUI(data.alertLevel);
+                                showToast(`เจ้าหน้าที่ได้เปลี่ยนระดับเตือนภัยเป็น: ${data.alertLevel.toUpperCase()}`, "แจ้งเตือนสถานการณ์ด่วน");
+                            }
                             if (data.announcements) {
                                 announcementsList = Array.isArray(data.announcements) ? data.announcements : Object.values(data.announcements);
                                 renderAnnouncements();
+                            }
+                            if (data.canalsHtml) {
+                                const container = document.getElementById('canals-list-container');
+                                if (container && container.innerHTML !== data.canalsHtml) {
+                                    container.innerHTML = data.canalsHtml;
+                                    showToast("เจ้าหน้าที่ได้อัปเดตข้อมูลระดับน้ำในลำคลองแล้ว", "อัปเดตระดับน้ำ");
+                                }
+                            }
+                            if (data.zonesHtml) {
+                                const mapTab = document.getElementById('tab-map');
+                                if (mapTab) {
+                                    // Sync zones or risk descriptions if stored
+                                }
                             }
                             if (data.evacuees !== undefined) {
                                 evacueesList = data.evacuees ? (Array.isArray(data.evacuees) ? data.evacuees : Object.values(data.evacuees)) : [];
@@ -1692,14 +1709,17 @@
                         }
                     });
 
-                    window.syncDataToCloud = function(alertLevel, announcements, evacuees = evacueesList) {
-                        db.ref('flood_status').update({
+                    window.syncDataToCloud = function(alertLevel, announcements, evacuees = evacueesList, canalsHtml = null) {
+                        const payload = {
                             alertLevel: alertLevel,
                             announcements: announcements,
                             evacuees: evacuees,
                             updatedAt: new Date().toISOString(),
                             updatedBy: isSuperAdminLoggedIn ? "Super Admin" : "เจ้าหน้าที่ กู้ภัย"
-                        });
+                        };
+                        if (canalsHtml) payload.canalsHtml = canalsHtml;
+
+                        db.ref('flood_status').update(payload);
                         db.ref('flood_evacuees').set(evacuees);
                     };
                 } catch(e) {
@@ -2369,6 +2389,10 @@
             addLog(`เพิ่มลำคลองใหม่: ${name} (${val})`, "เจ้าหน้าที่");
             broadcastDataChange('CANAL_UPDATE', { html: container.innerHTML }, `เจ้าหน้าที่ได้เพิ่มข้อมูลลำคลองใหม่: ${name}`);
 
+            if (window.syncDataToCloud) {
+                window.syncDataToCloud(currentAlertLevel, announcementsList, evacueesList, container.innerHTML);
+            }
+
             document.getElementById('officer-canal-name').value = '';
             document.getElementById('officer-canal-desc').value = '';
             document.getElementById('officer-canal-val').value = '';
@@ -2413,6 +2437,11 @@
                     const container = document.getElementById('canals-list-container');
                     addLog(`บันทึกการแก้ไขข้อมูลลำคลอง ${newName} ระดับน้ำ: ${newVal} สำเร็จ`, "เจ้าหน้าที่");
                     broadcastDataChange('CANAL_UPDATE', { html: container.innerHTML }, `เจ้าหน้าที่ได้อัปเดตข้อมูลลำคลอง ${newName}`);
+
+                    if (window.syncDataToCloud) {
+                        window.syncDataToCloud(currentAlertLevel, announcementsList, evacueesList, container.innerHTML);
+                    }
+
                     showToast("บันทึกการแก้ไขข้อมูลลำคลองเรียบร้อยแล้ว!");
                 }
             );
@@ -2427,6 +2456,11 @@
                     const container = document.getElementById('canals-list-container');
                     addLog(`ลบข้อมูลลำคลอง: ${name}`, "เจ้าหน้าที่");
                     broadcastDataChange('CANAL_UPDATE', { html: container.innerHTML }, `เจ้าหน้าที่ได้ลบข้อมูลลำคลอง ${name}`);
+
+                    if (window.syncDataToCloud) {
+                        window.syncDataToCloud(currentAlertLevel, announcementsList, evacueesList, container.innerHTML);
+                    }
+
                     showToast("ลบข้อมูลลำคลองเรียบร้อยแล้ว");
                 }
             });
