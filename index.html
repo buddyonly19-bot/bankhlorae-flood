@@ -2,11 +2,10 @@
 <html lang="th" class="h-full bg-slate-100">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ระบบติดตามและแจ้งเตือนสถานการณ์น้ำท่วม บ้านคลอแระ หมู่ 3</title>
     
     <!-- PWA Primary Meta Tags -->
-    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0B2B4C">
     <meta name="mobile-web-app-capable" content="yes">
 
@@ -50,10 +49,13 @@
         }
     </script>
     <style>
-        body {
+        html, body {
             font-family: 'Prompt', sans-serif;
             background-color: #EBF1F7;
             padding-bottom: 90px;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
         }
         
         .hero-card {
@@ -164,58 +166,80 @@
 
     <!-- REALTIME TOAST CONTAINER -->
     <div id="toast-container" class="toast-notification hidden">
-        <div class="bg-blue-900 text-white p-3 rounded-2xl shadow-2xl border border-cyan-400 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2.5">
+        <div id="toast-box" class="bg-blue-900 text-white p-3 rounded-2xl shadow-2xl border border-cyan-400 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 animate-bounce">
-                    <i class="fa-solid fa-bell"></i>
+                    <i id="toast-icon" class="fa-solid fa-bell"></i>
                 </div>
-                <div>
-                    <h5 class="font-extrabold text-xs text-cyan-300">อัปเดตข้อมูลเรียลไทม์ใหม่!</h5>
-                    <p id="toast-message-text" class="text-[10px] text-blue-100">เจ้าหน้าที่ได้อัปเดตข้อมูลสถานการณ์น้ำแล้ว</p>
+                <div class="min-w-0">
+                    <h5 id="toast-title" class="font-extrabold text-xs text-cyan-300 truncate">แจ้งเตือนระบบ</h5>
+                    <p id="toast-message-text" class="text-[11px] text-blue-100 break-words">อัปเดตข้อมูลสถานการณ์น้ำแล้ว</p>
                 </div>
             </div>
-            <button onclick="hideToast()" class="text-slate-300 hover:text-white text-xs px-2 py-1">
+            <button onclick="hideToast()" class="text-slate-300 hover:text-white text-xs px-2 py-1 flex-shrink-0">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
     </div>
 
+    <!-- CUSTOM DIALOG MODAL (Replaces alert / confirm / prompt) -->
+    <div id="custom-dialog-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3.5 relative animate-fade-in">
+            <div class="flex items-center gap-2.5">
+                <div id="dialog-icon-wrap" class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+                    <i id="dialog-icon" class="fa-solid fa-circle-info"></i>
+                </div>
+                <div class="min-w-0">
+                    <h3 id="dialog-title" class="font-extrabold text-slate-900 text-sm truncate">ข้อความจากระบบ</h3>
+                    <p id="dialog-subtitle" class="text-[10px] text-slate-500">ศูนย์อุทกวิทยาชุมชนบ้านคลอแระ</p>
+                </div>
+            </div>
+            <p id="dialog-message" class="text-xs text-slate-700 whitespace-pre-line leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-200/80"></p>
+            <div id="dialog-input-container" class="hidden space-y-2"></div>
+            <div id="dialog-buttons" class="flex items-center justify-end gap-2 pt-1">
+                <button id="dialog-cancel-btn" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">ยกเลิก</button>
+                <button id="dialog-confirm-btn" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow transition">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOP MOBILE APP HEADER -->
-    <header class="bg-white sticky top-0 z-40 shadow-sm border-b border-slate-200/80 px-4 py-2.5">
-        <div class="max-w-md mx-auto flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5 min-w-0">
-                <div class="flood-logo-wrapper w-11 h-11 flex-shrink-0">
+    <header class="bg-white sticky top-0 z-40 shadow-sm border-b border-slate-200/80 px-3 py-2.5">
+        <div class="max-w-md mx-auto flex items-center justify-between gap-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="flood-logo-wrapper w-10 h-10 flex-shrink-0">
                     <div class="flood-logo-ring"></div>
-                    <div class="w-10 h-10 rounded-full bg-blue-950 relative z-10 p-0.5 shadow-md overflow-hidden border border-blue-200 flex items-center justify-center">
-                        <i class="fa-solid fa-house-tsunami text-cyan-400 text-lg"></i>
+                    <div class="w-9 h-9 rounded-full bg-blue-950 relative z-10 p-0.5 shadow-md overflow-hidden border border-blue-200 flex items-center justify-center">
+                        <i class="fa-solid fa-house-tsunami text-cyan-400 text-base"></i>
                         <div class="absolute bottom-0 inset-x-0 bg-blue-600/90 py-0.5 text-center flex items-center justify-center">
-                            <i class="fa-solid fa-water text-[7px] text-white animate-bounce"></i>
+                            <i class="fa-solid fa-water text-[6px] text-white animate-bounce"></i>
                         </div>
                     </div>
                 </div>
                 <div class="truncate">
-                    <h1 class="font-extrabold text-slate-900 text-sm leading-tight flex items-center gap-1">
-                        บ้านคลอแระ <span class="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-md font-bold">หมู่ 3</span>
+                    <h1 class="font-extrabold text-slate-900 text-xs sm:text-sm leading-tight flex items-center gap-1 truncate">
+                        <span>บ้านคลอแระ</span>
+                        <span class="text-[9px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-md font-bold flex-shrink-0">หมู่ 3</span>
                     </h1>
                     <p class="text-[10px] text-slate-500 font-medium truncate">ต.บาเระใต้ อ.บาเจาะ จ.นราธิวาส</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-                <button onclick="manualRefreshData()" id="refresh-btn" class="px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition" title="รีเฟรชข้อมูล">
+            <div class="flex items-center gap-1 flex-shrink-0">
+                <button onclick="manualRefreshData()" id="refresh-btn" class="p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition" title="รีเฟรชข้อมูล">
                     <i class="fa-solid fa-arrows-rotate text-blue-600"></i>
                     <span class="hidden sm:inline">รีเฟรช</span>
                 </button>
-                <button onclick="openSuperAdminLoginModal()" id="admin-mode-btn" class="hidden px-2 py-1 rounded-full bg-slate-800 hover:bg-slate-900 text-amber-300 text-xs font-bold border border-amber-400/40 flex items-center gap-1 transition">
+                <button onclick="openSuperAdminLoginModal()" id="admin-mode-btn" class="hidden p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-800 hover:bg-slate-900 text-amber-300 text-xs font-bold border border-amber-400/40 flex items-center gap-1 transition">
                     <i class="fa-solid fa-crown text-amber-400"></i>
                     <span id="admin-btn-text" class="hidden sm:inline">Super Admin</span>
                 </button>
-                <button onclick="toggleRescueOfficerMode()" id="officer-mode-btn" class="px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition">
+                <button onclick="toggleRescueOfficerMode()" id="officer-mode-btn" class="p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition">
                     <i class="fa-solid fa-user-shield text-blue-600"></i>
                     <span id="officer-btn-text" class="hidden sm:inline">เจ้าหน้าที่</span>
                 </button>
-                <div id="header-status-badge" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
-                    <span id="header-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <div id="header-status-badge" class="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200 whitespace-nowrap">
+                    <span id="header-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
                     <span id="header-status-text">ปกติ</span>
                 </div>
             </div>
@@ -225,17 +249,17 @@
     <!-- SUPER ADMIN CONTROL PANEL (Hidden by Default) -->
     <div id="super-admin-panel" class="max-w-md mx-auto px-3 pt-2.5 hidden animate-fade-in">
         <div class="bg-slate-950 text-white p-4 rounded-3xl border-2 border-amber-400 shadow-2xl space-y-3.5 relative overflow-hidden">
-            <div class="flex items-center justify-between border-b border-amber-400/30 pb-2.5">
-                <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center">
+            <div class="flex items-center justify-between border-b border-amber-400/30 pb-2.5 gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-7 h-7 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-crown text-xs"></i>
                     </div>
-                    <div>
-                        <h3 class="font-extrabold text-xs text-amber-300 uppercase tracking-wider">แผงควบคุมแอดมินสูงสุด (SUPER ADMIN)</h3>
-                        <p class="text-[9px] text-slate-400">จัดการระบบ เซิร์ฟเวอร์ และข้อมูลทั้งหมด</p>
+                    <div class="min-w-0">
+                        <h3 class="font-extrabold text-xs text-amber-300 uppercase tracking-wider truncate">แผงควบคุมแอดมินสูงสุด (SUPER ADMIN)</h3>
+                        <p class="text-[9px] text-slate-400 truncate">จัดการระบบ เซิร์ฟเวอร์ และข้อมูลทั้งหมด</p>
                     </div>
                 </div>
-                <button onclick="logoutSuperAdmin()" class="text-[10px] bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-lg font-bold transition">
+                <button onclick="logoutSuperAdmin()" class="text-[10px] bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded-lg font-bold transition whitespace-nowrap flex-shrink-0">
                     ออกจากระบบ
                 </button>
             </div>
@@ -253,15 +277,15 @@
 
             <div class="space-y-2 text-xs">
                 <h4 class="font-bold text-amber-300 text-[11px] flex items-center gap-1.5">
-                    <i class="fa-solid fa-sliders"></i> จัดการพารามิเตอร์และตัวเลขระบบ
+                    <i class="fa-solid fa-sliders"></i> จัดการพารามิเตอร์และสภาพอากาศ
                 </h4>
                 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">ปรับปริมาณฝนสะสม (มม.)</label>
                         <div class="flex gap-1">
-                            <input type="number" id="admin-input-rain" placeholder="12" class="w-full p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
-                            <button onclick="adminUpdateRain()" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl whitespace-nowrap transition flex items-center gap-1">
+                            <input type="number" id="admin-input-rain" placeholder="12" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+                            <button onclick="adminUpdateRain()" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl whitespace-nowrap transition flex items-center gap-1 flex-shrink-0">
                                 <i class="fa-solid fa-floppy-disk"></i> บันทึก
                             </button>
                         </div>
@@ -269,20 +293,37 @@
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">เปลี่ยนรหัสผ่านเจ้าหน้าที่</label>
                         <div class="flex gap-1">
-                            <input type="text" id="admin-input-pin" placeholder="รหัสใหม่" class="w-full p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
-                            <button onclick="adminUpdateOfficerPin()" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl whitespace-nowrap transition flex items-center gap-1">
+                            <input type="text" id="admin-input-pin" placeholder="รหัสใหม่" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+                            <button onclick="adminUpdateOfficerPin()" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl whitespace-nowrap transition flex items-center gap-1 flex-shrink-0">
                                 <i class="fa-solid fa-floppy-disk"></i> บันทึก
                             </button>
                         </div>
                     </div>
                 </div>
 
+                <!-- Manual Weather Override in Super Admin -->
+                <div class="pt-2 border-t border-slate-800 space-y-1.5">
+                    <div class="flex items-center justify-between gap-1">
+                        <label class="block text-[10px] text-amber-300 font-bold truncate"><i class="fa-solid fa-cloud-sun-rain mr-1"></i> อัปเดตสภาพอากาศด้วยตนเอง / ดึงค่า API</label>
+                        <button onclick="fetchLiveWeather(true)" class="text-[10px] bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-0.5 rounded-md font-bold transition whitespace-nowrap flex-shrink-0">
+                            <i class="fa-solid fa-satellite-dish mr-0.5"></i> ดึงค่าดาวเทียม
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <input type="text" id="admin-weather-desc" placeholder="เช่น ฝนตกหนัก" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                        <input type="number" id="admin-weather-temp" placeholder="อุณหภูมิ °C" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                        <button onclick="adminManualWeatherUpdate()" class="px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl whitespace-nowrap transition flex items-center justify-center gap-1 text-[11px]">
+                            <i class="fa-solid fa-check"></i> ตั้งค่าอากาศ
+                        </button>
+                    </div>
+                </div>
+
                 <div class="pt-2 border-t border-slate-800">
                     <label class="block text-[10px] text-slate-400 mb-1">ส่งข้อความบรอดแคสต์ฉุกเฉินถึงทุกคน (Push Notification)</label>
                     <div class="flex gap-1.5">
-                        <input type="text" id="admin-broadcast-msg" placeholder="ข้อความแจ้งเตือนด่วนกระทันหัน..." class="flex-1 p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
-                        <button onclick="adminSendBroadcast()" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1">
-                            <i class="fa-solid fa-paper-plane"></i> บันทึก & ส่งประกาศ
+                        <input type="text" id="admin-broadcast-msg" placeholder="ข้อความแจ้งเตือนด่วนกระทันหัน..." class="flex-1 min-w-0 p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+                        <button onclick="adminSendBroadcast()" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
+                            <i class="fa-solid fa-paper-plane"></i> ส่งประกาศ
                         </button>
                     </div>
                 </div>
@@ -298,11 +339,11 @@
                         <i class="fa-solid fa-phone"></i> จัดการเพิ่มเบอร์โทรฉุกเฉิน
                     </h5>
                     <div class="space-y-1">
-                        <input type="text" id="admin-add-contact-title" placeholder="ชื่อหน่วยงาน / ตำแหน่ง" class="w-full p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
-                        <input type="text" id="admin-add-contact-sub" placeholder="ชื่อผู้ติดต่อ / หมายเหตุ" class="w-full p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                        <input type="text" id="admin-add-contact-title" placeholder="ชื่อหน่วยงาน / ตำแหน่ง" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                        <input type="text" id="admin-add-contact-sub" placeholder="ชื่อผู้ติดต่อ / หมายเหตุ" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
                         <div class="flex gap-1.5">
-                            <input type="tel" id="admin-add-contact-phone" placeholder="เบอร์โทรศัพท์ (เช่น 0812345678)" class="flex-1 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
-                            <button onclick="adminAddNewContact()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1">
+                            <input type="tel" id="admin-add-contact-phone" placeholder="เบอร์โทรศัพท์ (เช่น 0812345678)" class="flex-1 min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                            <button onclick="adminAddNewContact()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
                                 <i class="fa-solid fa-plus"></i> เพิ่มเบอร์
                             </button>
                         </div>
@@ -314,23 +355,23 @@
 
     <!-- RESCUE OFFICER CONTROL PANEL (Hidden by Default) -->
     <div id="officer-panel" class="max-w-md mx-auto px-3 pt-2.5 hidden animate-fade-in">
-        <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-3.5 rounded-2xl border border-amber-400/50 shadow-md space-y-2.5">
-            <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
-                    <h3 class="font-extrabold text-xs text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+        <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-3.5 rounded-2xl border border-amber-400/50 shadow-md space-y-2.5 overflow-hidden">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2 gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping flex-shrink-0"></span>
+                    <h3 class="font-extrabold text-xs text-amber-300 uppercase tracking-wider flex items-center gap-1.5 truncate">
                         <i class="fa-solid fa-sliders"></i> แผงควบคุมเจ้าหน้าที่ / ทีมกู้ภัย
                     </h3>
                 </div>
-                <span class="text-[9px] bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded-md font-mono border border-amber-400/30">AUTHORIZED</span>
+                <span class="text-[9px] bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded-md font-mono border border-amber-400/30 flex-shrink-0">AUTHORIZED</span>
             </div>
 
-            <div class="bg-amber-500/10 border border-amber-400/30 p-2.5 rounded-xl flex items-center justify-between">
-                <div>
-                    <p class="text-[11px] font-bold text-amber-300">บันทึกเวลาการแก้ไขข้อมูลล่าสุด</p>
-                    <p id="officer-last-saved-time" class="text-[10px] text-slate-300 font-mono">ยังไม่มีการบันทึกในรอบนี้</p>
+            <div class="bg-amber-500/10 border border-amber-400/30 p-2.5 rounded-xl flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <p class="text-[11px] font-bold text-amber-300 truncate">บันทึกเวลาการแก้ไขข้อมูลล่าสุด</p>
+                    <p id="officer-last-saved-time" class="text-[10px] text-slate-300 font-mono truncate">ยังไม่มีการบันทึกในรอบนี้</p>
                 </div>
-                <button onclick="officerManualRecordSave()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold rounded-lg text-xs shadow transition flex items-center gap-1 whitespace-nowrap">
+                <button onclick="officerManualRecordSave()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold rounded-lg text-xs shadow transition flex items-center gap-1 whitespace-nowrap flex-shrink-0">
                     <i class="fa-solid fa-clock-rotate-left"></i> บันทึกเวลา
                 </button>
             </div>
@@ -345,13 +386,13 @@
             </div>
 
             <div class="pt-2 border-t border-white/10 text-xs space-y-1.5">
-                <label class="block font-bold text-amber-300 text-[11px] flex items-center justify-between">
-                    <span><i class="fa-solid fa-bullhorn mr-1"></i> โพสต์ประกาศข่าวด่วนถึงชาวบ้าน:</span>
-                    <button onclick="clearAnnouncement()" class="text-[10px] text-red-300 hover:underline">ลบประกาศปัจจุบัน</button>
+                <label class="block font-bold text-amber-300 text-[11px] flex items-center justify-between gap-1">
+                    <span class="truncate"><i class="fa-solid fa-bullhorn mr-1"></i> โพสต์ประกาศข่าวด่วนถึงชาวบ้าน:</span>
+                    <button onclick="clearAnnouncement()" class="text-[10px] text-red-300 hover:underline whitespace-nowrap flex-shrink-0">ลบประกาศปัจจุบัน</button>
                 </label>
                 <div class="flex gap-1.5">
-                    <input type="text" id="officer-announcement-input" placeholder="พิมพ์ข้อความประกาศ..." class="flex-1 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
-                    <button onclick="publishAnnouncement()" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1">
+                    <input type="text" id="officer-announcement-input" placeholder="พิมพ์ข้อความประกาศ..." class="flex-1 min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
+                    <button onclick="publishAnnouncement()" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
                         <i class="fa-solid fa-floppy-disk"></i> บันทึกประกาศ
                     </button>
                 </div>
@@ -362,8 +403,8 @@
                     <i class="fa-brands fa-facebook-messenger"></i> ลิงก์ตรง Messenger ทีมกู้ภัย (m.me link):
                 </label>
                 <div class="flex gap-1.5">
-                    <input type="url" id="config-messenger-url" placeholder="https://m.me/your_page_id" class="flex-1 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
-                    <button onclick="saveRescueMessengerLink()" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1">
+                    <input type="url" id="config-messenger-url" placeholder="https://m.me/your_page_id" class="flex-1 min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
+                    <button onclick="saveRescueMessengerLink()" class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
                         <i class="fa-solid fa-floppy-disk"></i> บันทึกลิงก์
                     </button>
                 </div>
@@ -374,11 +415,11 @@
                     <i class="fa-solid fa-water"></i> จัดการเพิ่ม / แก้ไขข้อมูลลำคลอง:
                 </label>
                 <div class="space-y-1">
-                    <input type="text" id="officer-canal-name" placeholder="ชื่อลำคลอง (เช่น คลองอาโลร์ฆือแล)" class="w-full p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
-                    <input type="text" id="officer-canal-desc" placeholder="คำอธิบาย/จุดเสี่ยง (เช่น ความจุสูงสุด 2.8m)" class="w-full p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
+                    <input type="text" id="officer-canal-name" placeholder="ชื่อลำคลอง (เช่น คลองอาโลร์ฆือแล)" class="w-full min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
+                    <input type="text" id="officer-canal-desc" placeholder="คำอธิบาย/จุดเสี่ยง (เช่น ความจุสูงสุด 2.8m)" class="w-full min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
                     <div class="flex gap-1.5">
-                        <input type="text" id="officer-canal-val" placeholder="ระดับน้ำ (เช่น 1.2m (ปกติ))" class="flex-1 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
-                        <button onclick="officerAddCanal()" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1">
+                        <input type="text" id="officer-canal-val" placeholder="ระดับน้ำ (เช่น 1.2m (ปกติ))" class="flex-1 min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
+                        <button onclick="officerAddCanal()" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
                             <i class="fa-solid fa-plus"></i> เพิ่มคลอง
                         </button>
                     </div>
@@ -390,8 +431,8 @@
                     <i class="fa-solid fa-house-chimney-crack"></i> จัดการเพิ่มข้อมูลครัวเรือนประจำโซน:
                 </label>
                 <div class="space-y-1">
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <select id="officer-add-household-zone" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                        <select id="officer-add-household-zone" class="w-full min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
                             <option value="1">โซน 1 - คลอแระมัสยิดกลาง</option>
                             <option value="2">โซน 2 - ฆือลองไอมูรา</option>
                             <option value="3">โซน 3 - ฆือแล</option>
@@ -401,7 +442,7 @@
                             <option value="7">โซน 7 - เขตกูวิง</option>
                             <option value="8">โซน 8 - ถนนสายบ้านผู้ใหญ่</option>
                         </select>
-                        <input type="text" id="officer-add-household-name" placeholder="ชื่อหัวหน้าครัวเรือน / บ้านเลขที่" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
+                        <input type="text" id="officer-add-household-name" placeholder="ชื่อหัวหน้าครัวเรือน / บ้านเลขที่" class="w-full min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
                     </div>
                     <button onclick="officerAddHousehold()" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold rounded-xl transition flex items-center justify-center gap-1">
                         <i class="fa-solid fa-floppy-disk"></i> บันทึกครัวเรือนเข้าโซน
@@ -416,7 +457,7 @@
                     </span>
                     <button onclick="clearActivityLogs()" class="text-[9px] text-red-300 hover:underline">ล้างประวัติ</button>
                 </div>
-                <div id="activity-log-list" class="max-h-36 overflow-y-auto space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800 font-mono text-[10px]">
+                <div id="activity-log-list" class="max-h-36 overflow-y-auto space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800 font-mono text-[10px] break-words">
                     <div class="text-slate-400 text-center py-2">ยังไม่มีการบันทึกกิจกรรม</div>
                 </div>
             </div>
@@ -432,22 +473,28 @@
         <section class="hero-card rounded-3xl p-4 sm:p-5 text-white shadow-xl relative overflow-hidden">
             
             <div class="flex items-center justify-between mb-2 gap-2">
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-subcard text-[11px] text-slate-200">
-                    <i class="fa-solid fa-shield-halved text-emerald-400"></i>
-                    <span>ศูนย์อุทกวิทยาชุมชนบ้านคลอแระ</span>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-subcard text-[11px] text-slate-200 truncate">
+                    <i class="fa-solid fa-shield-halved text-emerald-400 flex-shrink-0"></i>
+                    <span class="truncate">ศูนย์อุทกวิทยาชุมชนบ้านคลอแระ</span>
+                </div>
+                <!-- Mini Live Weather Pill on Hero Card -->
+                <div onclick="fetchLiveWeather(true)" class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full glass-subcard text-[11px] text-cyan-200 hover:bg-white/15 transition flex-shrink-0" title="คลิกเพื่ออัปเดตสภาพอากาศ">
+                    <i id="hero-weather-icon" class="fa-solid fa-cloud-sun text-amber-300"></i>
+                    <span id="hero-weather-temp" class="font-bold">28°C</span>
+                    <span id="hero-weather-desc" class="text-[10px] text-blue-200 hidden sm:inline">เมฆบางส่วน</span>
                 </div>
             </div>
 
-            <div class="flex justify-between items-center mb-1">
-                <p class="text-xs text-blue-200/80 font-medium">สถานการณ์น้ำปัจจุบัน หมู่บ้านคลอแระ</p>
-                <span id="live-time-str" class="text-[10px] text-blue-200/90 font-mono">กำลังโหลด...</span>
+            <div class="flex justify-between items-center mb-1 gap-2">
+                <p class="text-xs text-blue-200/80 font-medium truncate">สถานการณ์น้ำปัจจุบัน หมู่บ้านคลอแระ</p>
+                <span id="live-time-str" class="text-[10px] text-blue-200/90 font-mono whitespace-nowrap flex-shrink-0">กำลังโหลด...</span>
             </div>
 
-            <div class="flex items-start justify-between my-2">
-                <div class="space-y-2 flex-1 pr-2">
+            <div class="flex items-start justify-between my-2 gap-2">
+                <div class="space-y-2 flex-1 min-w-0 pr-1">
                     <h2 id="hero-status-title" class="text-4xl font-extrabold text-emerald-400 tracking-tight transition-all">ปกติ</h2>
                     
-                    <div class="glass-subcard px-3 py-2 rounded-2xl inline-block max-w-[210px]">
+                    <div class="glass-subcard px-3 py-2 rounded-2xl inline-block max-w-full">
                         <span id="hero-level-tag" class="inline-block px-2 py-0.5 rounded-md bg-emerald-500 text-white text-[10px] font-bold mb-1">
                             ระดับ 1/4
                         </span>
@@ -476,47 +523,73 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/10">
-                <div class="glass-subcard p-2.5 rounded-2xl text-left">
-                    <p class="text-[10px] text-blue-200/70 leading-none">จุดวัดหลัก</p>
+            <!-- LIVE WEATHER STRIP IN HERO CARD -->
+            <div class="mt-3 p-2.5 rounded-2xl glass-subcard flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-lg text-cyan-300 flex-shrink-0">
+                        <i id="strip-weather-icon" class="fa-solid fa-cloud-sun-rain"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] text-cyan-300 font-bold uppercase tracking-wider">สภาพอากาศ ต.บาเระใต้</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        </div>
+                        <p id="strip-weather-status" class="font-extrabold text-white text-xs truncate">กำลังดึงข้อมูลพยากรณ์อากาศ...</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 text-right flex-shrink-0">
+                    <div>
+                        <p class="text-[9px] text-blue-200/70">ความชื้น</p>
+                        <p id="strip-weather-humidity" class="font-bold text-cyan-300 text-[11px]">82%</p>
+                    </div>
+                    <div class="border-l border-white/10 pl-2.5">
+                        <p class="text-[9px] text-blue-200/70">แรงลม</p>
+                        <p id="strip-weather-wind" class="font-bold text-amber-300 text-[11px]">12 กม./ชม.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/10">
+                <div class="glass-subcard p-2.5 rounded-2xl text-left min-w-0">
+                    <p class="text-[10px] text-blue-200/70 leading-none truncate">จุดวัดหลัก</p>
                     <p id="stat-canal-name" class="text-xs font-bold text-white mt-1.5 truncate">คลองอาโลฯ</p>
                     <p id="stat-canal-val" class="text-[11px] text-emerald-400 font-semibold mt-0.5 truncate">ปกติ (1.2m)</p>
                 </div>
 
-                <div class="glass-subcard p-2.5 rounded-2xl text-left">
-                    <p class="text-[10px] text-blue-200/70 leading-none">โซนต้องระวัง</p>
-                    <p id="stat-risk-zones" class="text-sm font-extrabold text-white mt-1">0 <span class="text-[10px] font-normal text-blue-200/70">/8 โซน</span></p>
+                <div class="glass-subcard p-2.5 rounded-2xl text-left min-w-0">
+                    <p class="text-[10px] text-blue-200/70 leading-none truncate">โซนต้องระวัง</p>
+                    <p id="stat-risk-zones" class="text-sm font-extrabold text-white mt-1 truncate">0 <span class="text-[10px] font-normal text-blue-200/70">/8 โซน</span></p>
                     <p id="stat-risk-households" class="text-[10px] text-blue-200/70 truncate">0 ครัวเรือน</p>
                 </div>
 
-                <div class="glass-subcard p-2.5 rounded-2xl text-left">
-                    <p class="text-[10px] text-blue-200/70 leading-none">ฝนสะสมวันนี้</p>
-                    <p id="stat-rain-val" class="text-sm font-extrabold text-white mt-1">12 <span class="text-[10px] font-normal text-blue-200/70">มม.</span></p>
+                <div class="glass-subcard p-2.5 rounded-2xl text-left min-w-0">
+                    <p class="text-[10px] text-blue-200/70 leading-none truncate">ฝนสะสมวันนี้</p>
+                    <p id="stat-rain-val" class="text-sm font-extrabold text-white mt-1 truncate">12 <span class="text-[10px] font-normal text-blue-200/70">มม.</span></p>
                     <p id="stat-rain-desc" class="text-[10px] text-blue-200/70 truncate">ฝนตกเล็กน้อย</p>
                 </div>
             </div>
 
             <div class="mt-4">
                 <button onclick="openSosModal()" class="w-full pulse-sos bg-gradient-to-r from-red-500 via-red-600 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white p-3.5 rounded-2xl shadow-lg flex items-center justify-between transition transform active:scale-95">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
                         <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl flex-shrink-0">
                             <i class="fa-solid fa-life-ring animate-spin" style="animation-duration: 8s;"></i>
                         </div>
-                        <div class="text-left">
-                            <h3 class="font-extrabold text-base leading-tight">ขอความช่วยเหลือฉุกเฉิน (SOS)</h3>
-                            <p class="text-[11px] text-red-100/90 font-normal">ทีมกู้ภัยและจิตอาสาเยาวชนรับเรื่อง 24 ชม.</p>
+                        <div class="text-left min-w-0">
+                            <h3 class="font-extrabold text-sm sm:text-base leading-tight truncate">ขอความช่วยเหลือฉุกเฉิน (SOS)</h3>
+                            <p class="text-[11px] text-red-100/90 font-normal truncate">ทีมกู้ภัยและจิตอาสาเยาวชนรับเรื่อง 24 ชม.</p>
                         </div>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-white/80 text-sm"></i>
+                    <i class="fa-solid fa-chevron-right text-white/80 text-sm flex-shrink-0 ml-2"></i>
                 </button>
             </div>
 
             <div class="grid grid-cols-2 gap-2 mt-2.5">
-                <button onclick="switchBottomTab('overview')" class="glass-subcard hover:bg-white/15 active:scale-95 text-white py-2.5 px-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 transition">
-                    <i class="fa-solid fa-water text-blue-300"></i> สถานการณ์น้ำ 3 คลอง
+                <button onclick="switchBottomTab('overview')" class="glass-subcard hover:bg-white/15 active:scale-95 text-white py-2.5 px-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-1.5 transition truncate">
+                    <i class="fa-solid fa-water text-blue-300 flex-shrink-0"></i> <span class="truncate">สถานการณ์น้ำ 3 คลอง</span>
                 </button>
-                <button onclick="switchBottomTab('shelter')" class="glass-subcard hover:bg-white/15 active:scale-95 text-white py-2.5 px-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-2 transition">
-                    <i class="fa-solid fa-house-chimney-user text-emerald-300"></i> ศูนย์อพยพ / รายชื่อ
+                <button onclick="switchBottomTab('shelter')" class="glass-subcard hover:bg-white/15 active:scale-95 text-white py-2.5 px-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-1.5 transition truncate">
+                    <i class="fa-solid fa-house-chimney-user text-emerald-300 flex-shrink-0"></i> <span class="truncate">ศูนย์อพยพ / รายชื่อ</span>
                 </button>
             </div>
         </section>
@@ -531,32 +604,32 @@
             <div class="grid grid-cols-2 gap-2">
                 <div id="btn-lvl-1" onclick="setSimLevel('normal')" class="cursor-pointer bg-white p-3 rounded-2xl border-2 border-emerald-400 shadow-sm flex items-start gap-2.5 hover:bg-emerald-50/50 transition active:scale-95">
                     <div class="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow">1</div>
-                    <div>
-                        <h4 class="font-bold text-xs text-emerald-700">1. ปกติ</h4>
+                    <div class="min-w-0">
+                        <h4 class="font-bold text-xs text-emerald-700 truncate">1. ปกติ</h4>
                         <p class="text-[10px] text-slate-500 leading-tight">ติดตามข่าวสารตามปกติ</p>
                     </div>
                 </div>
 
                 <div id="btn-lvl-2" onclick="setSimLevel('warning')" class="cursor-pointer bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-2.5 hover:bg-amber-50/50 transition active:scale-95">
                     <div class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow">2</div>
-                    <div>
-                        <h4 class="font-bold text-xs text-amber-700">2. เฝ้าระวัง</h4>
+                    <div class="min-w-0">
+                        <h4 class="font-bold text-xs text-amber-700 truncate">2. เฝ้าระวัง</h4>
                         <p class="text-[10px] text-slate-500 leading-tight">ยกของขึ้นที่สูง เตรียมพร้อม</p>
                     </div>
                 </div>
 
                 <div id="btn-lvl-3" onclick="setSimLevel('danger')" class="cursor-pointer bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-2.5 hover:bg-red-50/50 transition active:scale-95">
                     <div class="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow">3</div>
-                    <div>
-                        <h4 class="font-bold text-xs text-red-700">3. อันตราย</h4>
+                    <div class="min-w-0">
+                        <h4 class="font-bold text-xs text-red-700 truncate">3. อันตราย</h4>
                         <p class="text-[10px] text-slate-500 leading-tight">น้ำเริ่มเข้าบ้าน อพยพคนชรา</p>
                     </div>
                 </div>
 
                 <div id="btn-lvl-4" onclick="setSimLevel('critical')" class="cursor-pointer bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-2.5 hover:bg-purple-50/50 transition active:scale-95">
                     <div class="w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow">4</div>
-                    <div>
-                        <h4 class="font-bold text-xs text-purple-700">4. วิกฤต</h4>
+                    <div class="min-w-0">
+                        <h4 class="font-bold text-xs text-purple-700 truncate">4. วิกฤต</h4>
                         <p class="text-[10px] text-slate-500 leading-tight">ตัดไฟฟ้า อพยพทันทีตามแผน</p>
                     </div>
                 </div>
@@ -567,48 +640,93 @@
 
         <!-- TAB 1: OVERVIEW & CANAL MONITORING -->
         <div id="tab-overview" class="tab-pane space-y-3">
+
+            <!-- DETAILED WEATHER CARD IN OVERVIEW TAB -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-water text-blue-600"></i> ระดับน้ำ 3 คลองสำคัญประจำหมู่บ้าน
+                <div class="flex items-center justify-between gap-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-cloud-showers-heavy text-cyan-600 flex-shrink-0"></i>
+                        <span class="truncate">สภาพอากาศและเรดาร์ฝน บ้านคลอแระ</span>
                     </h3>
-                    <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-mono border border-emerald-200">
+                    <button onclick="fetchLiveWeather(true)" class="text-[10px] text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-full font-bold border border-blue-200 whitespace-nowrap flex-shrink-0 transition">
+                        <i class="fa-solid fa-rotate mr-0.5"></i> อัปเดตอากาศ
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                    <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                        <p class="text-[10px] text-slate-500">อุณหภูมิ</p>
+                        <p id="card-weather-temp" class="text-base font-extrabold text-slate-800 mt-0.5">28 °C</p>
+                        <p id="card-weather-feel" class="text-[9px] text-slate-400">รู้สึกเหมือน 31°C</p>
+                    </div>
+                    <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                        <p class="text-[10px] text-slate-500">โอกาสเกิดฝน</p>
+                        <p id="card-weather-rain-prob" class="text-base font-extrabold text-blue-600 mt-0.5">40 %</p>
+                        <p id="card-weather-rain-mm" class="text-[9px] text-slate-400">ฝนรายชั่วโมง 0.5 มม.</p>
+                    </div>
+                    <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                        <p class="text-[10px] text-slate-500">ความชื้นสัมพัทธ์</p>
+                        <p id="card-weather-hum" class="text-base font-extrabold text-teal-600 mt-0.5">82 %</p>
+                        <p class="text-[9px] text-slate-400">ความชื้นในอากาศ</p>
+                    </div>
+                    <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                        <p class="text-[10px] text-slate-500">ความเร็วลม</p>
+                        <p id="card-weather-wind" class="text-base font-extrabold text-amber-600 mt-0.5">12 <span class="text-[10px] font-normal">กม./ชม.</span></p>
+                        <p class="text-[9px] text-slate-400">ลมพัดผ่านพื้นที่</p>
+                    </div>
+                </div>
+
+                <div class="p-2.5 bg-cyan-50/70 border border-cyan-200 rounded-xl flex items-center justify-between gap-2 text-[11px] text-cyan-950">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <i class="fa-solid fa-mountain-sun text-cyan-600 text-sm flex-shrink-0"></i>
+                        <span id="weather-advisory-text" class="truncate font-medium">เฝ้าระวังกลุ่มฝนสะสมบริเวณเทือกเขาบูโดและต้นน้ำคลองอาโลฯ</span>
+                    </div>
+                    <span id="weather-updated-time" class="text-[9px] text-cyan-700 font-mono whitespace-nowrap flex-shrink-0">--:-- น.</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-water text-blue-600 flex-shrink-0"></i> <span class="truncate">ระดับน้ำ 3 คลองสำคัญประจำหมู่บ้าน</span>
+                    </h3>
+                    <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-mono border border-emerald-200 whitespace-nowrap flex-shrink-0">
                         <i class="fa-solid fa-arrows-rotate animate-spin mr-0.5"></i> Auto 10m
                     </span>
                 </div>
 
                 <div id="canals-list-container" class="space-y-2 text-xs">
-                    <div class="canal-item p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-slate-800 canal-name-text">1. คลองอาโลร์ฆือแล (สายหลัก)</p>
-                            <p class="text-[10px] text-slate-500 canal-desc-text">ความจุสูงสุด 2.8 เมตร | จุดเสี่ยงปอเนาะฆือแล</p>
+                    <div class="canal-item p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-800 canal-name-text truncate">1. คลองอาโลร์ฆือแล (สายหลัก)</p>
+                            <p class="text-[10px] text-slate-500 canal-desc-text truncate">ความจุสูงสุด 2.8 เมตร | จุดเสี่ยงปอเนาะฆือแล</p>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">1.2m (ปกติ)</span>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] whitespace-nowrap">1.2m (ปกติ)</span>
                             <button onclick="officerEditCanal(this)" class="officer-canal-ctrl-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="officerDeleteCanal(this)" class="officer-canal-ctrl-btn hidden text-red-600 hover:text-red-800 text-[11px] font-bold px-1"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>
 
-                    <div class="canal-item p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-slate-800 canal-name-text">2. คลองจาแบปะ (จุดระบายน้ำ)</p>
-                            <p class="text-[10px] text-slate-500 canal-desc-text">รับน้ำจากเทือกเขาบูโด | ลุ่มต่ำสุด</p>
+                    <div class="canal-item p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-800 canal-name-text truncate">2. คลองจาแบปะ (จุดระบายน้ำ)</p>
+                            <p class="text-[10px] text-slate-500 canal-desc-text truncate">รับน้ำจากเทือกเขาบูโด | ลุ่มต่ำสุด</p>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">0.9m (ปกติ)</span>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] whitespace-nowrap">0.9m (ปกติ)</span>
                             <button onclick="officerEditCanal(this)" class="officer-canal-ctrl-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="officerDeleteCanal(this)" class="officer-canal-ctrl-btn hidden text-red-600 hover:text-red-800 text-[11px] font-bold px-1"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>
 
-                    <div class="canal-item p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-slate-800 canal-name-text">3. คลองฆือลองไอมูรา</p>
-                            <p class="text-[10px] text-slate-500 canal-desc-text">สายรับน้ำเข้าทุ่งนา ม.3</p>
+                    <div class="canal-item p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-800 canal-name-text truncate">3. คลองฆือลองไอมูรา</p>
+                            <p class="text-[10px] text-slate-500 canal-desc-text truncate">สายรับน้ำเข้าทุ่งนา ม.3</p>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">0.7m (ปกติ)</span>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <span class="canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] whitespace-nowrap">0.7m (ปกติ)</span>
                             <button onclick="officerEditCanal(this)" class="officer-canal-ctrl-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="officerDeleteCanal(this)" class="officer-canal-ctrl-btn hidden text-red-600 hover:text-red-800 text-[11px] font-bold px-1"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
@@ -650,114 +768,114 @@
                 </div>
 
                 <!-- Google Maps Real Link Banner -->
-                <div class="p-3 bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl text-white shadow-md flex items-center justify-between">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-cyan-300 text-lg">
+                <div class="p-3 bg-gradient-to-r from-blue-900 to-indigo-900 rounded-2xl text-white shadow-md flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-cyan-300 text-lg flex-shrink-0">
                             <i class="fa-solid fa-map-marked-alt"></i>
                         </div>
-                        <div>
-                            <h4 class="font-bold text-xs">เปิดแผนที่นำทางจริง (Google Maps)</h4>
-                            <p class="text-[10px] text-blue-200">บ้านคลอแระ หมู่ 3 ต.บาเระใต้ อ.บาเจาะ จ.นราธิวาส</p>
+                        <div class="min-w-0">
+                            <h4 class="font-bold text-xs truncate">เปิดแผนที่นำทางจริง (Google Maps)</h4>
+                            <p class="text-[10px] text-blue-200 truncate">บ้านคลอแระ หมู่ 3 ต.บาเระใต้ อ.บาเจาะ จ.นราธิวาส</p>
                         </div>
                     </div>
-                    <a href="https://maps.google.com/?q=6.5167,101.5167" target="_blank" class="px-3 py-2 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-extrabold rounded-xl text-xs whitespace-nowrap shadow transition flex items-center gap-1">
+                    <a href="https://maps.google.com/?q=6.5167,101.5167" target="_blank" class="px-3 py-2 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-extrabold rounded-xl text-xs whitespace-nowrap shadow transition flex items-center gap-1 flex-shrink-0">
                         <i class="fa-solid fa-location-arrow"></i> เปิดแผนที่
                     </a>
                 </div>
 
                 <div class="space-y-2 text-xs">
                     <div id="zone-card-1" class="p-2.5 bg-red-50 border border-red-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center">
-                            <div>
+                        <div class="flex justify-between items-center gap-2">
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-red-900 zone-title-text">โซน 1 - คลอแระมัสยิดกลาง</span>
-                                    <button onclick="officerEditZone(1)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1" title="แก้ไขข้อมูลโซน">
+                                    <span class="font-bold text-red-900 zone-title-text truncate">โซน 1 - คลอแระมัสยิดกลาง</span>
+                                    <button onclick="officerEditZone(1)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 </div>
                                 <p class="text-[10px] text-red-700 zone-desc-text">พื้นที่ลุ่มต่ำริมคลอง | <span id="zone-count-1">0</span> ครัวเรือน</p>
                             </div>
-                            <span class="zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px]">เสี่ยงสูงมาก</span>
+                            <span class="zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงสูงมาก</span>
                         </div>
                         <div id="zone-households-1" class="space-y-1 text-[11px] pt-1 border-t border-red-200/60"></div>
                     </div>
 
                     <div id="zone-card-2" class="p-2.5 bg-red-50 border border-red-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center">
-                            <div>
+                        <div class="flex justify-between items-center gap-2">
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-red-900 zone-title-text">โซน 2 - ฆือลองไอมูรา</span>
-                                    <button onclick="officerEditZone(2)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1" title="แก้ไขข้อมูลโซน">
+                                    <span class="font-bold text-red-900 zone-title-text truncate">โซน 2 - ฆือลองไอมูรา</span>
+                                    <button onclick="officerEditZone(2)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 </div>
                                 <p class="text-[10px] text-red-700 zone-desc-text">ติดลำน้ำรับน้ำทุ่งนา | <span id="zone-count-2">0</span> ครัวเรือน</p>
                             </div>
-                            <span class="zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px]">เสี่ยงสูงมาก</span>
+                            <span class="zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงสูงมาก</span>
                         </div>
                         <div id="zone-households-2" class="space-y-1 text-[11px] pt-1 border-t border-red-200/60"></div>
                     </div>
 
                     <div id="zone-card-3" class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center">
-                            <div>
+                        <div class="flex justify-between items-center gap-2">
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-amber-900 zone-title-text">โซน 3 - ฆือแล</span>
-                                    <button onclick="officerEditZone(3)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1" title="แก้ไขข้อมูลโซน">
+                                    <span class="font-bold text-amber-900 zone-title-text truncate">โซน 3 - ฆือแล</span>
+                                    <button onclick="officerEditZone(3)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 </div>
                                 <p class="text-[10px] text-amber-700 zone-desc-text">พื้นที่แอ่งกะทะ | <span id="zone-count-3">0</span> ครัวเรือน</p>
                             </div>
-                            <span class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px]">เสี่ยงปานกลาง</span>
+                            <span class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงปานกลาง</span>
                         </div>
                         <div id="zone-households-3" class="space-y-1 text-[11px] pt-1 border-t border-amber-200/60"></div>
                     </div>
 
                     <div id="zone-card-4" class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center">
-                            <div>
+                        <div class="flex justify-between items-center gap-2">
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-amber-900 zone-title-text">โซน 4 - เขตปอเนาะฆือแล</span>
-                                    <button onclick="officerEditZone(4)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1" title="แก้ไขข้อมูลโซน">
+                                    <span class="font-bold text-amber-900 zone-title-text truncate">โซน 4 - เขตปอเนาะฆือแล</span>
+                                    <button onclick="officerEditZone(4)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 </div>
                                 <p class="text-[10px] text-amber-700 zone-desc-text">ทางน้ำไหลผ่าน | <span id="zone-count-4">0</span> ครัวเรือน</p>
                             </div>
-                            <span class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px]">เสี่ยงปานกลาง</span>
+                            <span class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงปานกลาง</span>
                         </div>
                         <div id="zone-households-4" class="space-y-1 text-[11px] pt-1 border-t border-amber-200/60"></div>
                     </div>
 
                     <div id="zone-card-5" class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center">
-                            <div>
+                        <div class="flex justify-between items-center gap-2">
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-amber-900 zone-title-text">โซน 5 - จาแบปะ</span>
-                                    <button onclick="officerEditZone(5)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1" title="แก้ไขข้อมูลโซน">
+                                    <span class="font-bold text-amber-900 zone-title-text truncate">โซน 5 - จาแบปะ</span>
+                                    <button onclick="officerEditZone(5)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 </div>
                                 <p class="text-[10px] text-amber-700 zone-desc-text">ใกล้นาข้าวและลำห้วย | <span id="zone-count-5">0</span> ครัวเรือน</p>
                             </div>
-                            <span class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px]">เสี่ยงปานกลาง</span>
+                            <span class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงปานกลาง</span>
                         </div>
                         <div id="zone-households-5" class="space-y-1 text-[11px] pt-1 border-t border-amber-200/60"></div>
                     </div>
 
                     <div id="zone-card-6" class="p-2.5 bg-slate-100 border border-slate-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center">
-                            <div>
+                        <div class="flex justify-between items-center gap-2">
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-slate-800 zone-title-text">โซน 6, 7, 8 (โตะเมาะ / เขตกูวิง / ถนนสายผู้ใหญ่)</span>
-                                    <button onclick="officerEditZone(6)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1" title="แก้ไขข้อมูลโซน">
+                                    <span class="font-bold text-slate-800 zone-title-text truncate">โซน 6, 7, 8 (โตะเมาะ / เขตกูวิง / ถนนสายผู้ใหญ่)</span>
+                                    <button onclick="officerEditZone(6)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 </div>
                                 <p class="text-[10px] text-slate-500 zone-desc-text">พื้นที่ดอน | ปลอดภัยสูง | <span id="zone-count-6">0</span> ครัวเรือน</p>
                             </div>
-                            <span class="zone-risk-badge px-2 py-1 bg-emerald-600 text-white font-bold rounded-md text-[10px]">เสี่ยงต่ำ</span>
+                            <span class="zone-risk-badge px-2 py-1 bg-emerald-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงต่ำ</span>
                         </div>
                         <div id="zone-households-6" class="space-y-1 text-[11px] pt-1 border-t border-slate-200"></div>
                     </div>
@@ -774,25 +892,25 @@
 
                 <div class="space-y-2 text-xs">
                     <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl space-y-1">
-                        <div class="flex justify-between items-center font-bold text-purple-950">
-                            <span>1. โรงเรียนบ้านคลอแระ (ศูนย์หลัก)</span>
-                            <span class="text-[10px] bg-purple-200 text-purple-900 px-2 py-0.5 rounded-full">รองรับ 150 คน</span>
+                        <div class="flex justify-between items-center font-bold text-purple-950 gap-2">
+                            <span class="truncate">1. โรงเรียนบ้านคลอแระ (ศูนย์หลัก)</span>
+                            <span class="text-[10px] bg-purple-200 text-purple-900 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">รองรับ 150 คน</span>
                         </div>
                         <p class="text-[10px] text-purple-800">จุดประกอบอาหาร / ทีมแพทย์พยาบาลเคลื่อนที่</p>
                     </div>
 
                     <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                        <div class="flex justify-between items-center font-bold text-slate-900">
-                            <span>2. ปอเนาะฆือแล</span>
-                            <span class="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full">รองรับ 80 คน</span>
+                        <div class="flex justify-between items-center font-bold text-slate-900 gap-2">
+                            <span class="truncate">2. ปอเนาะฆือแล</span>
+                            <span class="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">รองรับ 80 คน</span>
                         </div>
                         <p class="text-[10px] text-slate-600">จุดพักพิงสำรองโซนบน</p>
                     </div>
 
                     <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                        <div class="flex justify-between items-center font-bold text-slate-900">
-                            <span>3. โรงเรียนตาดีกาบ้านคลอแระ</span>
-                            <span class="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full">รองรับ 60 คน</span>
+                        <div class="flex justify-between items-center font-bold text-slate-900 gap-2">
+                            <span class="truncate">3. โรงเรียนตาดีกาบ้านคลอแระ</span>
+                            <span class="text-[10px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">รองรับ 60 คน</span>
                         </div>
                         <p class="text-[10px] text-slate-600">จุดคัดกรองและกระจายถุงยังชีพ</p>
                     </div>
@@ -800,18 +918,18 @@
             </div>
 
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                        <i class="fa-solid fa-users text-blue-600"></i> รายชื่อผู้อพยพในศูนย์พักพิง
+                <div class="flex items-center justify-between gap-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5 truncate">
+                        <i class="fa-solid fa-users text-blue-600 flex-shrink-0"></i> <span class="truncate">รายชื่อผู้อพยพในศูนย์พักพิง</span>
                     </h3>
-                    <span id="evacuee-count-badge" class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                    <span id="evacuee-count-badge" class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">
                         0 คน
                     </span>
                 </div>
 
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                    <input type="text" id="evacuee-search" onkeyup="filterEvacuees()" placeholder="ค้นหาชื่อ, เบอร์โทร หรือโซนบ้าน..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500">
+                    <input type="text" id="evacuee-search" onkeyup="filterEvacuees()" placeholder="ค้นหาชื่อ, เบอร์โทร หรือโซนบ้าน..." class="w-full min-w-0 pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div id="evacuees-list" class="space-y-2 max-h-72 overflow-y-auto pr-1">
@@ -830,13 +948,13 @@
                 </h3>
 
                 <div id="emergency-contacts-list" class="space-y-2 text-xs">
-                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-slate-900 contact-title">แบลี (ประธานเยาวชน)</p>
-                            <p class="text-[10px] text-slate-500 contact-sub">ศูนย์ประสานงานฉุกเฉินเยาวชน</p>
+                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 contact-title truncate">แบลี (ประธานเยาวชน)</p>
+                            <p class="text-[10px] text-slate-500 contact-sub truncate">ศูนย์ประสานงานฉุกเฉินเยาวชน</p>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <a href="tel:0886822347" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition">
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <a href="tel:0886822347" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
                                 <i class="fa-solid fa-phone"></i> โทรเลย
                             </a>
                             <button onclick="adminDeleteContact(this)" class="admin-delete-contact-btn hidden px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition">
@@ -845,13 +963,13 @@
                         </div>
                     </div>
 
-                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-slate-900 contact-title">นัสรี (หัวหน้าทีมกู้ภัย)</p>
-                            <p class="text-[10px] text-slate-500 contact-sub">ทีมกู้ภัยเยาวชนบ้านคลอแระ 24 ชม.</p>
+                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 contact-title truncate">นัสรี (หัวหน้าทีมกู้ภัย)</p>
+                            <p class="text-[10px] text-slate-500 contact-sub truncate">ทีมกู้ภัยเยาวชนบ้านคลอแระ 24 ชม.</p>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <a href="tel:0621891711" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition">
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <a href="tel:0621891711" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
                                 <i class="fa-solid fa-phone"></i> โทรเลย
                             </a>
                             <button onclick="adminDeleteContact(this)" class="admin-delete-contact-btn hidden px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition">
@@ -860,13 +978,13 @@
                         </div>
                     </div>
 
-                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold text-slate-900 contact-title">โรงพยาบาลส่งเสริมสุขภาพ ต.บาเระใต้</p>
-                            <p class="text-[10px] text-slate-500 contact-sub">หน่วยฉุกเฉินทางการแพทย์ รพ.สต.</p>
+                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 contact-title truncate">โรงพยาบาลส่งเสริมสุขภาพ ต.บาเระใต้</p>
+                            <p class="text-[10px] text-slate-500 contact-sub truncate">หน่วยฉุกเฉินทางการแพทย์ รพ.สต.</p>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <a href="tel:073571000" class="contact-tel-link px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition">
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <a href="tel:073571000" class="contact-tel-link px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
                                 <i class="fa-solid fa-phone"></i> โทรเลย
                             </a>
                             <button onclick="adminDeleteContact(this)" class="admin-delete-contact-btn hidden px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition">
@@ -897,7 +1015,7 @@
             <form onsubmit="submitOfficerLogin(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">รหัสผ่านเจ้าหน้าที่ *</label>
-                    <input type="password" id="officer-pin-input" required placeholder="กรอกรหัสผ่านเจ้าหน้าที่" class="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 text-center text-base tracking-widest font-mono">
+                    <input type="password" id="officer-pin-input" required placeholder="กรอกรหัสผ่านเจ้าหน้าที่" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-amber-500 text-center text-base tracking-widest font-mono">
                 </div>
                 <p id="officer-login-error" class="text-red-500 text-[11px] text-center font-semibold hidden">
                     <i class="fa-solid fa-circle-exclamation"></i> รหัสผ่านไม่ถูกต้อง! กรุณาลองใหม่อีกครั้ง
@@ -926,7 +1044,7 @@
             <form onsubmit="submitSuperAdminLogin(event)" class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-amber-200 mb-1">รหัสผ่านผู้ดูแลระบบ (Super Admin Key) *</label>
-                    <input type="password" id="admin-key-input" required placeholder="กรอกรหัสผ่าน Super Admin" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-400 text-center text-base tracking-widest font-mono text-white">
+                    <input type="password" id="admin-key-input" required placeholder="กรอกรหัสผ่าน Super Admin" class="w-full min-w-0 p-2.5 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:border-amber-400 text-center text-base tracking-widest font-mono text-white">
                 </div>
                 <p id="admin-login-error" class="text-red-400 text-[11px] text-center font-semibold hidden">
                     <i class="fa-solid fa-circle-exclamation"></i> รหัสผ่าน Super Admin ไม่ถูกต้อง!
@@ -950,7 +1068,7 @@
                     <i class="fa-solid fa-truck-medical"></i>
                 </div>
                 <h3 class="font-extrabold text-slate-900 text-base">แจ้งขอความช่วยเหลือฉุกเฉิน (SOS)</h3>
-                <p class="text-xs text-slate-500">ข้อมูลจะถูกส่งเข้า **ทีมกู้ภัยบ้านคลอแระ** ทันที</p>
+                <p class="text-xs text-slate-500">ข้อมูลจะถูกส่งเข้า <strong>ทีมกู้ภัยบ้านคลอแระ</strong> ทันที</p>
             </div>
 
             <div class="p-2.5 bg-red-50 border border-red-200 rounded-2xl space-y-1.5">
@@ -971,16 +1089,16 @@
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">ช่องทางส่งสัญญาณ SOS *</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center gap-2 p-2 bg-blue-50 border-2 border-blue-500 rounded-xl cursor-pointer">
-                            <input type="radio" name="sos-target" value="messenger" checked class="accent-blue-600">
-                            <span class="font-bold text-blue-900 text-[11px] flex items-center gap-1">
-                                <i class="fa-brands fa-facebook-messenger text-blue-600 text-sm"></i> Messenger กู้ภัย
+                        <label class="flex items-center gap-2 p-2 bg-blue-50 border-2 border-blue-500 rounded-xl cursor-pointer min-w-0">
+                            <input type="radio" name="sos-target" value="messenger" checked class="accent-blue-600 flex-shrink-0">
+                            <span class="font-bold text-blue-900 text-[11px] flex items-center gap-1 truncate">
+                                <i class="fa-brands fa-facebook-messenger text-blue-600 text-sm flex-shrink-0"></i> <span class="truncate">Messenger กู้ภัย</span>
                             </span>
                         </label>
-                        <label class="flex items-center gap-2 p-2 bg-emerald-50 border border-slate-300 rounded-xl cursor-pointer">
-                            <input type="radio" name="sos-target" value="line" class="accent-emerald-600">
-                            <span class="font-bold text-emerald-900 text-[11px] flex items-center gap-1">
-                                <i class="fa-brands fa-line text-emerald-500 text-sm"></i> คัดลอก + เปิดแอป
+                        <label class="flex items-center gap-2 p-2 bg-emerald-50 border border-slate-300 rounded-xl cursor-pointer min-w-0">
+                            <input type="radio" name="sos-target" value="line" class="accent-emerald-600 flex-shrink-0">
+                            <span class="font-bold text-emerald-900 text-[11px] flex items-center gap-1 truncate">
+                                <i class="fa-brands fa-line text-emerald-500 text-sm flex-shrink-0"></i> <span class="truncate">คัดลอก + เปิดแอป</span>
                             </span>
                         </label>
                     </div>
@@ -988,15 +1106,15 @@
 
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">ชื่อ-นามสกุล ผู้ขอความช่วยเหลือ *</label>
-                    <input type="text" id="sos-name" required placeholder="เช่น อับดุลเลาะห์ สุไลมาน" class="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-red-500">
+                    <input type="text" id="sos-name" required placeholder="เช่น อับดุลเลาะห์ สุไลมาน" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-red-500">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อกลับ *</label>
-                    <input type="tel" id="sos-phone" required placeholder="08X-XXX-XXXX" class="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-red-500">
+                    <input type="tel" id="sos-phone" required placeholder="08X-XXX-XXXX" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-red-500">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">โซน / จุดสังเกตที่อยู่ *</label>
-                    <select id="sos-address" required class="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-medium mb-1.5 focus:outline-none focus:border-red-500">
+                    <select id="sos-address" required class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium mb-1.5 focus:outline-none focus:border-red-500">
                         <option value="โซน 1 คลอแระมัสยิดกลาง">โซน 1 คลอแระมัสยิดกลาง</option>
                         <option value="โซน 2 ฆือลองไอมูรา">โซน 2 ฆือลองไอมูรา</option>
                         <option value="โซน 3 ฆือแล">โซน 3 ฆือแล</option>
@@ -1006,11 +1124,11 @@
                         <option value="โซน 7 เขตกูวิง">โซน 7 เขตกูวิง</option>
                         <option value="โซน 8 ถนนสายบ้านผู้ใหญ่">โซน 8 ถนนสายบ้านผู้ใหญ่</option>
                     </select>
-                    <input type="text" id="sos-detail-loc" placeholder="จุดสังเกต เช่น ใกล้ร้านค้ากูวิง / บ้านหลังสีขาว" class="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-red-500">
+                    <input type="text" id="sos-detail-loc" placeholder="จุดสังเกต เช่น ใกล้ร้านค้ากูวิง / บ้านหลังสีขาว" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-red-500">
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">สิ่งที่ต้องการความช่วยเหลือ *</label>
-                    <select id="sos-type" class="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-medium focus:outline-none focus:border-red-500">
+                    <select id="sos-type" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium focus:outline-none focus:border-red-500">
                         <option value="ยกของขึ้นที่สูง / ย้ายสิ่งของ">ยกของขึ้นที่สูง / ย้ายสิ่งของ</option>
                         <option value="ต้องการอพยพคนชรา / เด็ก / ผู้ป่วย">ต้องการอพยพคนชรา / เด็ก / ผู้ป่วย</option>
                         <option value="ต้องการเรือรับส่ง">ต้องการเรือรับส่ง</option>
@@ -1021,8 +1139,8 @@
 
                 <div class="pt-1">
                     <button type="button" onclick="getCurrentLocation('sos-coords-text', 'sos-lat', 'sos-lng')" class="w-full bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 font-bold transition">
-                        <i class="fa-solid fa-location-crosshairs text-blue-600"></i>
-                        <span id="sos-coords-text">กดเพื่อระบุพิกัด GPS เรียลไทม์</span>
+                        <i class="fa-solid fa-location-crosshairs text-blue-600 flex-shrink-0"></i>
+                        <span id="sos-coords-text" class="truncate">กดเพื่อระบุพิกัด GPS เรียลไทม์</span>
                     </button>
                     <input type="hidden" id="sos-lat">
                     <input type="hidden" id="sos-lng">
@@ -1052,7 +1170,7 @@
             <form onsubmit="handleEvacueeSubmit(event)" class="space-y-2.5 text-xs">
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">ศูนย์อพยพที่เข้าพัก *</label>
-                    <select id="evac-shelter" required class="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
+                    <select id="evac-shelter" required class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
                         <option value="โรงเรียนบ้านคลอแระ (ศูนย์หลัก)">โรงเรียนบ้านคลอแระ (ศูนย์หลัก)</option>
                         <option value="ปอเนาะฆือแล">ปอเนาะฆือแล</option>
                         <option value="โรงเรียนตาดีกาบ้านคลอแระ">โรงเรียนตาดีกาบ้านคลอแระ</option>
@@ -1060,16 +1178,16 @@
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">ชื่อ-นามสกุล ผู้อพยพ *</label>
-                    <input type="text" id="evac-name" required placeholder="เช่น นายมาหะมะ ยูโซ๊ะ" class="w-full p-2.5 border border-slate-300 rounded-xl">
+                    <input type="text" id="evac-name" required placeholder="เช่น นายมาหะมะ ยูโซ๊ะ" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">อายุ (ปี)</label>
-                        <input type="number" id="evac-age" placeholder="เช่น 45" class="w-full p-2.5 border border-slate-300 rounded-xl">
+                        <input type="number" id="evac-age" placeholder="เช่น 45" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl">
                     </div>
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">กลุ่มเปราะบาง</label>
-                        <select id="evac-group" class="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
+                        <select id="evac-group" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
                             <option value="ทั่วไป">ทั่วไป</option>
                             <option value="ผู้สูงอายุ">ผู้สูงอายุ</option>
                             <option value="เด็ก">เด็ก</option>
@@ -1081,7 +1199,7 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">มาจากโซน *</label>
-                        <select id="evac-zone" required class="w-full p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
+                        <select id="evac-zone" required class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
                             <option value="โซน 1 คลอแระมัสยิดกลาง">โซน 1 มัสยิดกลาง</option>
                             <option value="โซน 2 ฆือลองไอมูรา">โซน 2 ฆือลองไอมูรา</option>
                             <option value="โซน 3 ฆือแล">โซน 3 ฆือแล</option>
@@ -1094,12 +1212,12 @@
                     </div>
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">เลขห้อง / จุดนอน</label>
-                        <input type="text" id="evac-room" placeholder="เช่น อาคาร 1 ห้อง 2" class="w-full p-2.5 border border-slate-300 rounded-xl">
+                        <input type="text" id="evac-room" placeholder="เช่น อาคาร 1 ห้อง 2" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl">
                     </div>
                 </div>
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อ (หรือของญาติ) *</label>
-                    <input type="tel" id="evac-phone" required placeholder="08X-XXX-XXXX" class="w-full p-2.5 border border-slate-300 rounded-xl">
+                    <input type="tel" id="evac-phone" required placeholder="08X-XXX-XXXX" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl">
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl shadow transition text-sm flex items-center justify-center gap-1.5">
@@ -1110,34 +1228,34 @@
     </div>
 
     <!-- BOTTOM APP NAVIGATION BAR -->
-    <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 px-3 py-1.5 shadow-lg">
+    <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 px-2 py-1.5 shadow-lg">
         <div class="max-w-md mx-auto flex items-center justify-around text-center">
             
             <button onclick="switchBottomTab('overview')" id="nav-btn-overview" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-blue-600 font-bold">
                 <i class="fa-solid fa-chart-pie text-lg"></i>
-                <span class="text-[10px] mt-0.5">ภาพรวม</span>
+                <span class="text-[10px] mt-0.5 whitespace-nowrap">ภาพรวม</span>
             </button>
 
             <button onclick="switchBottomTab('map')" id="nav-btn-map" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-slate-600">
                 <i class="fa-solid fa-map-location-dot text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">แผนที่</span>
+                <span class="text-[10px] font-medium mt-0.5 whitespace-nowrap">แผนที่</span>
             </button>
 
-            <div class="relative -top-5">
-                <button onclick="openSosModal()" class="w-13 h-13 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 text-white flex flex-col items-center justify-center shadow-lg pulse-sos border-4 border-white transition transform active:scale-90">
+            <div class="relative -top-5 flex flex-col items-center">
+                <button onclick="openSosModal()" class="w-14 h-14 rounded-full bg-gradient-to-tr from-red-600 to-rose-500 text-white flex flex-col items-center justify-center shadow-lg pulse-sos border-4 border-white transition transform active:scale-90">
                     <i class="fa-solid fa-life-ring text-xl"></i>
                 </button>
-                <span class="block text-[10px] font-extrabold text-red-600 mt-0.5 text-center">แจ้ง SOS</span>
+                <span class="block text-[10px] font-extrabold text-red-600 mt-0.5 text-center whitespace-nowrap">แจ้ง SOS</span>
             </div>
 
             <button onclick="switchBottomTab('shelter')" id="nav-btn-shelter" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-slate-600">
                 <i class="fa-solid fa-house-chimney-window text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">ศูนย์อพยพ</span>
+                <span class="text-[10px] font-medium mt-0.5 whitespace-nowrap">ศูนย์อพยพ</span>
             </button>
 
             <button onclick="switchBottomTab('contacts')" id="nav-btn-contacts" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-slate-600">
                 <i class="fa-solid fa-phone text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5">โทรด่วน</span>
+                <span class="text-[10px] font-medium mt-0.5 whitespace-nowrap">โทรด่วน</span>
             </button>
 
         </div>
@@ -1154,6 +1272,111 @@
         let sosCount = 0;
         let activityLogs = [];
         let announcementsList = [];
+
+        // Weather state for Ban Kho Rae (6.5167, 101.5167)
+        let currentWeatherState = {
+            temp: 28,
+            apparentTemp: 31,
+            humidity: 82,
+            windSpeed: 12,
+            rainProb: 40,
+            precipitation: 0.5,
+            desc: "เมฆบางส่วน",
+            iconClass: "fa-solid fa-cloud-sun text-amber-300"
+        };
+
+        // Custom UI Dialog System (No native alert/confirm/prompt)
+        function showCustomMessage(message, title = "แจ้งเตือนระบบ") {
+            const modal = document.getElementById('custom-dialog-modal');
+            document.getElementById('dialog-title').innerText = title;
+            document.getElementById('dialog-message').innerText = message;
+            document.getElementById('dialog-input-container').classList.add('hidden');
+            document.getElementById('dialog-input-container').innerHTML = '';
+            document.getElementById('dialog-cancel-btn').classList.add('hidden');
+            
+            const confirmBtn = document.getElementById('dialog-confirm-btn');
+            confirmBtn.innerText = "รับทราบ";
+            confirmBtn.onclick = () => {
+                modal.classList.add('hidden');
+            };
+            modal.classList.remove('hidden');
+        }
+
+        function showCustomConfirm(message, onConfirmCallback, title = "ยืนยันการทำรายการ") {
+            const modal = document.getElementById('custom-dialog-modal');
+            document.getElementById('dialog-title').innerText = title;
+            document.getElementById('dialog-message').innerText = message;
+            document.getElementById('dialog-input-container').classList.add('hidden');
+            document.getElementById('dialog-input-container').innerHTML = '';
+            
+            const cancelBtn = document.getElementById('dialog-cancel-btn');
+            cancelBtn.classList.remove('hidden');
+            cancelBtn.onclick = () => {
+                modal.classList.add('hidden');
+            };
+
+            const confirmBtn = document.getElementById('dialog-confirm-btn');
+            confirmBtn.innerText = "ยืนยัน";
+            confirmBtn.onclick = () => {
+                modal.classList.add('hidden');
+                if (onConfirmCallback) onConfirmCallback();
+            };
+            modal.classList.remove('hidden');
+        }
+
+        function showCustomFormDialog(title, message, fields, onSubmitCallback) {
+            const modal = document.getElementById('custom-dialog-modal');
+            document.getElementById('dialog-title').innerText = title;
+            document.getElementById('dialog-message').innerText = message;
+            
+            const container = document.getElementById('dialog-input-container');
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+
+            fields.forEach(f => {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `<label class="block text-[11px] font-bold text-slate-700 mb-1">${f.label}</label>`;
+                if (f.type === 'select') {
+                    const sel = document.createElement('select');
+                    sel.id = f.id;
+                    sel.className = "w-full p-2 border border-slate-300 rounded-xl text-xs bg-white";
+                    f.options.forEach(opt => {
+                        const o = document.createElement('option');
+                        o.value = opt.value;
+                        o.innerText = opt.text;
+                        if (opt.value === f.value) o.selected = true;
+                        sel.appendChild(o);
+                    });
+                    wrapper.appendChild(sel);
+                } else {
+                    const inp = document.createElement('input');
+                    inp.type = f.type || 'text';
+                    inp.id = f.id;
+                    inp.value = f.value || '';
+                    inp.placeholder = f.placeholder || '';
+                    inp.className = "w-full p-2 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-blue-500";
+                    wrapper.appendChild(inp);
+                }
+                container.appendChild(wrapper);
+            });
+
+            const cancelBtn = document.getElementById('dialog-cancel-btn');
+            cancelBtn.classList.remove('hidden');
+            cancelBtn.onclick = () => modal.classList.add('hidden');
+
+            const confirmBtn = document.getElementById('dialog-confirm-btn');
+            confirmBtn.innerText = "บันทึกข้อมูล";
+            confirmBtn.onclick = () => {
+                const values = {};
+                fields.forEach(f => {
+                    const el = document.getElementById(f.id);
+                    if (el) values[f.id] = el.value;
+                });
+                modal.classList.add('hidden');
+                if (onSubmitCallback) onSubmitCallback(values);
+            };
+            modal.classList.remove('hidden');
+        }
 
         const realtimeChannel = new BroadcastChannel('ban_khlorae_flood_channel');
 
@@ -1183,7 +1406,9 @@
             };
             
             realtimeChannel.postMessage(syncData);
-            localStorage.setItem('klr_flood_sync_event', JSON.stringify(syncData));
+            try {
+                localStorage.setItem('klr_flood_sync_event', JSON.stringify(syncData));
+            } catch(e) {}
         }
 
         function handleIncomingRealtimeUpdate(data) {
@@ -1206,16 +1431,21 @@
                 addNewEvacueeToDOM(data.payload);
             } else if (data.type === 'EVACUEE_DELETE') {
                 removeEvacueeFromDOM(data.payload.name);
+            } else if (data.type === 'WEATHER_UPDATE') {
+                currentWeatherState = data.payload;
+                renderWeatherUI();
             }
         }
 
-        function showToast(text) {
+        function showToast(text, title = "อัปเดตข้อมูลเรียลไทม์!") {
             const container = document.getElementById('toast-container');
+            const titleElem = document.getElementById('toast-title');
             const msgElem = document.getElementById('toast-message-text');
             if (container && msgElem) {
+                if (titleElem) titleElem.innerText = title;
                 msgElem.innerText = text;
                 container.classList.remove('hidden');
-                setTimeout(() => { hideToast(); }, 5000);
+                setTimeout(() => { hideToast(); }, 4500);
             }
         }
 
@@ -1239,10 +1469,150 @@
             } catch(e) {}
         }
 
+        // Convert WMO Weather Code to Thai description & FontAwesome Icon
+        function interpretWeatherCode(code) {
+            if (code === 0) return { desc: "ท้องฟ้าแจ่มใส", icon: "fa-solid fa-sun text-amber-400" };
+            if (code === 1 || code === 2) return { desc: "มีเมฆบางส่วน", icon: "fa-solid fa-cloud-sun text-amber-300" };
+            if (code === 3) return { desc: "มีเมฆมาก / ครึ้มฟ้าครึ้มฝน", icon: "fa-solid fa-cloud text-slate-300" };
+            if (code >= 45 && code <= 48) return { desc: "มีหมอกปกคลุม", icon: "fa-solid fa-smog text-slate-300" };
+            if (code >= 51 && code <= 57) return { desc: "ฝนตกปรอยๆ", icon: "fa-solid fa-cloud-rain text-cyan-300" };
+            if (code === 61 || code === 80) return { desc: "ฝนตกเล็กน้อย", icon: "fa-solid fa-cloud-rain text-cyan-300" };
+            if (code === 63 || code === 81) return { desc: "ฝนตกปานกลาง", icon: "fa-solid fa-cloud-showers-heavy text-blue-300" };
+            if (code === 65 || code === 82) return { desc: "ฝนตกหนักมาก", icon: "fa-solid fa-cloud-showers-water text-red-400 animate-bounce" };
+            if (code >= 95) return { desc: "พายุฝนฟ้าคะนอง", icon: "fa-solid fa-cloud-bolt text-amber-400 animate-pulse" };
+            return { desc: "มีเมฆฝนในพื้นที่", icon: "fa-solid fa-cloud-sun-rain text-cyan-300" };
+        }
+
+        // Fetch Live Weather from Open-Meteo API for Ban Kho Rae (Lat 6.5167, Lng 101.5167)
+        async function fetchLiveWeather(showNotification = false) {
+            const url = "https://api.open-meteo.com/v1/forecast?latitude=6.5167&longitude=101.5167&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&hourly=precipitation_probability&timezone=Asia%2FBangkok&forecast_days=1";
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("Weather API Error");
+                const data = await res.json();
+
+                if (data && data.current) {
+                    const c = data.current;
+                    const wInfo = interpretWeatherCode(c.weather_code);
+                    
+                    const nowHour = new Date().getHours();
+                    let prob = 30;
+                    if (data.hourly && data.hourly.precipitation_probability && data.hourly.precipitation_probability[nowHour] !== undefined) {
+                        prob = data.hourly.precipitation_probability[nowHour];
+                    }
+
+                    currentWeatherState = {
+                        temp: Math.round(c.temperature_2m),
+                        apparentTemp: Math.round(c.apparent_temperature),
+                        humidity: Math.round(c.relative_humidity_2m),
+                        windSpeed: Math.round(c.wind_speed_10m),
+                        rainProb: prob,
+                        precipitation: c.precipitation || 0,
+                        desc: wInfo.desc,
+                        iconClass: wInfo.icon
+                    };
+
+                    renderWeatherUI();
+                    if (showNotification) {
+                        showToast(`อัปเดตสภาพอากาศล่าสุด: ${currentWeatherState.desc} (${currentWeatherState.temp}°C)`, "พยากรณ์อากาศสด");
+                    }
+                }
+            } catch (err) {
+                renderWeatherUI();
+                if (showNotification) {
+                    showToast(`แสดงผลสภาพอากาศ: ${currentWeatherState.desc} (${currentWeatherState.temp}°C)`, "ข้อมูลสภาพอากาศ");
+                }
+            }
+        }
+
+        function renderWeatherUI() {
+            const w = currentWeatherState;
+            const nowStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+            const heroTemp = document.getElementById('hero-weather-temp');
+            const heroDesc = document.getElementById('hero-weather-desc');
+            const heroIcon = document.getElementById('hero-weather-icon');
+            const stripStatus = document.getElementById('strip-weather-status');
+            const stripHum = document.getElementById('strip-weather-humidity');
+            const stripWind = document.getElementById('strip-weather-wind');
+            const stripIcon = document.getElementById('strip-weather-icon');
+
+            if (heroTemp) heroTemp.innerText = `${w.temp}°C`;
+            if (heroDesc) heroDesc.innerText = w.desc;
+            if (heroIcon) heroIcon.className = w.iconClass;
+            if (stripStatus) stripStatus.innerText = `${w.desc} • อุณหภูมิ ${w.temp}°C`;
+            if (stripHum) stripHum.innerText = `${w.humidity}%`;
+            if (stripWind) stripWind.innerText = `${w.windSpeed} กม./ชม.`;
+            if (stripIcon) stripIcon.className = w.iconClass;
+
+            const cardTemp = document.getElementById('card-weather-temp');
+            const cardFeel = document.getElementById('card-weather-feel');
+            const cardProb = document.getElementById('card-weather-rain-prob');
+            const cardRainMm = document.getElementById('card-weather-rain-mm');
+            const cardHum = document.getElementById('card-weather-hum');
+            const cardWind = document.getElementById('card-weather-wind');
+            const timeLabel = document.getElementById('weather-updated-time');
+            const advisory = document.getElementById('weather-advisory-text');
+            const statRainDesc = document.getElementById('stat-rain-desc');
+
+            if (cardTemp) cardTemp.innerText = `${w.temp} °C`;
+            if (cardFeel) cardFeel.innerText = `รู้สึกเหมือน ${w.apparentTemp}°C`;
+            if (cardProb) cardProb.innerText = `${w.rainProb} %`;
+            if (cardRainMm) cardRainMm.innerText = `ฝนรายชั่วโมง ${w.precipitation} มม.`;
+            if (cardHum) cardHum.innerText = `${w.humidity} %`;
+            if (cardWind) cardWind.innerHTML = `${w.windSpeed} <span class="text-[10px] font-normal">กม./ชม.</span>`;
+            if (timeLabel) timeLabel.innerText = `อัปเดต ${nowStr} น.`;
+            if (statRainDesc) statRainDesc.innerText = w.desc;
+
+            if (advisory) {
+                if (w.rainProb >= 70 || w.precipitation >= 5) {
+                    advisory.innerText = "⚠️ โอกาสฝนตกสูง เฝ้าระวังน้ำหลากจากเทือกเขาบูโดและคลองจาแบปะ";
+                } else {
+                    advisory.innerText = `สภาพอากาศทั่วไป: ${w.desc} ติดตามระดับน้ำตามปกติ`;
+                }
+            }
+        }
+
+        function adminManualWeatherUpdate() {
+            const descInput = document.getElementById('admin-weather-desc').value.trim();
+            const tempInput = document.getElementById('admin-weather-temp').value.trim();
+
+            if (!descInput && !tempInput) {
+                showCustomMessage("กรุณากรอกลักษณะอากาศ หรือ อุณหภูมิที่ต้องการตั้งค่า");
+                return;
+            }
+
+            if (descInput) currentWeatherState.desc = descInput;
+            if (tempInput) {
+                currentWeatherState.temp = parseInt(tempInput);
+                currentWeatherState.apparentTemp = parseInt(tempInput) + 2;
+            }
+
+            if (descInput.includes("พายุ") || descInput.includes("หนัก")) {
+                currentWeatherState.iconClass = "fa-solid fa-cloud-showers-water text-red-400 animate-bounce";
+                currentWeatherState.rainProb = 90;
+            } else if (descInput.includes("ฝน")) {
+                currentWeatherState.iconClass = "fa-solid fa-cloud-rain text-cyan-300";
+                currentWeatherState.rainProb = 70;
+            } else if (descInput.includes("แดด") || descInput.includes("แจ่มใส")) {
+                currentWeatherState.iconClass = "fa-solid fa-sun text-amber-400";
+                currentWeatherState.rainProb = 10;
+            }
+
+            renderWeatherUI();
+            addLog(`ตั้งค่าสภาพอากาศเป็น: ${currentWeatherState.desc} (${currentWeatherState.temp}°C)`, "Super Admin");
+            broadcastDataChange('WEATHER_UPDATE', currentWeatherState, `🌦️ อัปเดตสภาพอากาศ: ${currentWeatherState.desc} (${currentWeatherState.temp}°C)`);
+
+            document.getElementById('admin-weather-desc').value = '';
+            document.getElementById('admin-weather-temp').value = '';
+            showToast(`บันทึกและอัปเดตสภาพอากาศเป็น "${currentWeatherState.desc}" เรียบร้อยแล้ว`);
+        }
+
         // Initialize on page load
         window.onload = function() {
             setSimLevel('normal');
             updateLiveTime();
+            fetchLiveWeather(false);
             setInterval(updateLiveTime, 30000);
             setInterval(autoSyncData, 10 * 60 * 1000);
 
@@ -1293,18 +1663,20 @@
             if (btnIcon) btnIcon.classList.add('fa-spin');
             
             updateLiveTime();
+            fetchLiveWeather(false);
             autoSyncData();
 
             setTimeout(() => {
                 if (btnIcon) btnIcon.classList.remove('fa-spin');
-                alert("รีเฟรชข้อมูลสถานการณ์น้ำและประกาศล่าสุดเรียบร้อยแล้ว!");
+                showToast("รีเฟรชข้อมูลสถานการณ์น้ำ สภาพอากาศ และประกาศล่าสุดเรียบร้อยแล้ว!", "รีเฟรชสำเร็จ");
             }, 600);
         }
 
         function autoSyncData() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            addLog(`ระบบอัปเดตและรีเฟรชอัตโนมัติทุกๆ 10 นาที สำเร็จ (${timeStr} น.)`, "ระบบอัตโนมัติ");
+            fetchLiveWeather(false);
+            addLog(`ระบบอัปเดตสภาพอากาศและรีเฟรชอัตโนมัติทุกๆ 10 นาที สำเร็จ (${timeStr} น.)`, "ระบบอัตโนมัติ");
         }
 
         function officerManualRecordSave() {
@@ -1320,7 +1692,7 @@
 
             addLog(`บันทึกยืนยันการตรวจสอบและแก้ไขข้อมูลประจำรอบ (${fullStr})`, "เจ้าหน้าที่");
             broadcastDataChange('MANUAL_SAVE', { timeStr: fullStr }, `เจ้าหน้าที่ได้กดยืนยันบันทึกการอัปเดตข้อมูลเมื่อ ${timeStr} น.`);
-            alert(`บันทึกเวลาการแก้ไข/อัปเดตข้อมูลสำเร็จเมื่อ ${fullStr}`);
+            showToast(`บันทึกเวลาการแก้ไข/อัปเดตข้อมูลสำเร็จเมื่อ ${fullStr}`);
         }
 
         function addLog(actionText, author = "เจ้าหน้าที่") {
@@ -1354,19 +1726,20 @@
                 return;
             }
             container.innerHTML = activityLogs.slice(0, 5).map(log => `
-                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 text-[11px] flex justify-between items-center">
-                    <span><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>${log.action}</span>
-                    <span class="text-[10px] text-slate-400 font-mono">${log.time} น.</span>
+                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 text-[11px] flex justify-between items-center gap-2">
+                    <span class="min-w-0 break-words"><i class="fa-solid fa-circle-check text-emerald-600 mr-1.5"></i>${log.action}</span>
+                    <span class="text-[10px] text-slate-400 font-mono whitespace-nowrap flex-shrink-0">${log.time} น.</span>
                 </div>
             `).join('');
         }
 
         function clearActivityLogs() {
-            if (confirm("คุณต้องการล้างประวัติกิจกรรมทั้งหมดใช่หรือไม่?")) {
+            showCustomConfirm("คุณต้องการล้างประวัติกิจกรรมทั้งหมดใช่หรือไม่?", () => {
                 activityLogs = [];
                 renderActivityLogs();
                 renderPublicTimeline();
-            }
+                showToast("ล้างประวัติกิจกรรมเรียบร้อยแล้ว");
+            });
         }
 
         function publishAnnouncement() {
@@ -1374,7 +1747,7 @@
             const message = textInput.value.trim();
 
             if (!message) {
-                alert("กรุณากรอกข้อความประกาศก่อนกดบันทึก");
+                showCustomMessage("กรุณากรอกข้อความประกาศก่อนกดบันทึก");
                 return;
             }
 
@@ -1391,7 +1764,7 @@
             }
 
             textInput.value = '';
-            alert("บันทึกและส่งประกาศข่าวสารไปยังชาวบ้านเรียบร้อยแล้ว!");
+            showToast("บันทึกและส่งประกาศข่าวสารไปยังชาวบ้านเรียบร้อยแล้ว!");
         }
 
         function addAnnouncementItem(text, timeStr, author) {
@@ -1411,16 +1784,16 @@
 
             container.classList.remove('hidden');
             container.innerHTML = announcementsList.map((item, index) => `
-                <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 p-3 rounded-2xl shadow-md flex items-start gap-3 border border-amber-400/40 relative">
+                <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 p-3 rounded-2xl shadow-md flex items-start gap-3 border border-amber-400/40 relative overflow-hidden">
                     <div class="w-8 h-8 rounded-xl bg-slate-950/20 flex items-center justify-center flex-shrink-0 text-slate-950 text-base mt-0.5">
                         <i class="fa-solid fa-bullhorn animate-bounce"></i>
                     </div>
-                    <div class="flex-1 text-xs pr-6">
-                        <div class="flex items-center justify-between font-extrabold text-[11px] uppercase tracking-wider text-slate-900 mb-0.5">
-                            <span>📢 ประกาศจาก (${item.author})</span>
-                            <span class="text-[9px] opacity-80 font-mono">${item.time} น.</span>
+                    <div class="flex-1 min-w-0 text-xs pr-6">
+                        <div class="flex items-center justify-between font-extrabold text-[11px] uppercase tracking-wider text-slate-900 mb-0.5 gap-1">
+                            <span class="truncate">📢 ประกาศจาก (${item.author})</span>
+                            <span class="text-[9px] opacity-80 font-mono whitespace-nowrap flex-shrink-0">${item.time} น.</span>
                         </div>
-                        <p class="font-bold text-slate-950 leading-tight">
+                        <p class="font-bold text-slate-950 leading-tight break-words">
                             ${item.text}
                         </p>
                     </div>
@@ -1434,25 +1807,25 @@
         }
 
         function removeAnnouncement(index) {
-            if (confirm("คุณต้องการลบประกาศนี้ใช่หรือไม่?")) {
+            showCustomConfirm("คุณต้องการลบประกาศนี้ใช่หรือไม่?", () => {
                 announcementsList.splice(index, 1);
                 renderAnnouncements();
                 addLog("ลบประกาศออกจากบอร์ด", "เจ้าหน้าที่");
                 if (window.syncDataToCloud) {
                     window.syncDataToCloud(currentAlertLevel, announcementsList);
                 }
-            }
+            });
         }
 
         function clearAnnouncement() {
-            if (confirm("คุณต้องการลบประกาศทั้งหมดใช่หรือไม่?")) {
+            showCustomConfirm("คุณต้องการลบประกาศทั้งหมดใช่หรือไม่?", () => {
                 announcementsList = [];
                 renderAnnouncements();
                 addLog("ลบประกาศทั้งหมด", "เจ้าหน้าที่ กู้ภัย");
                 if (window.syncDataToCloud) {
                     window.syncDataToCloud(currentAlertLevel, announcementsList);
                 }
-            }
+            });
         }
 
         function updateLiveTime() {
@@ -1466,13 +1839,13 @@
             if (!isOfficerLoggedIn) {
                 openOfficerLoginModal();
             } else {
-                if (confirm("ต้องการออกจากโหมดเจ้าหน้าที่ใช่หรือไม่?")) {
+                showCustomConfirm("ต้องการออกจากโหมดเจ้าหน้าที่ใช่หรือไม่?", () => {
                     isOfficerLoggedIn = false;
                     document.getElementById('officer-panel').classList.add('hidden');
                     document.getElementById('admin-mode-btn').classList.add('hidden');
                     document.getElementById('warning-level-selector').classList.add('hidden');
                     document.getElementById('officer-btn-text').innerText = "เจ้าหน้าที่";
-                    document.getElementById('officer-mode-btn').className = "px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition";
+                    document.getElementById('officer-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition";
                     
                     if (!isSuperAdminLoggedIn) {
                         document.querySelectorAll('.officer-delete-hh-btn').forEach(btn => btn.classList.add('hidden'));
@@ -1481,7 +1854,8 @@
                         document.querySelectorAll('.officer-delete-evac-btn').forEach(btn => btn.classList.add('hidden'));
                     }
                     addLog("ออกจากโหมดเจ้าหน้าที่/กู้ภัย", "เจ้าหน้าที่");
-                }
+                    showToast("ออกจากโหมดเจ้าหน้าที่แล้ว");
+                });
             }
         }
 
@@ -1506,7 +1880,7 @@
                 document.getElementById('admin-mode-btn').classList.remove('hidden');
                 document.getElementById('warning-level-selector').classList.remove('hidden');
                 document.getElementById('officer-btn-text').innerText = "เจ้าหน้าที่ ✓";
-                document.getElementById('officer-mode-btn').className = "px-2 py-1 rounded-full bg-amber-500 text-white text-xs font-bold border border-amber-600 flex items-center gap-1 shadow-sm";
+                document.getElementById('officer-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-amber-500 text-white text-xs font-bold border border-amber-600 flex items-center gap-1 shadow-sm";
                 document.getElementById('config-messenger-url').value = rescueMessengerLink;
                 
                 document.querySelectorAll('.officer-delete-hh-btn').forEach(btn => btn.classList.remove('hidden'));
@@ -1515,6 +1889,7 @@
                 document.querySelectorAll('.officer-delete-evac-btn').forEach(btn => btn.classList.remove('hidden'));
 
                 addLog("เข้าสู่ระบบเจ้าหน้าที่/ทีมกู้ภัยสำเร็จ", "เจ้าหน้าที่");
+                showToast("เข้าสู่โหมดเจ้าหน้าที่กู้ภัยเรียบร้อยแล้ว");
             } else {
                 document.getElementById('officer-login-error').classList.remove('hidden');
             }
@@ -1543,7 +1918,7 @@
                 closeSuperAdminLoginModal();
                 document.getElementById('super-admin-panel').classList.remove('hidden');
                 document.getElementById('admin-btn-text').innerText = "Admin (ออนไลน์)";
-                document.getElementById('admin-mode-btn').className = "px-2 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-bold border border-amber-500 flex items-center gap-1 shadow transition";
+                document.getElementById('admin-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-bold border border-amber-500 flex items-center gap-1 shadow transition";
                 
                 document.querySelectorAll('.admin-delete-contact-btn').forEach(btn => btn.classList.remove('hidden'));
                 document.querySelectorAll('.officer-canal-ctrl-btn').forEach(btn => btn.classList.remove('hidden'));
@@ -1552,18 +1927,18 @@
                 document.querySelectorAll('.officer-delete-evac-btn').forEach(btn => btn.classList.remove('hidden'));
 
                 addLog("เข้าสู่ระบบ Super Admin", "Super Admin");
-                alert("เข้าสู่ระบบ Super Admin เรียบร้อยแล้ว!");
+                showToast("เข้าสู่ระบบ Super Admin เรียบร้อยแล้ว!");
             } else {
                 document.getElementById('admin-login-error').classList.remove('hidden');
             }
         }
 
         function logoutSuperAdmin() {
-            if (confirm("ต้องการออกจากระบบ Super Admin หรือไม่?")) {
+            showCustomConfirm("ต้องการออกจากระบบ Super Admin หรือไม่?", () => {
                 isSuperAdminLoggedIn = false;
                 document.getElementById('super-admin-panel').classList.add('hidden');
                 document.getElementById('admin-btn-text').innerText = "Super Admin";
-                document.getElementById('admin-mode-btn').className = "px-2 py-1 rounded-full bg-slate-800 hover:bg-slate-900 text-amber-300 text-xs font-bold border border-amber-400/40 flex items-center gap-1 transition";
+                document.getElementById('admin-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-800 hover:bg-slate-900 text-amber-300 text-xs font-bold border border-amber-400/40 flex items-center gap-1 transition";
                 
                 if (!isOfficerLoggedIn) {
                     document.querySelectorAll('.admin-delete-contact-btn').forEach(btn => btn.classList.add('hidden'));
@@ -1573,7 +1948,8 @@
                     document.querySelectorAll('.officer-delete-evac-btn').forEach(btn => btn.classList.add('hidden'));
                 }
                 addLog("ออกจากระบบ Super Admin", "Super Admin");
-            }
+                showToast("ออกจากระบบ Super Admin แล้ว");
+            });
         }
 
         function adminAddNewContact() {
@@ -1582,23 +1958,23 @@
             const phone = document.getElementById('admin-add-contact-phone').value.trim();
 
             if (!title || !phone) {
-                alert("กรุณากรอกชื่อหน่วยงานและเบอร์โทรศัพท์ให้ครบถ้วน");
+                showCustomMessage("กรุณากรอกชื่อหน่วยงานและเบอร์โทรศัพท์ให้ครบถ้วน");
                 return;
             }
 
             const list = document.getElementById('emergency-contacts-list');
             const newContact = document.createElement('div');
-            newContact.className = "contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center animate-fade-in";
+            newContact.className = "contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2 animate-fade-in";
             
             const hideClass = isSuperAdminLoggedIn ? '' : 'hidden';
 
             newContact.innerHTML = `
-                <div>
-                    <p class="font-bold text-slate-900 contact-title">${title}</p>
-                    <p class="text-[10px] text-slate-500 contact-sub">${sub || 'เบอร์ติดต่อฉุกเฉิน'}</p>
+                <div class="min-w-0">
+                    <p class="font-bold text-slate-900 contact-title truncate">${title}</p>
+                    <p class="text-[10px] text-slate-500 contact-sub truncate">${sub || 'เบอร์ติดต่อฉุกเฉิน'}</p>
                 </div>
-                <div class="flex items-center gap-1.5">
-                    <a href="tel:${phone}" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition">
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <a href="tel:${phone}" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
                         <i class="fa-solid fa-phone"></i> โทรเลย
                     </a>
                     <button onclick="adminDeleteContact(this)" class="admin-delete-contact-btn ${hideClass} px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition">
@@ -1614,19 +1990,19 @@
             document.getElementById('admin-add-contact-sub').value = '';
             document.getElementById('admin-add-contact-phone').value = '';
 
-            alert(`บันทึกและเพิ่มเบอร์โทรฉุกเฉิน "${title}" เรียบร้อยแล้ว!`);
+            showToast(`บันทึกและเพิ่มเบอร์โทรฉุกเฉิน "${title}" เรียบร้อยแล้ว!`);
         }
 
         function adminDeleteContact(btn) {
-            if (confirm("คุณต้องการลบเบอร์โทรติดต่อนี้ออกจากระบบใช่หรือไม่?")) {
+            showCustomConfirm("คุณต้องการลบเบอร์โทรติดต่อนี้ออกจากระบบใช่หรือไม่?", () => {
                 const item = btn.closest('.contact-item');
                 if (item) {
                     const name = item.querySelector('.contact-title')?.innerText || '';
                     item.remove();
                     addLog(`ลบเบอร์โทรฉุกเฉิน: ${name}`, "Super Admin");
-                    alert("ลบข้อมูลเบอร์โทรศัพท์เรียบร้อยแล้ว");
+                    showToast("ลบข้อมูลเบอร์โทรศัพท์เรียบร้อยแล้ว");
                 }
-            }
+            });
         }
 
         function adminUpdateRain() {
@@ -1634,7 +2010,7 @@
             if (val !== "") {
                 document.getElementById('stat-rain-val').innerHTML = `${val} <span class="text-[10px] font-normal text-blue-200/70">มม.</span>`;
                 addLog(`ปรับอัปเดตปริมาณฝนสะสมเป็น ${val} มม.`, "Super Admin");
-                alert(`บันทึกปริมาณฝนสะสมเป็น ${val} มม. เรียบร้อยแล้ว`);
+                showToast(`บันทึกปริมาณฝนสะสมเป็น ${val} มม. เรียบร้อยแล้ว`);
             }
         }
 
@@ -1643,17 +2019,17 @@
             if (newPin.length >= 4) {
                 officerPinCode = newPin;
                 addLog(`ทำการเปลี่ยนรหัสผ่านเข้าใช้งานของเจ้าหน้าที่`, "Super Admin");
-                alert(`บันทึกการเปลี่ยนรหัสผ่านเจ้าหน้าที่เป็น "${newPin}" เรียบร้อยแล้ว`);
+                showToast(`บันทึกการเปลี่ยนรหัสผ่านเจ้าหน้าที่เป็น "${newPin}" เรียบร้อยแล้ว`);
                 document.getElementById('admin-input-pin').value = '';
             } else {
-                alert("กรุณากรอกรหัสผ่านอย่างน้อย 4 ตัวอักษร");
+                showCustomMessage("กรุณากรอกรหัสผ่านอย่างน้อย 4 ตัวอักษร");
             }
         }
 
         function adminSendBroadcast() {
             const msg = document.getElementById('admin-broadcast-msg').value.trim();
             if (!msg) {
-                alert("กรุณากรอกข้อความบรอดแคสต์");
+                showCustomMessage("กรุณากรอกข้อความบรอดแคสต์");
                 return;
             }
             const now = new Date();
@@ -1668,20 +2044,20 @@
             }
 
             document.getElementById('admin-broadcast-msg').value = '';
-            alert("บันทึกและส่งสัญญาณบรอดแคสต์เรียบร้อยแล้ว!");
+            showToast("บันทึกและส่งสัญญาณบรอดแคสต์เรียบร้อยแล้ว!");
         }
 
         function adminExportEvacueesData() {
             const items = document.querySelectorAll('.evacuee-item');
             if (items.length === 0) {
-                alert("ไม่มีข้อมูลผู้อพยพในระบบ");
+                showCustomMessage("ยังไม่มีข้อมูลผู้อพยพในระบบ");
                 return;
             }
-            let dataStr = "รายชื่อผู้อพยพทั้งหมดในระบบ:\n\n";
+            let dataStr = "";
             items.forEach((item, index) => {
                 dataStr += `${index + 1}. ${item.innerText.replace(/\n/g, ' ')}\n`;
             });
-            alert(dataStr);
+            showCustomMessage(dataStr, "รายชื่อผู้อพยพทั้งหมดในระบบ");
         }
 
         function officerEditZone(zoneId) {
@@ -1695,39 +2071,54 @@
             const countVal = countElem ? countElem.innerText : '0';
 
             const currentTitle = titleElem ? titleElem.innerText : '';
-            const newTitle = prompt("แก้ไขชื่อโซน:", currentTitle);
-            if (newTitle === null) return;
+            const currentDescText = descElem ? descElem.innerText.split('|')[0].trim() : '';
 
-            let currentDescText = descElem ? descElem.innerText.split('|')[0].trim() : '';
-            const newDesc = prompt("แก้ไขคำอธิบาย/จุดเสี่ยงของโซน:", currentDescText);
-            if (newDesc === null) return;
+            showCustomFormDialog(
+                `แก้ไขข้อมูลโซน ${zoneId}`,
+                "ปรับปรุงชื่อโซน คำอธิบาย และระดับความเสี่ยง",
+                [
+                    { id: 'edit-zone-title', label: 'ชื่อโซน', value: currentTitle },
+                    { id: 'edit-zone-desc', label: 'คำอธิบาย/จุดเสี่ยง', value: currentDescText },
+                    {
+                        id: 'edit-zone-risk',
+                        label: 'ระดับความเสี่ยง',
+                        type: 'select',
+                        value: '1',
+                        options: [
+                            { value: '1', text: 'เสี่ยงสูงมาก (สีแดง)' },
+                            { value: '2', text: 'เสี่ยงปานกลาง (สีส้ม)' },
+                            { value: '3', text: 'เสี่ยงต่ำ (สีเขียว)' }
+                        ]
+                    }
+                ],
+                (vals) => {
+                    const newTitle = vals['edit-zone-title'];
+                    const newDesc = vals['edit-zone-desc'];
+                    const riskChoice = vals['edit-zone-risk'];
 
-            const riskChoice = prompt("เลือกระดับความเสี่ยงโซน:\n1 = เสี่ยงสูงมาก (สีแดง)\n2 = เสี่ยงปานกลาง (สีส้ม)\n3 = เสี่ยงต่ำ (สีเขียว)");
-            if (riskChoice === null) return;
+                    if (newTitle.trim() !== '' && titleElem) titleElem.innerText = newTitle.trim();
+                    if (newDesc.trim() !== '' && descElem) {
+                        descElem.innerHTML = `${newDesc.trim()} | <span id="zone-count-${zoneId}">${countVal}</span> ครัวเรือน`;
+                    }
 
-            if (confirm(`ยืนยันการบันทึกการแก้ไขข้อมูลโซน ${zoneId} ใช่หรือไม่?`)) {
-                if (newTitle.trim() !== '' && titleElem) titleElem.innerText = newTitle.trim();
-                if (newDesc.trim() !== '' && descElem) {
-                    descElem.innerHTML = `${newDesc.trim()} | <span id="zone-count-${zoneId}">${countVal}</span> ครัวเรือน`;
+                    if (riskChoice === '1') {
+                        card.className = "p-2.5 bg-red-50 border border-red-200 rounded-xl space-y-2 zone-card";
+                        if (titleElem) titleElem.className = "font-bold text-red-900 zone-title-text truncate";
+                        if (badgeElem) { badgeElem.className = "zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0"; badgeElem.innerText = "เสี่ยงสูงมาก"; }
+                    } else if (riskChoice === '2') {
+                        card.className = "p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 zone-card";
+                        if (titleElem) titleElem.className = "font-bold text-amber-900 zone-title-text truncate";
+                        if (badgeElem) { badgeElem.className = "zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0"; badgeElem.innerText = "เสี่ยงปานกลาง"; }
+                    } else if (riskChoice === '3') {
+                        card.className = "p-2.5 bg-slate-100 border border-slate-200 rounded-xl space-y-2 zone-card";
+                        if (titleElem) titleElem.className = "font-bold text-slate-800 zone-title-text truncate";
+                        if (badgeElem) { badgeElem.className = "zone-risk-badge px-2 py-1 bg-emerald-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0"; badgeElem.innerText = "เสี่ยงต่ำ"; }
+                    }
+
+                    addLog(`บันทึกการแก้ไขข้อมูลพื้นที่เสี่ยงโซน ${zoneId} (${newTitle}) สำเร็จ`, "เจ้าหน้าที่");
+                    showToast(`บันทึกและอัปเดตข้อมูลโซน ${zoneId} เรียบร้อยแล้ว!`);
                 }
-
-                if (riskChoice === '1') {
-                    card.className = "p-2.5 bg-red-50 border border-red-200 rounded-xl space-y-2 zone-card";
-                    if (titleElem) titleElem.className = "font-bold text-red-900 zone-title-text";
-                    if (badgeElem) { badgeElem.className = "zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px]"; badgeElem.innerText = "เสี่ยงสูงมาก"; }
-                } else if (riskChoice === '2') {
-                    card.className = "p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 zone-card";
-                    if (titleElem) titleElem.className = "font-bold text-amber-900 zone-title-text";
-                    if (badgeElem) { badgeElem.className = "zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px]"; badgeElem.innerText = "เสี่ยงปานกลาง"; }
-                } else if (riskChoice === '3') {
-                    card.className = "p-2.5 bg-slate-100 border border-slate-200 rounded-xl space-y-2 zone-card";
-                    if (titleElem) titleElem.className = "font-bold text-slate-800 zone-title-text";
-                    if (badgeElem) { badgeElem.className = "zone-risk-badge px-2 py-1 bg-emerald-600 text-white font-bold rounded-md text-[10px]"; badgeElem.innerText = "เสี่ยงต่ำ"; }
-                }
-
-                addLog(`บันทึกการแก้ไขข้อมูลพื้นที่เสี่ยงโซน ${zoneId} (${newTitle}) สำเร็จ`, "เจ้าหน้าที่");
-                alert(`บันทึกและอัปเดตข้อมูลโซน ${zoneId} เรียบร้อยแล้ว!`);
-            }
+            );
         }
 
         function officerAddCanal() {
@@ -1736,7 +2127,7 @@
             const val = document.getElementById('officer-canal-val').value.trim();
 
             if (!name || !val) {
-                alert("กรุณากรอกชื่อลำคลองและระดับน้ำให้ครบถ้วน");
+                showCustomMessage("กรุณากรอกชื่อลำคลองและระดับน้ำให้ครบถ้วน");
                 return;
             }
 
@@ -1744,14 +2135,14 @@
             const hideClass = (isOfficerLoggedIn || isSuperAdminLoggedIn) ? '' : 'hidden';
 
             const newItem = document.createElement('div');
-            newItem.className = "canal-item p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center animate-fade-in";
+            newItem.className = "canal-item p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2 animate-fade-in";
             newItem.innerHTML = `
-                <div>
-                    <p class="font-bold text-slate-800 canal-name-text">${name}</p>
-                    <p class="text-[10px] text-slate-500 canal-desc-text">${desc || 'ลำคลองในพื้นที่'}</p>
+                <div class="min-w-0">
+                    <p class="font-bold text-slate-800 canal-name-text truncate">${name}</p>
+                    <p class="text-[10px] text-slate-500 canal-desc-text truncate">${desc || 'ลำคลองในพื้นที่'}</p>
                 </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">${val}</span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span class="canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] whitespace-nowrap">${val}</span>
                     <button onclick="officerEditCanal(this)" class="officer-canal-ctrl-btn ${hideClass} text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1"><i class="fa-solid fa-pen"></i></button>
                     <button onclick="officerDeleteCanal(this)" class="officer-canal-ctrl-btn ${hideClass} text-red-600 hover:text-red-800 text-[11px] font-bold px-1"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
@@ -1765,7 +2156,7 @@
             document.getElementById('officer-canal-desc').value = '';
             document.getElementById('officer-canal-val').value = '';
 
-            alert(`บันทึกและเพิ่มข้อมูลลำคลอง "${name}" เรียบร้อยแล้ว!`);
+            showToast(`บันทึกและเพิ่มข้อมูลลำคลอง "${name}" เรียบร้อยแล้ว!`);
         }
 
         function officerEditCanal(btn) {
@@ -1776,38 +2167,42 @@
             const descElem = item.querySelector('.canal-desc-text');
             const valElem = item.querySelector('.canal-val-badge');
 
-            const newName = prompt("แก้ไขชื่อลำคลอง:", nameElem.innerText);
-            if (newName === null) return;
+            showCustomFormDialog(
+                "แก้ไขข้อมูลลำคลอง",
+                "ปรับปรุงชื่อลำคลอง คำอธิบาย และระดับน้ำล่าสุด",
+                [
+                    { id: 'edit-canal-name', label: 'ชื่อลำคลอง', value: nameElem.innerText },
+                    { id: 'edit-canal-desc', label: 'คำอธิบาย/จุดเสี่ยง', value: descElem.innerText },
+                    { id: 'edit-canal-val', label: 'ระดับน้ำและสถานะ (เช่น 1.8m (เฝ้าระวัง))', value: valElem.innerText }
+                ],
+                (vals) => {
+                    const newName = vals['edit-canal-name'];
+                    const newDesc = vals['edit-canal-desc'];
+                    const newVal = vals['edit-canal-val'];
 
-            const newDesc = prompt("แก้ไขคำอธิบาย/จุดเสี่ยง:", descElem.innerText);
-            if (newDesc === null) return;
-
-            const newVal = prompt("แก้ไขระดับน้ำและสถานะ (เช่น 1.8m (เฝ้าระวัง)):", valElem.innerText);
-            if (newVal === null) return;
-
-            if (confirm(`ยืนยันการบันทึกข้อมูลลำคลอง "${newName}" ใช่หรือไม่?`)) {
-                if (newName.trim() !== '') nameElem.innerText = newName.trim();
-                if (newDesc.trim() !== '') descElem.innerText = newDesc.trim();
-                if (newVal.trim() !== '') {
-                    valElem.innerText = newVal.trim();
-                    if (newVal.includes('เฝ้าระวัง')) {
-                        valElem.className = "canal-val-badge px-2 py-1 rounded-md bg-amber-100 text-amber-800 font-bold text-[10px]";
-                    } else if (newVal.includes('อันตราย') || newVal.includes('วิกฤต')) {
-                        valElem.className = "canal-val-badge px-2 py-1 rounded-md bg-red-100 text-red-800 font-bold text-[10px]";
-                    } else {
-                        valElem.className = "canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]";
+                    if (newName.trim() !== '') nameElem.innerText = newName.trim();
+                    if (newDesc.trim() !== '') descElem.innerText = newDesc.trim();
+                    if (newVal.trim() !== '') {
+                        valElem.innerText = newVal.trim();
+                        if (newVal.includes('เฝ้าระวัง')) {
+                            valElem.className = "canal-val-badge px-2 py-1 rounded-md bg-amber-100 text-amber-800 font-bold text-[10px] whitespace-nowrap";
+                        } else if (newVal.includes('อันตราย') || newVal.includes('วิกฤต')) {
+                            valElem.className = "canal-val-badge px-2 py-1 rounded-md bg-red-100 text-red-800 font-bold text-[10px] whitespace-nowrap";
+                        } else {
+                            valElem.className = "canal-val-badge px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] whitespace-nowrap";
+                        }
                     }
-                }
 
-                const container = document.getElementById('canals-list-container');
-                addLog(`บันทึกการแก้ไขข้อมูลลำคลอง ${newName} ระดับน้ำ: ${newVal} สำเร็จ`, "เจ้าหน้าที่");
-                broadcastDataChange('CANAL_UPDATE', { html: container.innerHTML }, `เจ้าหน้าที่ได้อัปเดตข้อมูลลำคลอง ${newName}`);
-                alert("บันทึกการแก้ไขข้อมูลลำคลองเรียบร้อยแล้ว!");
-            }
+                    const container = document.getElementById('canals-list-container');
+                    addLog(`บันทึกการแก้ไขข้อมูลลำคลอง ${newName} ระดับน้ำ: ${newVal} สำเร็จ`, "เจ้าหน้าที่");
+                    broadcastDataChange('CANAL_UPDATE', { html: container.innerHTML }, `เจ้าหน้าที่ได้อัปเดตข้อมูลลำคลอง ${newName}`);
+                    showToast("บันทึกการแก้ไขข้อมูลลำคลองเรียบร้อยแล้ว!");
+                }
+            );
         }
 
         function officerDeleteCanal(btn) {
-            if (confirm("ต้องการลบข้อมูลลำคลองนี้ใช่หรือไม่?")) {
+            showCustomConfirm("ต้องการลบข้อมูลลำคลองนี้ใช่หรือไม่?", () => {
                 const item = btn.closest('.canal-item');
                 if (item) {
                     const name = item.querySelector('.canal-name-text')?.innerText || '';
@@ -1815,9 +2210,9 @@
                     const container = document.getElementById('canals-list-container');
                     addLog(`ลบข้อมูลลำคลอง: ${name}`, "เจ้าหน้าที่");
                     broadcastDataChange('CANAL_UPDATE', { html: container.innerHTML }, `เจ้าหน้าที่ได้ลบข้อมูลลำคลอง ${name}`);
-                    alert("ลบข้อมูลลำคลองเรียบร้อยแล้ว");
+                    showToast("ลบข้อมูลลำคลองเรียบร้อยแล้ว");
                 }
-            }
+            });
         }
 
         function officerAddHousehold() {
@@ -1825,7 +2220,7 @@
             const nameInfo = document.getElementById('officer-add-household-name').value.trim();
 
             if (!nameInfo) {
-                alert("กรุณากรอกข้อมูลบ้านเลขที่หรือชื่อหัวหน้าครัวเรือน");
+                showCustomMessage("กรุณากรอกข้อมูลบ้านเลขที่หรือชื่อหัวหน้าครัวเรือน");
                 return;
             }
 
@@ -1835,10 +2230,10 @@
             const hideClass = (isOfficerLoggedIn || isSuperAdminLoggedIn) ? '' : 'hidden';
 
             const newItem = document.createElement('div');
-            newItem.className = "household-item flex justify-between items-center bg-white/70 px-2 py-1 rounded border border-slate-200 animate-fade-in";
+            newItem.className = "household-item flex justify-between items-center gap-2 bg-white/70 px-2 py-1 rounded border border-slate-200 animate-fade-in";
             newItem.innerHTML = `
-                <span>${nameInfo}</span>
-                <button onclick="officerDeleteHousehold(this, ${zoneId})" class="officer-delete-hh-btn ${hideClass} text-[10px] text-red-600 hover:underline font-bold">ลบ</button>
+                <span class="truncate">${nameInfo}</span>
+                <button onclick="officerDeleteHousehold(this, ${zoneId})" class="officer-delete-hh-btn ${hideClass} text-[10px] text-red-600 hover:underline font-bold flex-shrink-0">ลบ</button>
             `;
 
             container.appendChild(newItem);
@@ -1848,11 +2243,11 @@
 
             addLog(`ลงทะเบียนครัวเรือน ${nameInfo} เข้าโซน ${zoneId}`, "เจ้าหน้าที่");
             document.getElementById('officer-add-household-name').value = '';
-            alert(`บันทึกข้อมูลครัวเรือน "${nameInfo}" เข้าสู่โซน ${zoneId} เรียบร้อยแล้ว!`);
+            showToast(`บันทึกข้อมูลครัวเรือน "${nameInfo}" เข้าสู่โซน ${zoneId} เรียบร้อยแล้ว!`);
         }
 
         function officerDeleteHousehold(btn, zoneId) {
-            if (confirm("ต้องการลบข้อมูลครัวเรือนนี้ใช่หรือไม่?")) {
+            showCustomConfirm("ต้องการลบข้อมูลครัวเรือนนี้ใช่หรือไม่?", () => {
                 const item = btn.closest('.household-item');
                 if (item) {
                     const name = item.querySelector('span')?.innerText || '';
@@ -1862,9 +2257,9 @@
                         countElem.innerText = parseInt(countElem.innerText) - 1;
                     }
                     addLog(`ลบครัวเรือน ${name} ออกจากโซน ${zoneId}`, "เจ้าหน้าที่");
-                    alert("ลบข้อมูลครัวเรือนเรียบร้อยแล้ว");
+                    showToast("ลบข้อมูลครัวเรือนเรียบร้อยแล้ว");
                 }
-            }
+            });
         }
 
         function saveRescueMessengerLink() {
@@ -1872,16 +2267,34 @@
             if (urlInput && urlInput.trim() !== '') {
                 rescueMessengerLink = urlInput.trim();
                 addLog(`อัปเดตลิงก์ Messenger ทีมกู้ภัย`, "เจ้าหน้าที่");
-                alert('บันทึกลิงก์ Messenger ทีมกู้ภัยเรียบร้อยแล้ว!');
+                showToast('บันทึกลิงก์ Messenger ทีมกู้ภัยเรียบร้อยแล้ว!');
             }
         }
 
         function quickUpdateStatusPrompt() {
-            const choice = prompt("เลือกระดับเตือนภัย:\n1 = ปกติ\n2 = เฝ้าระวัง\n3 = อันตราย\n4 = วิกฤต");
-            if (choice === "1") setSimLevel('normal');
-            else if (choice === "2") setSimLevel('warning');
-            else if (choice === "3") setSimLevel('danger');
-            else if (choice === "4") setSimLevel('critical');
+            showCustomFormDialog(
+                "เปลี่ยนระดับการแจ้งเตือนภัย",
+                "เลือกระดับการแจ้งเตือนสถานการณ์น้ำท่วมสำหรับหมู่บ้านคลอแระ",
+                [
+                    {
+                        id: 'select-alert-level',
+                        label: 'ระดับเตือนภัย 4 ขั้น',
+                        type: 'select',
+                        value: currentAlertLevel,
+                        options: [
+                            { value: 'normal', text: '1. ปกติ (สีเขียว)' },
+                            { value: 'warning', text: '2. เฝ้าระวัง (สีเหลือง)' },
+                            { value: 'danger', text: '3. อันตราย (สีแดง)' },
+                            { value: 'critical', text: '4. วิกฤต (สีม่วง)' }
+                        ]
+                    }
+                ],
+                (vals) => {
+                    if (vals['select-alert-level']) {
+                        setSimLevel(vals['select-alert-level']);
+                    }
+                }
+            );
         }
 
         function switchBottomTab(tabName) {
@@ -1953,9 +2366,9 @@
                 gaugeFill.className = "gauge-fill bg-emerald-500";
                 gaugePercent.innerText = "35%";
 
-                headerBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200";
+                headerBadge.className = "flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200 whitespace-nowrap";
                 headerText.innerText = "ปกติ";
-                headerDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                headerDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
 
                 statCanal.innerText = "ปกติ (1.2m)";
                 statCanal.className = "text-[11px] text-emerald-400 font-semibold mt-0.5 truncate";
@@ -1976,9 +2389,9 @@
                 gaugeFill.className = "gauge-fill bg-amber-500";
                 gaugePercent.innerText = "60%";
 
-                headerBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold border border-amber-200";
+                headerBadge.className = "flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold border border-amber-200 whitespace-nowrap";
                 headerText.innerText = "เฝ้าระวัง";
-                headerDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+                headerDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0";
 
                 statCanal.innerText = "เฝ้าระวัง (1.9m)";
                 statCanal.className = "text-[11px] text-amber-400 font-semibold mt-0.5 truncate";
@@ -1999,9 +2412,9 @@
                 gaugeFill.className = "gauge-fill bg-red-500";
                 gaugePercent.innerText = "85%";
 
-                headerBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-bold border border-red-200";
+                headerBadge.className = "flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-800 text-[11px] font-bold border border-red-200 whitespace-nowrap";
                 headerText.innerText = "อันตราย";
-                headerDot.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
+                headerDot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0";
 
                 statCanal.innerText = "อันตราย (2.5m)";
                 statCanal.className = "text-[11px] text-red-400 font-semibold mt-0.5 truncate";
@@ -2022,9 +2435,9 @@
                 gaugeFill.className = "gauge-fill bg-purple-600";
                 gaugePercent.innerText = "100%";
 
-                headerBadge.className = "flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold border border-purple-200";
+                headerBadge.className = "flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100 text-purple-800 text-[11px] font-bold border border-purple-200 whitespace-nowrap";
                 headerText.innerText = "วิกฤต";
-                headerDot.className = "w-2.5 h-2.5 rounded-full bg-purple-600 animate-ping";
+                headerDot.className = "w-2 h-2 rounded-full bg-purple-600 animate-ping flex-shrink-0";
 
                 statCanal.innerText = "วิกฤต (>2.8m)";
                 statCanal.className = "text-[11px] text-purple-400 font-semibold mt-0.5 truncate";
@@ -2059,12 +2472,12 @@
                         btnText.parentElement.className = "w-full bg-emerald-50 border border-emerald-300 text-emerald-800 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 font-bold transition";
                     },
                     (error) => {
-                        alert("ไม่สามารถเข้าถึงตำแหน่งพิกัด GPS ได้ กรุณาเปิดระบบระบุตำแหน่งของอุปกรณ์");
+                        showCustomMessage("ไม่สามารถเข้าถึงตำแหน่งพิกัด GPS ได้ กรุณาเปิดระบบระบุตำแหน่งของอุปกรณ์");
                         btnText.innerText = "กดเพื่อระบุพิกัด GPS เรียลไทม์";
                     }
                 );
             } else {
-                alert("เบราว์เซอร์ของคุณไม่รองรับการดึงพิกัด GPS");
+                showCustomMessage("เบราว์เซอร์ของคุณไม่รองรับการดึงพิกัด GPS");
                 btnText.innerText = "กดเพื่อระบุพิกัด GPS เรียลไทม์";
             }
         }
@@ -2094,25 +2507,21 @@
 
             const messageText = `🚨 *แจ้งขอความช่วยเหลือฉุกเฉิน SOS (บ้านคลอแระ)*\n👤 ชื่อ: ${name}\n📞 เบอร์โทร: ${phone}\n📍 โซน: ${zone} (${detailLoc})\n🆘 ต้องการ: ${type}\n🌐 พิกัด GPS: ${gpsString}${googleMapsUrl}`;
 
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(messageText);
-            } else {
-                const tempInput = document.createElement("textarea");
-                tempInput.value = messageText;
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand("copy");
-                document.body.removeChild(tempInput);
-            }
+            const tempInput = document.createElement("textarea");
+            tempInput.value = messageText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
 
             addLog(`ได้รับคำขอ SOS ใหม่จากคุณ ${name} (${zone}) - ${type}`, "ระบบ SOS");
             closeSosModal();
 
             if (target === 'messenger') {
-                alert("คัดลอกข้อความแจ้ง SOS พร้อมพิกัด GPS เรียบร้อยแล้ว!\n\nระบบกำลังพาคุณไปยัง Messenger ทีมกู้ภัย สามารถวาง (Paste) ข้อความส่งหาทีมกู้ภัยได้ทันที");
+                showCustomMessage("คัดลอกข้อความแจ้ง SOS พร้อมพิกัด GPS เรียบร้อยแล้ว!\n\nระบบกำลังเปิดหน้าต่าง Messenger ทีมกู้ภัย คุณสามารถวาง (Paste) ข้อความส่งหาทีมกู้ภัยได้ทันที", "ส่งสัญญาณ SOS สำเร็จ");
                 window.open(rescueMessengerLink, '_blank');
             } else {
-                alert("คัดลอกข้อความ SOS พร้อมพิกัด GPS เรียบร้อยแล้ว! คุณสามารถนำข้อความไปวางส่งในไลน์ หรือช่องทางอื่นได้เลย");
+                showCustomMessage("คัดลอกข้อความ SOS พร้อมพิกัด GPS เรียบร้อยแล้ว! คุณสามารถนำข้อความไปวางส่งในไลน์ หรือช่องทางอื่นได้เลย", "คัดลอกข้อความ SOS สำเร็จ");
             }
         }
 
@@ -2148,7 +2557,7 @@
             broadcastDataChange('EVACUEE_ADD', evacueePayload, `เจ้าหน้าที่ได้เพิ่มรายชื่อผู้อพยพใหม่: ${name}`);
 
             addLog(`ลงทะเบียนผู้อพยพใหม่: ${name} (เข้าพัก: ${shelter})`, "เจ้าหน้าที่");
-            alert("บันทึกข้อมูลผู้อพยพเรียบร้อยแล้ว!");
+            showToast("บันทึกข้อมูลผู้อพยพเรียบร้อยแล้ว!");
             closeEvacueeModal();
         }
 
@@ -2165,19 +2574,19 @@
             const hideClass = (isOfficerLoggedIn || isSuperAdminLoggedIn) ? '' : 'hidden';
 
             const newCard = document.createElement('div');
-            newCard.className = "p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between items-center evacuee-item animate-fade-in";
+            newCard.className = "p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between items-center gap-2 evacuee-item animate-fade-in";
             newCard.innerHTML = `
-                <div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="font-bold text-slate-800 evacuee-name">${data.name} (${data.age} ปี)</span>
-                        <span class="${groupBadgeClass} text-[9px] font-bold px-1.5 py-0.2 rounded">${data.group}</span>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-bold text-slate-800 evacuee-name truncate">${data.name} (${data.age} ปี)</span>
+                        <span class="${groupBadgeClass} text-[9px] font-bold px-1.5 py-0.2 rounded whitespace-nowrap">${data.group}</span>
                     </div>
-                    <p class="text-[10px] text-slate-500">มาจาก: ${data.zone} | พักที่: ${data.shelter}</p>
-                    <p class="text-[10px] text-emerald-700 font-semibold">ติดต่อ: ${data.phone}</p>
+                    <p class="text-[10px] text-slate-500 truncate">มาจาก: ${data.zone} | พักที่: ${data.shelter}</p>
+                    <p class="text-[10px] text-emerald-700 font-semibold truncate">ติดต่อ: ${data.phone}</p>
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 flex-shrink-0">
                     <span class="text-[9px] bg-slate-200 text-slate-700 px-2 py-1 rounded-md font-bold whitespace-nowrap">${data.room}</span>
-                    <button onclick="officerDeleteEvacuee(this)" class="officer-delete-evac-btn ${hideClass} px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-md font-bold text-[10px] transition">
+                    <button onclick="officerDeleteEvacuee(this)" class="officer-delete-evac-btn ${hideClass} px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-md font-bold text-[10px] transition whitespace-nowrap">
                         <i class="fa-solid fa-trash-can"></i> ลบ
                     </button>
                 </div>
@@ -2190,7 +2599,7 @@
         }
 
         function officerDeleteEvacuee(btn) {
-            if (confirm("คุณต้องการลบรายชื่อผู้อพยพนี้ออกจากศูนย์พักพิงใช่หรือไม่?")) {
+            showCustomConfirm("คุณต้องการลบรายชื่อผู้อพยพนี้ออกจากศูนย์พักพิงใช่หรือไม่?", () => {
                 const card = btn.closest('.evacuee-item');
                 if (card) {
                     const fullName = card.querySelector('.evacuee-name')?.innerText || '';
@@ -2200,9 +2609,9 @@
                     removeEvacueeFromDOM(rawName);
                     broadcastDataChange('EVACUEE_DELETE', { name: rawName }, `เจ้าหน้าที่ได้ลบรายชื่อผู้อพยพ: ${rawName}`);
                     addLog(`ลบรายชื่อผู้อพยพ: ${rawName}`, "เจ้าหน้าที่");
-                    alert("ลบรายชื่อผู้อพยพเรียบร้อยแล้ว");
+                    showToast("ลบรายชื่อผู้อพยพเรียบร้อยแล้ว");
                 }
-            }
+            });
         }
 
         function removeEvacueeFromDOM(name) {
