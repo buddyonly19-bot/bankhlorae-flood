@@ -932,12 +932,12 @@
                     </div>
                 </div>
 
-                <!-- Filter by shelter -->
+                    <!-- Filter by shelter -->
                 <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5 text-[10px]">
-                    <button onclick="filterEvacueesByShelter('all')" id="filter-shelter-all" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold whitespace-nowrap transition">ทั้งหมด</button>
-                    <button onclick="filterEvacueesByShelter('โรงเรียนบ้านคลอแระ (ศูนย์หลัก)')" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">รร.บ้านคลอแระ</button>
-                    <button onclick="filterEvacueesByShelter('ปอเนาะฆือแล')" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">ปอเนาะฆือแล</button>
-                    <button onclick="filterEvacueesByShelter('โรงเรียนตาดีกาบ้านคลอแระ')" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">ตาดีกาบ้านคลอแระ</button>
+                    <button onclick="filterEvacueesByShelter('all', this)" id="filter-shelter-all" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold whitespace-nowrap transition">ทั้งหมด</button>
+                    <button onclick="filterEvacueesByShelter('โรงเรียนบ้านคลอแระ (ศูนย์หลัก)', this)" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">รร.บ้านคลอแระ</button>
+                    <button onclick="filterEvacueesByShelter('ปอเนาะฆือแล', this)" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">ปอเนาะฆือแล</button>
+                    <button onclick="filterEvacueesByShelter('โรงเรียนตาดีกาบ้านคลอแระ', this)" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">ตาดีกาบ้านคลอแระ</button>
                 </div>
 
                 <div class="relative">
@@ -1671,25 +1671,36 @@
                         if (data) {
                             if (data.alertLevel) applySimLevelUI(data.alertLevel);
                             if (data.announcements) {
-                                announcementsList = data.announcements;
+                                announcementsList = Array.isArray(data.announcements) ? data.announcements : Object.values(data.announcements);
                                 renderAnnouncements();
                             }
-                            if (data.evacuees) {
-                                evacueesList = Array.isArray(data.evacuees) ? data.evacuees : Object.values(data.evacuees);
+                            if (data.evacuees !== undefined) {
+                                evacueesList = data.evacuees ? (Array.isArray(data.evacuees) ? data.evacuees : Object.values(data.evacuees)) : [];
                                 saveEvacueesToLocal();
                                 renderEvacueesList();
                             }
                         }
                     });
 
+                    // Dedicated realtime listener for evacuees node
+                    db.ref('flood_evacuees').on('value', (snapshot) => {
+                        const val = snapshot.val();
+                        if (val !== null && val !== undefined) {
+                            evacueesList = Array.isArray(val) ? val : Object.values(val);
+                            saveEvacueesToLocal();
+                            renderEvacueesList();
+                        }
+                    });
+
                     window.syncDataToCloud = function(alertLevel, announcements, evacuees = evacueesList) {
-                        db.ref('flood_status').set({
+                        db.ref('flood_status').update({
                             alertLevel: alertLevel,
                             announcements: announcements,
                             evacuees: evacuees,
                             updatedAt: new Date().toISOString(),
                             updatedBy: isSuperAdminLoggedIn ? "Super Admin" : "เจ้าหน้าที่ กู้ภัย"
                         });
+                        db.ref('flood_evacuees').set(evacuees);
                     };
                 } catch(e) {
                     console.error("Firebase Initialization Error:", e);
@@ -2159,7 +2170,7 @@
                                 <span class="${groupBadgeClass} text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">${data.group}</span>
                                 <span class="${statusBadgeClass} border text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">${statusText}</span>
                             </div>
-                            <p class="text-[10px] text-slate-600 truncate"><i class="fa-solid fa-house-Blank text-slate-400 mr-1"></i>มาจาก: ${data.zone} | <strong>พักที่: ${data.shelter}</strong></p>
+                            <p class="text-[10px] text-slate-600 truncate"><i class="fa-solid fa-house-chimney text-slate-400 mr-1"></i>มาจาก: ${data.zone} | <strong>พักที่: ${data.shelter}</strong></p>
                             <div class="flex items-center gap-2 text-[10px] text-emerald-700 font-semibold flex-wrap">
                                 <span><i class="fa-solid fa-phone mr-1"></i>${data.phone}</span>
                                 <span class="text-slate-400">•</span>
@@ -2169,10 +2180,10 @@
                         <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
                             <span class="text-[9px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-bold whitespace-nowrap">${data.room}</span>
                             <div class="flex items-center gap-1">
-                                <button onclick="openEvacueeModal('${data.id}')" class="px-2 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md font-bold text-[10px] transition whitespace-nowrap" title="แก้ไข/อัปเดตสถานะ">
+                                <button type="button" onclick="openEvacueeModal('${data.id}')" class="px-2 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md font-bold text-[10px] transition whitespace-nowrap" title="แก้ไข/อัปเดตสถานะ">
                                     <i class="fa-solid fa-pen-to-square"></i> แก้ไข
                                 </button>
-                                <button onclick="officerDeleteEvacuee('${data.id}')" class="officer-delete-evac-btn ${hideDeleteClass} px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-md font-bold text-[10px] transition whitespace-nowrap" title="ลบรายชื่อ">
+                                <button type="button" onclick="officerDeleteEvacuee('${data.id}')" class="officer-delete-evac-btn ${hideDeleteClass} px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-md font-bold text-[10px] transition whitespace-nowrap" title="ลบรายชื่อ">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
@@ -2184,12 +2195,14 @@
             filterEvacuees();
         }
 
-        function filterEvacueesByShelter(shelterName) {
+        function filterEvacueesByShelter(shelterName, btnEl) {
             currentShelterFilter = shelterName;
             document.querySelectorAll('.shelter-filter-btn').forEach(btn => {
                 btn.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition";
             });
-            event.currentTarget.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold whitespace-nowrap transition";
+            if (btnEl) {
+                btnEl.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold whitespace-nowrap transition";
+            }
             renderEvacueesList();
         }
 
@@ -2729,114 +2742,10 @@
             }
         }
 
-        function openEvacueeModal() {
-            document.getElementById('evacuee-modal').classList.remove('hidden');
-        }
-
-        function closeEvacueeModal() {
-            document.getElementById('evacuee-modal').classList.add('hidden');
-        }
-
-        function handleEvacueeSubmit(e) {
-            e.preventDefault();
-            const shelter = document.getElementById('evac-shelter').value;
-            const name = document.getElementById('evac-name').value;
-            const age = document.getElementById('evac-age').value || '-';
-            const group = document.getElementById('evac-group').value;
-            const zone = document.getElementById('evac-zone').value;
-            const room = document.getElementById('evac-room').value || 'ไม่ระบุ';
-            const phone = document.getElementById('evac-phone').value;
-
-            const evacueePayload = {
-                shelter: shelter,
-                name: name,
-                age: age,
-                group: group,
-                zone: zone,
-                room: room,
-                phone: phone
-            };
-
-            addNewEvacueeToDOM(evacueePayload);
-            broadcastDataChange('EVACUEE_ADD', evacueePayload, `เจ้าหน้าที่ได้เพิ่มรายชื่อผู้อพยพใหม่: ${name}`);
-
-            addLog(`ลงทะเบียนผู้อพยพใหม่: ${name} (เข้าพัก: ${shelter})`, "เจ้าหน้าที่");
-            showToast("บันทึกข้อมูลผู้อพยพเรียบร้อยแล้ว!");
-            closeEvacueeModal();
-        }
-
-        function addNewEvacueeToDOM(data) {
-            const list = document.getElementById('evacuees-list');
-            const noMsg = document.getElementById('no-evacuee-msg');
-            if (noMsg) noMsg.remove();
-
-            let groupBadgeClass = "bg-blue-100 text-blue-800";
-            if (data.group === "ผู้สูงอายุ") groupBadgeClass = "bg-purple-100 text-purple-800";
-            else if (data.group === "ผู้ป่วย/ผู้พิการ") groupBadgeClass = "bg-red-100 text-red-800";
-            else if (data.group === "หญิงตั้งครรภ์") groupBadgeClass = "bg-pink-100 text-pink-800";
-
-            const hideClass = (isOfficerLoggedIn || isSuperAdminLoggedIn) ? '' : 'hidden';
-
-            const newCard = document.createElement('div');
-            newCard.className = "p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between items-center gap-2 evacuee-item animate-fade-in";
-            newCard.innerHTML = `
-                <div class="min-w-0">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="font-bold text-slate-800 evacuee-name truncate">${data.name} (${data.age} ปี)</span>
-                        <span class="${groupBadgeClass} text-[9px] font-bold px-1.5 py-0.2 rounded whitespace-nowrap">${data.group}</span>
-                    </div>
-                    <p class="text-[10px] text-slate-500 truncate">มาจาก: ${data.zone} | พักที่: ${data.shelter}</p>
-                    <p class="text-[10px] text-emerald-700 font-semibold truncate">ติดต่อ: ${data.phone}</p>
-                </div>
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <span class="text-[9px] bg-slate-200 text-slate-700 px-2 py-1 rounded-md font-bold whitespace-nowrap">${data.room}</span>
-                    <button onclick="officerDeleteEvacuee(this)" class="officer-delete-evac-btn ${hideClass} px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-md font-bold text-[10px] transition whitespace-nowrap">
-                        <i class="fa-solid fa-trash-can"></i> ลบ
-                    </button>
-                </div>
-            `;
-
-            list.insertBefore(newCard, list.firstChild);
-
-            const itemsCount = list.querySelectorAll('.evacuee-item').length;
-            document.getElementById('evacuee-count-badge').innerText = `${itemsCount} คน`;
-        }
-
-        function officerDeleteEvacuee(btn) {
-            showCustomConfirm("คุณต้องการลบรายชื่อผู้อพยพนี้ออกจากศูนย์พักพิงใช่หรือไม่?", () => {
-                const card = btn.closest('.evacuee-item');
-                if (card) {
-                    const fullName = card.querySelector('.evacuee-name')?.innerText || '';
-                    const rawName = fullName.split('(')[0].trim();
-                    card.remove();
-                    
-                    removeEvacueeFromDOM(rawName);
-                    broadcastDataChange('EVACUEE_DELETE', { name: rawName }, `เจ้าหน้าที่ได้ลบรายชื่อผู้อพยพ: ${rawName}`);
-                    addLog(`ลบรายชื่อผู้อพยพ: ${rawName}`, "เจ้าหน้าที่");
-                    showToast("ลบรายชื่อผู้อพยพเรียบร้อยแล้ว");
-                }
-            });
-        }
-
-        function removeEvacueeFromDOM(name) {
-            const list = document.getElementById('evacuees-list');
-            const items = list.querySelectorAll('.evacuee-item');
-            items.forEach(item => {
-                if (item.innerText.includes(name)) {
-                    item.remove();
-                }
-            });
-
-            const remaining = list.querySelectorAll('.evacuee-item').length;
-            document.getElementById('evacuee-count-badge').innerText = `${remaining} คน`;
-
-            if (remaining === 0) {
-                list.innerHTML = `<div id="no-evacuee-msg" class="p-4 text-center text-slate-400 text-xs">ยังไม่มีข้อมูลผู้อพยพในระบบ</div>`;
-            }
-        }
-
         function filterEvacuees() {
-            const query = document.getElementById('evacuee-search').value.toLowerCase();
+            const searchInput = document.getElementById('evacuee-search');
+            if (!searchInput) return;
+            const query = searchInput.value.toLowerCase();
             const items = document.querySelectorAll('.evacuee-item');
 
             items.forEach(item => {
