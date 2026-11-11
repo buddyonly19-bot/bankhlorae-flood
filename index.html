@@ -783,7 +783,7 @@
                     </a>
                 </div>
 
-                <div class="space-y-2 text-xs">
+                <div id="zones-list-container" class="space-y-2 text-xs">
                     <div id="zone-card-1" class="p-2.5 bg-red-50 border border-red-200 rounded-xl space-y-2 zone-card">
                         <div class="flex justify-between items-center gap-2">
                             <div class="min-w-0">
@@ -923,7 +923,7 @@
                         <i class="fa-solid fa-users text-blue-600 flex-shrink-0"></i> <span class="truncate">รายชื่อผู้อพยพในศูนย์พักพิง</span>
                     </h3>
                     <div class="flex items-center gap-1.5 flex-shrink-0">
-                        <button onclick="openEvacueeModal()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full shadow flex items-center gap-1 transition active:scale-95">
+                        <button onclick="openEvacueeModal()" id="shelter-add-evac-btn" class="officer-evac-ctrl-btn hidden px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full shadow flex items-center gap-1 transition active:scale-95">
                             <i class="fa-solid fa-user-plus"></i> ลงทะเบียน/อัปเดต
                         </button>
                         <span id="evacuee-count-badge" class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap">
@@ -1448,6 +1448,29 @@
                 if (data.payload.html) {
                     document.getElementById('canals-list-container').innerHTML = data.payload.html;
                 }
+            } else if (data.type === 'ZONES_UPDATE') {
+                if (data.payload.html) {
+                    const zonesContainer = document.getElementById('zones-list-container');
+                    if (zonesContainer) {
+                        zonesContainer.innerHTML = data.payload.html;
+                        const showCtrl = (isOfficerLoggedIn || isSuperAdminLoggedIn);
+                        document.querySelectorAll('.officer-zone-edit-btn, .officer-delete-hh-btn').forEach(btn => {
+                            if (showCtrl) btn.classList.remove('hidden');
+                            else btn.classList.add('hidden');
+                        });
+                    }
+                }
+            } else if (data.type === 'CONTACTS_UPDATE') {
+                if (data.payload.html) {
+                    const contactsContainer = document.getElementById('emergency-contacts-list');
+                    if (contactsContainer) {
+                        contactsContainer.innerHTML = data.payload.html;
+                        document.querySelectorAll('.admin-delete-contact-btn').forEach(btn => {
+                            if (isSuperAdminLoggedIn) btn.classList.remove('hidden');
+                            else btn.classList.add('hidden');
+                        });
+                    }
+                }
             } else if (data.type === 'LOG_ADD') {
                 activityLogs.unshift(data.payload.log);
                 renderActivityLogs();
@@ -1685,10 +1708,25 @@
                                     showToast("เจ้าหน้าที่ได้อัปเดตข้อมูลระดับน้ำในลำคลองแล้ว", "อัปเดตระดับน้ำ");
                                 }
                             }
+                            if (data.contactsHtml) {
+                                const contactsContainer = document.getElementById('emergency-contacts-list');
+                                if (contactsContainer && contactsContainer.innerHTML !== data.contactsHtml) {
+                                    contactsContainer.innerHTML = data.contactsHtml;
+                                    document.querySelectorAll('.admin-delete-contact-btn').forEach(btn => {
+                                        if (isSuperAdminLoggedIn) btn.classList.remove('hidden');
+                                        else btn.classList.add('hidden');
+                                    });
+                                }
+                            }
                             if (data.zonesHtml) {
-                                const mapTab = document.getElementById('tab-map');
-                                if (mapTab) {
-                                    // Sync zones or risk descriptions if stored
+                                const zonesContainer = document.getElementById('zones-list-container');
+                                if (zonesContainer && zonesContainer.innerHTML !== data.zonesHtml) {
+                                    zonesContainer.innerHTML = data.zonesHtml;
+                                    const showCtrl = (isOfficerLoggedIn || isSuperAdminLoggedIn);
+                                    document.querySelectorAll('.officer-zone-edit-btn, .officer-delete-hh-btn').forEach(btn => {
+                                        if (showCtrl) btn.classList.remove('hidden');
+                                        else btn.classList.add('hidden');
+                                    });
                                 }
                             }
                             if (data.evacuees !== undefined) {
@@ -1922,6 +1960,7 @@
                         document.querySelectorAll('.officer-canal-ctrl-btn').forEach(btn => btn.classList.add('hidden'));
                         document.querySelectorAll('.officer-zone-edit-btn').forEach(btn => btn.classList.add('hidden'));
                         document.querySelectorAll('.officer-delete-evac-btn').forEach(btn => btn.classList.add('hidden'));
+                        document.querySelectorAll('.officer-evac-ctrl-btn').forEach(btn => btn.classList.add('hidden'));
                     }
                     renderEvacueesList();
                     addLog("ออกจากโหมดเจ้าหน้าที่/กู้ภัย", "เจ้าหน้าที่");
@@ -1958,6 +1997,7 @@
                 document.querySelectorAll('.officer-canal-ctrl-btn').forEach(btn => btn.classList.remove('hidden'));
                 document.querySelectorAll('.officer-zone-edit-btn').forEach(btn => btn.classList.remove('hidden'));
                 document.querySelectorAll('.officer-delete-evac-btn').forEach(btn => btn.classList.remove('hidden'));
+                document.querySelectorAll('.officer-evac-ctrl-btn').forEach(btn => btn.classList.remove('hidden'));
 
                 renderEvacueesList();
                 addLog("เข้าสู่ระบบเจ้าหน้าที่/ทีมกู้ภัยสำเร็จ", "เจ้าหน้าที่");
@@ -1997,6 +2037,7 @@
                 document.querySelectorAll('.officer-zone-edit-btn').forEach(btn => btn.classList.remove('hidden'));
                 document.querySelectorAll('.officer-delete-hh-btn').forEach(btn => btn.classList.remove('hidden'));
                 document.querySelectorAll('.officer-delete-evac-btn').forEach(btn => btn.classList.remove('hidden'));
+                document.querySelectorAll('.officer-evac-ctrl-btn').forEach(btn => btn.classList.remove('hidden'));
 
                 renderEvacueesList();
                 addLog("เข้าสู่ระบบ Super Admin", "Super Admin");
@@ -2019,6 +2060,7 @@
                     document.querySelectorAll('.officer-zone-edit-btn').forEach(btn => btn.classList.add('hidden'));
                     document.querySelectorAll('.officer-delete-hh-btn').forEach(btn => btn.classList.add('hidden'));
                     document.querySelectorAll('.officer-delete-evac-btn').forEach(btn => btn.classList.add('hidden'));
+                    document.querySelectorAll('.officer-evac-ctrl-btn').forEach(btn => btn.classList.add('hidden'));
                 }
                 renderEvacueesList();
                 addLog("ออกจากระบบ Super Admin", "Super Admin");
@@ -2026,6 +2068,10 @@
             });
         }
         function openEvacueeModal(editId = null) {
+            if (!isOfficerLoggedIn && !isSuperAdminLoggedIn) {
+                showCustomMessage("เฉพาะเจ้าหน้าที่หรือผู้ดูแลระบบเท่านั้นที่สามารถลงทะเบียนและแก้ไขข้อมูลผู้อพยพได้");
+                return;
+            }
             const modal = document.getElementById('evacuee-modal');
             const title = document.getElementById('evac-modal-title');
             const submitBtn = document.getElementById('evac-submit-btn');
@@ -2164,12 +2210,16 @@
                 return true;
             });
 
+            const isAuthorized = (isOfficerLoggedIn || isSuperAdminLoggedIn);
+            const hideCtrlClass = isAuthorized ? '' : 'hidden';
+
             if (filtered.length === 0) {
-                list.innerHTML = `<div id="no-evacuee-msg" class="p-4 text-center text-slate-400 text-xs">ยังไม่มีรายชื่อผู้อพยพในหมวดหมู่นี้ กดปุ่ม "+ ลงทะเบียน/อัปเดต" เพื่อเพิ่มข้อมูล</div>`;
+                const emptyText = isAuthorized
+                    ? 'ยังไม่มีรายชื่อผู้อพยพในหมวดหมู่นี้ กดปุ่ม "+ ลงทะเบียน/อัปเดต" เพื่อเพิ่มข้อมูล'
+                    : 'ยังไม่มีรายชื่อผู้อพยพในหมวดหมู่นี้';
+                list.innerHTML = `<div id="no-evacuee-msg" class="p-4 text-center text-slate-400 text-xs">${emptyText}</div>`;
                 return;
             }
-
-            const hideDeleteClass = (isOfficerLoggedIn || isSuperAdminLoggedIn) ? '' : 'hidden';
 
             list.innerHTML = filtered.map(data => {
                 let groupBadgeClass = "bg-blue-100 text-blue-800";
@@ -2199,11 +2249,11 @@
                         </div>
                         <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
                             <span class="text-[9px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md font-bold whitespace-nowrap">${data.room}</span>
-                            <div class="flex items-center gap-1">
+                            <div class="officer-evac-ctrl-btn ${hideCtrlClass} flex items-center gap-1">
                                 <button type="button" onclick="openEvacueeModal('${data.id}')" class="px-2 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-md font-bold text-[10px] transition whitespace-nowrap" title="แก้ไข/อัปเดตสถานะ">
                                     <i class="fa-solid fa-pen-to-square"></i> แก้ไข
                                 </button>
-                                <button type="button" onclick="officerDeleteEvacuee('${data.id}')" class="officer-delete-evac-btn ${hideDeleteClass} px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-md font-bold text-[10px] transition whitespace-nowrap" title="ลบรายชื่อ">
+                                <button type="button" onclick="officerDeleteEvacuee('${data.id}')" class="officer-delete-evac-btn px-2 py-1 bg-red-100 text-red-600 hover:bg-red-200 rounded-md font-bold text-[10px] transition whitespace-nowrap" title="ลบรายชื่อ">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
@@ -2297,6 +2347,81 @@
             showCustomMessage(dataStr, "รายชื่อผู้อพยพทั้งหมดในระบบ");
         }
 
+        function adminAddNewContact() {
+            const titleInput = document.getElementById('admin-add-contact-title');
+            const subInput = document.getElementById('admin-add-contact-sub');
+            const phoneInput = document.getElementById('admin-add-contact-phone');
+
+            const title = titleInput.value.trim();
+            const sub = subInput.value.trim() || 'เบอร์ติดต่อฉุกเฉิน';
+            const phone = phoneInput.value.trim();
+
+            if (!title || !phone) {
+                showCustomMessage("กรุณากรอกชื่อหน่วยงาน/ตำแหน่ง และเบอร์โทรศัพท์ให้ครบถ้วน");
+                return;
+            }
+
+            const container = document.getElementById('emergency-contacts-list');
+            const hideDeleteClass = isSuperAdminLoggedIn ? '' : 'hidden';
+
+            const newItem = document.createElement('div');
+            newItem.className = "contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2 animate-fade-in";
+            newItem.innerHTML = `
+                <div class="min-w-0">
+                    <p class="font-bold text-slate-900 contact-title truncate">${title}</p>
+                    <p class="text-[10px] text-slate-500 contact-sub truncate">${sub}</p>
+                </div>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <a href="tel:${phone}" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
+                        <i class="fa-solid fa-phone"></i> โทรเลย
+                    </a>
+                    <button onclick="adminDeleteContact(this)" class="admin-delete-contact-btn ${hideDeleteClass} px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(newItem);
+
+            broadcastDataChange('CONTACTS_UPDATE', { html: container.innerHTML }, `เพิ่มเบอร์โทรด่วนฉุกเฉิน: ${title}`);
+
+            if (typeof firebase !== 'undefined' && firebase.apps.length) {
+                firebase.database().ref('flood_status').update({
+                    contactsHtml: container.innerHTML
+                });
+            }
+
+            addLog(`เพิ่มเบอร์โทรฉุกเฉิน: ${title} (${phone})`, "Super Admin");
+            showToast(`เพิ่มเบอร์โทร "${title}" เรียบร้อยแล้ว!`);
+
+            titleInput.value = '';
+            subInput.value = '';
+            phoneInput.value = '';
+            switchBottomTab('contacts');
+        }
+
+        function adminDeleteContact(btn) {
+            showCustomConfirm("คุณต้องการลบเบอร์โทรฉุกเฉินนี้ใช่หรือไม่?", () => {
+                const item = btn.closest('.contact-item');
+                if (item) {
+                    const title = item.querySelector('.contact-title')?.innerText || '';
+                    item.remove();
+
+                    const container = document.getElementById('emergency-contacts-list');
+                    broadcastDataChange('CONTACTS_UPDATE', { html: container.innerHTML }, `ลบเบอร์โทรด่วนฉุกเฉิน: ${title}`);
+
+                    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+                        firebase.database().ref('flood_status').update({
+                            contactsHtml: container.innerHTML
+                        });
+                    }
+
+                    addLog(`ลบเบอร์โทรฉุกเฉิน: ${title}`, "Super Admin");
+                    showToast(`ลบเบอร์โทร "${title}" เรียบร้อยแล้ว`);
+                }
+            });
+        }
+
         function officerEditZone(zoneId) {
             const card = document.getElementById(`zone-card-${zoneId}`);
             if (!card) return;
@@ -2350,6 +2475,17 @@
                         card.className = "p-2.5 bg-slate-100 border border-slate-200 rounded-xl space-y-2 zone-card";
                         if (titleElem) titleElem.className = "font-bold text-slate-800 zone-title-text truncate";
                         if (badgeElem) { badgeElem.className = "zone-risk-badge px-2 py-1 bg-emerald-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0"; badgeElem.innerText = "เสี่ยงต่ำ"; }
+                    }
+
+                    const zonesContainer = document.getElementById('zones-list-container');
+                    if (zonesContainer) {
+                        broadcastDataChange('ZONES_UPDATE', { html: zonesContainer.innerHTML }, `เจ้าหน้าที่ได้อัปเดตผังโซนพื้นที่เสี่ยง (โซน ${zoneId})`);
+                        if (typeof firebase !== 'undefined' && firebase.apps.length) {
+                            firebase.database().ref('flood_status').update({
+                                zonesHtml: zonesContainer.innerHTML,
+                                updatedAt: new Date().toISOString()
+                            });
+                        }
                     }
 
                     addLog(`บันทึกการแก้ไขข้อมูลพื้นที่เสี่ยงโซน ${zoneId} (${newTitle}) สำเร็จ`, "เจ้าหน้าที่");
@@ -2475,22 +2611,35 @@
                 return;
             }
 
-            const container = document.getElementById(`zone-households-${zoneId}`);
+            const targetZoneCardId = (zoneId == 7 || zoneId == 8) ? 6 : zoneId;
+            const container = document.getElementById(`zone-households-${targetZoneCardId}`);
             if (!container) return;
 
             const hideClass = (isOfficerLoggedIn || isSuperAdminLoggedIn) ? '' : 'hidden';
+            const displayLabel = (zoneId == 6 || zoneId == 7 || zoneId == 8) ? `[โซน ${zoneId}] ${nameInfo}` : nameInfo;
 
             const newItem = document.createElement('div');
             newItem.className = "household-item flex justify-between items-center gap-2 bg-white/70 px-2 py-1 rounded border border-slate-200 animate-fade-in";
             newItem.innerHTML = `
-                <span class="truncate">${nameInfo}</span>
-                <button onclick="officerDeleteHousehold(this, ${zoneId})" class="officer-delete-hh-btn ${hideClass} text-[10px] text-red-600 hover:underline font-bold flex-shrink-0">ลบ</button>
+                <span class="truncate">${displayLabel}</span>
+                <button onclick="officerDeleteHousehold(this, ${targetZoneCardId})" class="officer-delete-hh-btn ${hideClass} text-[10px] text-red-600 hover:underline font-bold flex-shrink-0">ลบ</button>
             `;
 
             container.appendChild(newItem);
 
-            const countElem = document.getElementById(`zone-count-${zoneId}`);
+            const countElem = document.getElementById(`zone-count-${targetZoneCardId}`);
             if (countElem) countElem.innerText = parseInt(countElem.innerText || '0') + 1;
+
+            const zonesContainer = document.getElementById('zones-list-container');
+            if (zonesContainer) {
+                broadcastDataChange('ZONES_UPDATE', { html: zonesContainer.innerHTML }, `เจ้าหน้าที่เพิ่มข้อมูลครัวเรือนในโซน ${zoneId}`);
+                if (typeof firebase !== 'undefined' && firebase.apps.length) {
+                    firebase.database().ref('flood_status').update({
+                        zonesHtml: zonesContainer.innerHTML,
+                        updatedAt: new Date().toISOString()
+                    });
+                }
+            }
 
             addLog(`ลงทะเบียนครัวเรือน ${nameInfo} เข้าโซน ${zoneId}`, "เจ้าหน้าที่");
             document.getElementById('officer-add-household-name').value = '';
@@ -2503,10 +2652,23 @@
                 if (item) {
                     const name = item.querySelector('span')?.innerText || '';
                     item.remove();
-                    const countElem = document.getElementById(`zone-count-${zoneId}`);
+                    const targetZoneCardId = (zoneId == 7 || zoneId == 8) ? 6 : zoneId;
+                    const countElem = document.getElementById(`zone-count-${targetZoneCardId}`);
                     if (countElem && parseInt(countElem.innerText) > 0) {
                         countElem.innerText = parseInt(countElem.innerText) - 1;
                     }
+
+                    const zonesContainer = document.getElementById('zones-list-container');
+                    if (zonesContainer) {
+                        broadcastDataChange('ZONES_UPDATE', { html: zonesContainer.innerHTML }, `เจ้าหน้าที่ลบข้อมูลครัวเรือนในโซน ${zoneId}`);
+                        if (typeof firebase !== 'undefined' && firebase.apps.length) {
+                            firebase.database().ref('flood_status').update({
+                                zonesHtml: zonesContainer.innerHTML,
+                                updatedAt: new Date().toISOString()
+                            });
+                        }
+                    }
+
                     addLog(`ลบครัวเรือน ${name} ออกจากโซน ${zoneId}`, "เจ้าหน้าที่");
                     showToast("ลบข้อมูลครัวเรือนเรียบร้อยแล้ว");
                 }
