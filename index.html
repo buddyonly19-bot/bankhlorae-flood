@@ -839,6 +839,13 @@
                         </div>
                     </div>
 
+else if (data.type === 'EVACUEE_ADD') {
+    // โค้ดสำหรับสร้าง Card ผู้อพยพแล้วนำไปแปะไว้บนหน้าจอชาวบ้านอัตโนมัติ
+    addNewEvacueeToDOM(data.payload);
+} else if (data.type === 'EVACUEE_DELETE') {
+    // โค้ดสำหรับค้นหาและลบ Card ผู้อพยพออกจากหน้าจอชาวบ้าน
+    removeEvacueeFromDOM(data.payload.name);
+}
                     <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between items-center evacuee-item">
                         <div>
                             <div class="flex items-center gap-1.5">
@@ -1240,7 +1247,17 @@
             realtimeChannel.postMessage(syncData);
             localStorage.setItem('klr_flood_sync_event', JSON.stringify(syncData));
         }
-
+            
+        const evacueePayload = {
+            shelter: shelter,
+            name: name,
+            age: age,
+            group: group,
+            zone: zone,
+            room: room,
+            phone: phone
+};
+broadcastDataChange('EVACUEE_ADD', evacueePayload, `เจ้าหน้าที่ได้เพิ่มรายชื่อผู้อพยพใหม่: ${name}`);
         function handleIncomingRealtimeUpdate(data) {
             showToast(data.message || "เจ้าหน้าที่ได้ทำการอัปเดตข้อมูลเรียลไทม์");
             playAlertSound();
@@ -1289,6 +1306,7 @@
                 osc.stop(ctx.currentTime + 0.2);
             } catch(e) {}
         }
+broadcastDataChange('EVACUEE_DELETE', { name: name }, `เจ้าหน้าที่ได้ลบรายชื่อผู้อพยพ: ${name}`);
 
         // Initialize on page load
         window.onload = function() {
