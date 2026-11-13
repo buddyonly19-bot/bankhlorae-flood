@@ -483,7 +483,7 @@
                 </span>
                 <div class="truncate">
                     <span id="cloud-status-text" class="font-extrabold text-slate-800">กำลังเชื่อมต่อ Firebase Realtime...</span>
-                    <span id="last-officer-msg-preview" class="block text-[9px] text-slate-500 truncate">ซิงค์ข้อมูลสดอัตโนมัติจากฐานข้อมูล ming-2d05c</span>
+                    <span id="last-officer-msg-preview" class="block text-[9px] text-slate-500 truncate">ซิงค์ข้อมูลสถานการณ์น้ำอัตโนมัติแบบเรียลไทม์</span>
                 </div>
             </div>
             <span id="last-officer-sync-badge" class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0">
@@ -758,9 +758,10 @@
                 <div id="canals-list-container" class="space-y-2.5 text-xs"></div>
             </div>
 
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
+            <!-- OFFICER ACTION TIMELINE (HIDDEN FROM PUBLIC CITIZENS) -->
+            <div id="officer-action-timeline-card" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3 hidden">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> การดำเนินการและประกาศจากเจ้าหน้าที่
+                    <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> การดำเนินการและประกาศจากเจ้าหน้าที่ (เฉพาะเจ้าหน้าที่)
                 </h3>
                 <div id="public-action-timeline" class="space-y-2 text-xs">
                     <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-slate-600 text-[11px]">
@@ -1818,9 +1819,14 @@
             const badge = document.getElementById('last-officer-sync-badge');
             const ping = document.getElementById('citizen-sync-ping');
             const preview = document.getElementById('last-officer-msg-preview');
-            if (preview && lastMsg) {
-                preview.innerText = `ล่าสุด: ${lastMsg}`;
-                preview.className = "block text-[10px] text-emerald-700 font-semibold truncate";
+            if (preview) {
+                if ((isOfficerLoggedIn || isSuperAdminLoggedIn) && lastMsg) {
+                    preview.innerText = `ล่าสุด: ${lastMsg}`;
+                    preview.className = "block text-[10px] text-emerald-700 font-semibold truncate";
+                } else {
+                    preview.innerText = "ซิงค์ข้อมูลสถานการณ์น้ำอัตโนมัติแบบเรียลไทม์";
+                    preview.className = "block text-[9px] text-slate-500 truncate";
+                }
             }
             if (badge) {
                 badge.innerText = `ซิงค์ ${timeStr}`;
@@ -2749,12 +2755,18 @@
                     document.getElementById('officer-panel').classList.add('hidden');
                     if (!isSuperAdminLoggedIn) {
                         document.getElementById('warning-level-selector').classList.add('hidden');
+                        document.getElementById('officer-action-timeline-card')?.classList.add('hidden');
                     }
                     document.getElementById('officer-btn-text').innerText = "เจ้าหน้าที่";
                     document.getElementById('officer-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition";
                     
                     if (!isSuperAdminLoggedIn) {
                         document.querySelectorAll('.officer-delete-hh-btn, .officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.add('hidden'));
+                    }
+                    const preview = document.getElementById('last-officer-msg-preview');
+                    if (preview && !isSuperAdminLoggedIn) {
+                        preview.innerText = "ซิงค์ข้อมูลสถานการณ์น้ำอัตโนมัติแบบเรียลไทม์";
+                        preview.className = "block text-[9px] text-slate-500 truncate";
                     }
                     renderZonesListUI();
                     renderCanalsTelemetryUI();
@@ -2783,6 +2795,7 @@
                 closeOfficerLoginModal();
                 document.getElementById('officer-panel').classList.remove('hidden');
                 document.getElementById('warning-level-selector').classList.remove('hidden');
+                document.getElementById('officer-action-timeline-card')?.classList.remove('hidden');
                 document.getElementById('officer-btn-text').innerText = "เจ้าหน้าที่ ✓";
                 document.getElementById('officer-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-amber-500 text-white text-xs font-bold border border-amber-600 flex items-center gap-1 shadow-sm";
                 
@@ -2820,6 +2833,7 @@
                 closeSuperAdminLoginModal();
                 document.getElementById('super-admin-panel').classList.remove('hidden');
                 document.getElementById('warning-level-selector').classList.remove('hidden');
+                document.getElementById('officer-action-timeline-card')?.classList.remove('hidden');
                 document.getElementById('admin-btn-text').innerText = "Admin ✓";
                 document.getElementById('admin-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-bold border border-amber-500 flex items-center gap-1 shadow transition";
                 
@@ -2841,7 +2855,13 @@
                 document.getElementById('super-admin-panel').classList.add('hidden');
                 if (!isOfficerLoggedIn) {
                     document.getElementById('warning-level-selector').classList.add('hidden');
+                    document.getElementById('officer-action-timeline-card')?.classList.add('hidden');
                     document.querySelectorAll('.admin-delete-contact-btn, .officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-hh-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.add('hidden'));
+                    const preview = document.getElementById('last-officer-msg-preview');
+                    if (preview) {
+                        preview.innerText = "ซิงค์ข้อมูลสถานการณ์น้ำอัตโนมัติแบบเรียลไทม์";
+                        preview.className = "block text-[9px] text-slate-500 truncate";
+                    }
                 }
                 document.getElementById('admin-btn-text').innerText = "Admin";
                 document.getElementById('admin-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-800 hover:bg-slate-900 text-amber-300 text-xs font-bold border border-amber-400/40 flex items-center gap-1 transition";
