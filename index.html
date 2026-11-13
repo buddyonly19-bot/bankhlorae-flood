@@ -21,7 +21,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts (Prompt) -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- MQTT.js for Cross-Device Cloud Realtime Sync -->
+    <!-- Firebase SDKs (App, Analytics & Realtime Database) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- MQTT.js for Cross-Device Cloud Realtime Sync Fallback -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     
     <script>
@@ -478,12 +482,12 @@
                     <span id="citizen-sync-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
                 <div class="truncate">
-                    <span id="cloud-status-text" class="font-extrabold text-slate-800">เชื่อมต่อระบบซิงค์สดเรียลไทม์</span>
-                    <span id="last-officer-msg-preview" class="block text-[9px] text-slate-500 truncate">รับข้อมูลอัตโนมัติทันทีเมื่อเจ้าหน้าที่อัปเดต</span>
+                    <span id="cloud-status-text" class="font-extrabold text-slate-800">กำลังเชื่อมต่อ Firebase Realtime...</span>
+                    <span id="last-officer-msg-preview" class="block text-[9px] text-slate-500 truncate">ซิงค์ข้อมูลสดอัตโนมัติจากฐานข้อมูล ming-2d05c</span>
                 </div>
             </div>
             <span id="last-officer-sync-badge" class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0">
-                ออนไลน์สด
+                Firebase Live
             </span>
         </div>
 
@@ -1562,12 +1566,88 @@
             modal.classList.remove('hidden');
         }
 
+        // ============================================================================
+        // FIREBASE REALTIME DATABASE CONFIGURATION & LIVE SYNC (ming-2d05c)
+        // ============================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDejXrY79-RUMJutqUUmri4epuX3qCvDJo",
+            authDomain: "ming-2d05c.firebaseapp.com",
+            databaseURL: "https://ming-2d05c-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ming-2d05c",
+            storageBucket: "ming-2d05c.firebasestorage.app",
+            messagingSenderId: "160089505923",
+            appId: "1:160089505923:web:fb8eaec45cdf8dff28dbb6",
+            measurementId: "G-4XPQHGC6Q8"
+        };
+
+        let firebaseApp = null;
+        let firebaseAnalytics = null;
+        let firebaseDb = null;
+        let floodStateRef = null;
+        let isFirebaseConnected = false;
+        let isInitialFirebaseLoad = true;
+
         // Master Shared State & Real-time Synchronization Engine
         let lastKnownMasterVersion = 0;
         const clientDeviceId = 'klr_client_' + Math.random().toString(36).substring(2, 10);
         const CLOUD_TOPIC_STATE = 'narathiwat/bacho/baretai/ban_khlorae_moo3/live_state_v2';
         let mqttClient = null;
         let isCloudConnected = false;
+
+        function initFirebaseRealtimeSync() {
+            try {
+                if (typeof firebase !== 'undefined') {
+                    firebaseApp = !firebase.apps.length ? firebase.initializeApp(firebaseConfig) : firebase.app();
+                    try {
+                        if (typeof firebase.analytics === 'function') {
+                            firebaseAnalytics = firebase.analytics(firebaseApp);
+                        }
+                    } catch (anErr) {}
+
+                    firebaseDb = firebase.database();
+                    floodStateRef = firebaseDb.ref('ban_khlorae_flood_state');
+
+                    // Listen for Firebase connection status (.info/connected)
+                    firebaseDb.ref('.info/connected').on('value', (snap) => {
+                        isFirebaseConnected = (snap.val() === true);
+                        const statusText = document.getElementById('cloud-status-text');
+                        const syncDot = document.getElementById('citizen-sync-dot');
+                        const syncPing = document.getElementById('citizen-sync-ping');
+                        if (isFirebaseConnected) {
+                            if (statusText) statusText.innerText = "เชื่อมต่อฐานข้อมูล Firebase Realtime สด (ออนไลน์)";
+                            if (syncDot) syncDot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500";
+                            if (syncPing) syncPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
+                        } else {
+                            if (statusText) statusText.innerText = isCloudConnected ? "เชื่อมต่อศูนย์ข้อมูลสด (Cloud Backup)" : "โหมดออฟไลน์ (รอสัญญาณซิงค์อัตโนมัติ)";
+                        }
+                    });
+
+                    // Real-time listener on 'ban_khlorae_flood_state'
+                    floodStateRef.on('value', (snapshot) => {
+                        const cloudData = snapshot.val();
+                        if (cloudData && cloudData.version) {
+                            const shouldNotify = !isInitialFirebaseLoad && (cloudData.senderDeviceId !== clientDeviceId) && (cloudData.version > lastKnownMasterVersion);
+                            isInitialFirebaseLoad = false;
+
+                            try {
+                                localStorage.setItem('klr_master_shared_state', JSON.stringify(cloudData));
+                            } catch (e) {}
+
+                            applyMasterSharedState(cloudData, shouldNotify);
+                        } else if (isInitialFirebaseLoad) {
+                            isInitialFirebaseLoad = false;
+                            // Seed initial state to Firebase if database node is empty
+                            const initialState = saveMasterSharedState("เริ่มต้นระบบฐานข้อมูลน้ำท่วมบ้านคลอแระ");
+                            floodStateRef.set(initialState).catch(() => {});
+                        }
+                    }, (error) => {
+                        console.warn("Firebase RTDB read warning:", error);
+                    });
+                }
+            } catch (err) {
+                console.warn("Firebase init error:", err);
+            }
+        }
 
         const realtimeChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('ban_khlorae_flood_channel') : null;
 
@@ -1587,7 +1667,7 @@
             }
         });
 
-        // Cloud Real-time Sync via WebSockets (MQTT) for Cross-Device Instant Updates
+        // Cloud Real-time Sync via WebSockets (MQTT) for Backup Cross-Device Instant Updates
         function initCloudRealtimeSync() {
             if (typeof mqtt === 'undefined') return;
             try {
@@ -1600,8 +1680,10 @@
 
                 mqttClient.on('connect', () => {
                     isCloudConnected = true;
-                    const statusText = document.getElementById('cloud-status-text');
-                    if (statusText) statusText.innerText = "เชื่อมต่อศูนย์ข้อมูลสด (Cloud Live)";
+                    if (!isFirebaseConnected) {
+                        const statusText = document.getElementById('cloud-status-text');
+                        if (statusText) statusText.innerText = "เชื่อมต่อศูนย์ข้อมูลสด (Cloud Live)";
+                    }
                     mqttClient.subscribe(CLOUD_TOPIC_STATE, { qos: 1 });
                 });
 
@@ -1611,7 +1693,6 @@
                             const data = JSON.parse(message.toString());
                             if (data && data.senderDeviceId !== clientDeviceId) {
                                 if (data.masterState && data.masterState.version > lastKnownMasterVersion) {
-                                    // Save to local storage as well so page reloads keep latest state
                                     try {
                                         localStorage.setItem('klr_master_shared_state', JSON.stringify(data.masterState));
                                     } catch(e) {}
@@ -1641,18 +1722,20 @@
 
             const masterState = {
                 version: version,
+                senderDeviceId: clientDeviceId,
                 updatedAtTime: nowTimeStr,
                 lastMessage: messageStr,
                 sender: isSuperAdminLoggedIn ? "Super Admin" : (isOfficerLoggedIn ? "เจ้าหน้าที่กู้ภัย" : "ประชาชน"),
                 currentAlertLevel: currentAlertLevel,
-                announcementsList: announcementsList,
-                canalsTelemetryData: canalsTelemetryData,
-                zonesRiskData: zonesRiskData,
-                evacueesList: evacueesList,
-                citizenReportsList: citizenReportsList,
+                announcementsList: announcementsList || [],
+                canalsTelemetryData: canalsTelemetryData || [],
+                zonesRiskData: zonesRiskData || [],
+                evacueesList: evacueesList || [],
+                citizenReportsList: citizenReportsList || [],
                 currentWeatherState: currentWeatherState,
                 rainMm: currentRainVal,
-                activityLogs: activityLogs
+                sosCount: sosCount || 0,
+                activityLogs: activityLogs || []
             };
 
             try {
@@ -1676,26 +1759,24 @@
                 currentAlertLevel = state.currentAlertLevel;
                 applySimLevelUI(currentAlertLevel);
             }
-            if (Array.isArray(state.announcementsList)) {
-                announcementsList = state.announcementsList;
-                renderAnnouncements();
-            }
-            if (Array.isArray(state.canalsTelemetryData)) {
+            // Handle Firebase empty array behavior gracefully
+            announcementsList = Array.isArray(state.announcementsList) ? state.announcementsList : [];
+            renderAnnouncements();
+
+            if (Array.isArray(state.canalsTelemetryData) && state.canalsTelemetryData.length > 0) {
                 canalsTelemetryData = state.canalsTelemetryData;
                 renderCanalsTelemetryUI();
             }
-            if (Array.isArray(state.zonesRiskData)) {
+            if (Array.isArray(state.zonesRiskData) && state.zonesRiskData.length > 0) {
                 zonesRiskData = state.zonesRiskData;
                 renderZonesListUI();
             }
-            if (Array.isArray(state.evacueesList)) {
-                evacueesList = state.evacueesList;
-                renderEvacueesList();
-            }
-            if (Array.isArray(state.citizenReportsList)) {
-                citizenReportsList = state.citizenReportsList;
-                renderCitizenReports();
-            }
+            evacueesList = Array.isArray(state.evacueesList) ? state.evacueesList : [];
+            renderEvacueesList();
+
+            citizenReportsList = Array.isArray(state.citizenReportsList) ? state.citizenReportsList : [];
+            renderCitizenReports();
+
             if (state.currentWeatherState) {
                 currentWeatherState = state.currentWeatherState;
                 renderWeatherUI();
@@ -1703,10 +1784,13 @@
             if (state.rainMm !== undefined) {
                 applyRainValueUI(state.rainMm);
             }
-            if (Array.isArray(state.activityLogs)) {
-                activityLogs = state.activityLogs;
-                renderActivityLogs();
+            if (state.sosCount !== undefined) {
+                sosCount = state.sosCount;
+                const sosStatEl = document.getElementById('admin-stat-sos');
+                if (sosStatEl) sosStatEl.innerText = sosCount;
             }
+            activityLogs = Array.isArray(state.activityLogs) ? state.activityLogs : [];
+            renderActivityLogs();
 
             if (state.updatedAtTime) {
                 updateCitizenSyncBadge(state.updatedAtTime, state.lastMessage);
@@ -1739,7 +1823,7 @@
                 preview.className = "block text-[10px] text-emerald-700 font-semibold truncate";
             }
             if (badge) {
-                badge.innerText = `อัปเดต ${timeStr}`;
+                badge.innerText = `ซิงค์ ${timeStr}`;
                 badge.className = "text-[10px] font-mono font-extrabold text-white bg-emerald-600 px-2 py-1 rounded-lg shadow-sm whitespace-nowrap flex-shrink-0 transition-all scale-105";
                 setTimeout(() => {
                     if (badge) badge.className = "text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0 transition-all";
@@ -1759,12 +1843,23 @@
 
         function broadcastDataChange(type, payload, messageStr) {
             const masterState = saveMasterSharedState(messageStr);
+
+            // 1. Push directly to Firebase Realtime Database (ming-2d05c)
+            if (floodStateRef) {
+                try {
+                    floodStateRef.set(masterState).catch((err) => {
+                        console.warn("Firebase write error:", err);
+                    });
+                } catch (e) {}
+            }
+
+            // 2. Push to local BroadcastChannel & localStorage for instant multi-tab sync
             const syncData = {
                 type: type,
                 payload: payload,
                 masterState: masterState,
                 senderDeviceId: clientDeviceId,
-                sender: isSuperAdminLoggedIn ? "Super Admin" : (isOfficerLoggedIn ? "เจ้าหน้าที่กู้ภัย" : "ประชาชน"),
+                sender: masterState.sender,
                 timestamp: new Date().toISOString(),
                 message: messageStr
             };
@@ -1773,62 +1868,12 @@
             }
             try { localStorage.setItem('klr_flood_sync_event', JSON.stringify(syncData)); } catch(e) {}
 
-            // Publish retained state to Cloud MQTT Broker so all citizens on any device receive it immediately
+            // 3. Publish retained state to Cloud MQTT Broker as secondary real-time layer
             if (mqttClient && isCloudConnected) {
                 try {
                     mqttClient.publish(CLOUD_TOPIC_STATE, JSON.stringify(syncData), { qos: 1, retain: true });
                 } catch (e) {}
             }
-        }
-
-        function checkMasterStatePolling() {
-            try {
-                const raw = localStorage.getItem('klr_master_shared_state');
-                if (raw) {
-                    const parsed = JSON.parse(raw);
-                    if (parsed && parsed.version > lastKnownMasterVersion) {
-                        applyMasterSharedState(parsed, true);
-                    }
-                }
-            } catch(e) {}
-        }
-
-        function updateCitizenSyncBadge(timeStr) {
-            const badge = document.getElementById('last-officer-sync-badge');
-            const ping = document.getElementById('citizen-sync-ping');
-            if (badge) {
-                badge.innerText = `อัปเดตล่าสุด ${timeStr}`;
-                badge.className = "text-[10px] font-mono font-extrabold text-white bg-emerald-600 px-2 py-0.5 rounded-lg shadow-sm whitespace-nowrap flex-shrink-0 transition-all";
-                setTimeout(() => {
-                    if (badge) badge.className = "text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0 transition-all";
-                }, 2000);
-            }
-            if (ping) {
-                ping.classList.remove('bg-emerald-400');
-                ping.classList.add('bg-cyan-400');
-                setTimeout(() => {
-                    if (ping) {
-                        ping.classList.remove('bg-cyan-400');
-                        ping.classList.add('bg-emerald-400');
-                    }
-                }, 2000);
-            }
-        }
-
-        function broadcastDataChange(type, payload, messageStr) {
-            const masterState = saveMasterSharedState(messageStr);
-            const syncData = {
-                type: type,
-                payload: payload,
-                masterState: masterState,
-                sender: isSuperAdminLoggedIn ? "Super Admin" : (isOfficerLoggedIn ? "เจ้าหน้าที่กู้ภัย" : "ประชาชน"),
-                timestamp: new Date().toISOString(),
-                message: messageStr
-            };
-            if (realtimeChannel) {
-                try { realtimeChannel.postMessage(syncData); } catch(e) {}
-            }
-            try { localStorage.setItem('klr_flood_sync_event', JSON.stringify(syncData)); } catch(e) {}
         }
 
         function handleIncomingRealtimeUpdate(data) {
@@ -2642,6 +2687,7 @@
             updateLiveTime();
             fetchLiveWeather(false);
             fetchGovCanalTelemetry(false);
+            initFirebaseRealtimeSync();
             initCloudRealtimeSync();
 
             // Fast real-time polling (every 1 second) + visibility check so citizens see any officer changes immediately
@@ -2654,10 +2700,6 @@
                     checkMasterStatePolling();
                 }
             });
-
-            setInterval(() => {
-                checkMasterStatePolling();
-            }, 1500);
 
             setInterval(() => {
                 updateLiveTime();
@@ -3230,6 +3272,8 @@
 
             sosCount++;
             document.getElementById('admin-stat-sos').innerText = sosCount;
+            recordActivityLog(`รับแจ้งเหตุฉุกเฉิน SOS จากคุณ ${name} (${zone})`);
+            broadcastDataChange('SOS_ALERT', { sosCount: sosCount }, `🆘 มีการแจ้งขอความช่วยเหลือ SOS ใหม่จาก ${zone}`);
             closeSosModal();
 
             if (target === 'messenger') {
