@@ -468,6 +468,20 @@
     <!-- MAIN APP CONTAINER -->
     <div class="max-w-md mx-auto px-3 pt-3 space-y-3.5">
 
+        <!-- LIVE CITIZEN REALTIME SYNC BAR -->
+        <div class="bg-white/90 backdrop-blur border border-emerald-200 rounded-2xl px-3 py-2 shadow-sm flex items-center justify-between gap-2 text-[11px]">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="relative flex h-2.5 w-2.5 flex-shrink-0">
+                    <span id="citizen-sync-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span class="font-bold text-slate-700 truncate">ซิงค์ข้อมูลสดจากเจ้าหน้าที่กู้ภัยอัตโนมัติ</span>
+            </div>
+            <span id="last-officer-sync-badge" class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0">
+                พร้อมรับข้อมูลสด
+            </span>
+        </div>
+
         <!-- EMERGENCY ANNOUNCEMENT BANNER CONTAINER -->
         <div id="announcement-container" class="space-y-2 hidden animate-fade-in"></div>
 
@@ -1543,31 +1557,172 @@
             modal.classList.remove('hidden');
         }
 
-        // Cross-tab Realtime Sync Channel
-        const realtimeChannel = new BroadcastChannel('ban_khlorae_flood_channel');
-        realtimeChannel.onmessage = function(event) {
-            if (event.data && event.data.type) handleIncomingRealtimeUpdate(event.data);
-        };
+        // Master Shared State & Real-time Synchronization Engine
+        let lastKnownMasterVersion = 0;
+        const realtimeChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('ban_khlorae_flood_channel') : null;
+
+        if (realtimeChannel) {
+            realtimeChannel.onmessage = function(event) {
+                if (event.data && event.data.type) {
+                    handleIncomingRealtimeUpdate(event.data);
+                }
+            };
+        }
 
         window.addEventListener('storage', function(e) {
             if (e.key === 'klr_flood_sync_event' && e.newValue) {
                 try { handleIncomingRealtimeUpdate(JSON.parse(e.newValue)); } catch(err){}
+            } else if (e.key === 'klr_master_shared_state' && e.newValue) {
+                try { applyMasterSharedState(JSON.parse(e.newValue), true); } catch(err){}
             }
         });
 
+        function saveMasterSharedState(messageStr = "เจ้าหน้าที่อัปเดตข้อมูลล่าสุด") {
+            const nowTimeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " น.";
+            const version = Date.now();
+            lastKnownMasterVersion = version;
+
+            let currentRainVal = 12;
+            try {
+                const savedRain = localStorage.getItem('klr_rain_mm');
+                if (savedRain !== null && !isNaN(parseFloat(savedRain))) currentRainVal = parseFloat(savedRain);
+            } catch(e) {}
+
+            const masterState = {
+                version: version,
+                updatedAtTime: nowTimeStr,
+                lastMessage: messageStr,
+                sender: isSuperAdminLoggedIn ? "Super Admin" : (isOfficerLoggedIn ? "เจ้าหน้าที่กู้ภัย" : "ประชาชน"),
+                currentAlertLevel: currentAlertLevel,
+                announcementsList: announcementsList,
+                canalsTelemetryData: canalsTelemetryData,
+                zonesRiskData: zonesRiskData,
+                evacueesList: evacueesList,
+                citizenReportsList: citizenReportsList,
+                currentWeatherState: currentWeatherState,
+                rainMm: currentRainVal,
+                activityLogs: activityLogs
+            };
+
+            try {
+                localStorage.setItem('klr_master_shared_state', JSON.stringify(masterState));
+                localStorage.setItem('klr_zones_risk_data', JSON.stringify(zonesRiskData));
+                localStorage.setItem('klr_canals_telemetry_data', JSON.stringify(canalsTelemetryData));
+                localStorage.setItem('klr_announcements_data', JSON.stringify(announcementsList));
+                localStorage.setItem('klr_alert_level', currentAlertLevel);
+                localStorage.setItem('klr_weather_state', JSON.stringify(currentWeatherState));
+            } catch(e) {}
+
+            updateCitizenSyncBadge(nowTimeStr);
+            return masterState;
+        }
+
+        function applyMasterSharedState(state, notifyCitizen = false) {
+            if (!state || !state.version || state.version <= lastKnownMasterVersion) return;
+            lastKnownMasterVersion = state.version;
+
+            if (state.currentAlertLevel) {
+                currentAlertLevel = state.currentAlertLevel;
+                applySimLevelUI(currentAlertLevel);
+            }
+            if (Array.isArray(state.announcementsList)) {
+                announcementsList = state.announcementsList;
+                renderAnnouncements();
+            }
+            if (Array.isArray(state.canalsTelemetryData)) {
+                canalsTelemetryData = state.canalsTelemetryData;
+                renderCanalsTelemetryUI();
+            }
+            if (Array.isArray(state.zonesRiskData)) {
+                zonesRiskData = state.zonesRiskData;
+                renderZonesListUI();
+            }
+            if (Array.isArray(state.evacueesList)) {
+                evacueesList = state.evacueesList;
+                renderEvacueesList();
+            }
+            if (Array.isArray(state.citizenReportsList)) {
+                citizenReportsList = state.citizenReportsList;
+                renderCitizenReports();
+            }
+            if (state.currentWeatherState) {
+                currentWeatherState = state.currentWeatherState;
+                renderWeatherUI();
+            }
+            if (state.rainMm !== undefined) {
+                applyRainValueUI(state.rainMm);
+            }
+            if (Array.isArray(state.activityLogs)) {
+                activityLogs = state.activityLogs;
+                renderActivityLogs();
+            }
+
+            if (state.updatedAtTime) {
+                updateCitizenSyncBadge(state.updatedAtTime);
+            }
+
+            if (notifyCitizen) {
+                showToast(state.lastMessage || "เจ้าหน้าที่ได้อัปเดตข้อมูลสถานการณ์ล่าสุด", `ซิงค์สด (${state.sender || 'ศูนย์ควบคุม'})`);
+                playAlertSound();
+            }
+        }
+
+        function checkMasterStatePolling() {
+            try {
+                const raw = localStorage.getItem('klr_master_shared_state');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && parsed.version > lastKnownMasterVersion) {
+                        applyMasterSharedState(parsed, true);
+                    }
+                }
+            } catch(e) {}
+        }
+
+        function updateCitizenSyncBadge(timeStr) {
+            const badge = document.getElementById('last-officer-sync-badge');
+            const ping = document.getElementById('citizen-sync-ping');
+            if (badge) {
+                badge.innerText = `อัปเดตล่าสุด ${timeStr}`;
+                badge.className = "text-[10px] font-mono font-extrabold text-white bg-emerald-600 px-2 py-0.5 rounded-lg shadow-sm whitespace-nowrap flex-shrink-0 transition-all";
+                setTimeout(() => {
+                    if (badge) badge.className = "text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0 transition-all";
+                }, 2000);
+            }
+            if (ping) {
+                ping.classList.remove('bg-emerald-400');
+                ping.classList.add('bg-cyan-400');
+                setTimeout(() => {
+                    if (ping) {
+                        ping.classList.remove('bg-cyan-400');
+                        ping.classList.add('bg-emerald-400');
+                    }
+                }, 2000);
+            }
+        }
+
         function broadcastDataChange(type, payload, messageStr) {
+            const masterState = saveMasterSharedState(messageStr);
             const syncData = {
                 type: type,
                 payload: payload,
-                sender: isSuperAdminLoggedIn ? "Super Admin" : "เจ้าหน้าที่ กู้ภัย",
+                masterState: masterState,
+                sender: isSuperAdminLoggedIn ? "Super Admin" : (isOfficerLoggedIn ? "เจ้าหน้าที่กู้ภัย" : "ประชาชน"),
                 timestamp: new Date().toISOString(),
                 message: messageStr
             };
-            realtimeChannel.postMessage(syncData);
+            if (realtimeChannel) {
+                try { realtimeChannel.postMessage(syncData); } catch(e) {}
+            }
             try { localStorage.setItem('klr_flood_sync_event', JSON.stringify(syncData)); } catch(e) {}
         }
 
         function handleIncomingRealtimeUpdate(data) {
+            if (data.masterState && data.masterState.version > lastKnownMasterVersion) {
+                applyMasterSharedState(data.masterState, true);
+                return;
+            }
+
             showToast(data.message || "อัปเดตข้อมูลเรียลไทม์");
             playAlertSound();
 
@@ -1777,6 +1932,9 @@
         function dismissAnnouncement(idx) {
             announcementsList.splice(idx, 1);
             renderAnnouncements();
+            if (isOfficerLoggedIn || isSuperAdminLoggedIn) {
+                broadcastDataChange('ANNOUNCEMENT', { list: announcementsList }, "เจ้าหน้าที่อัปเดตป้ายประกาศฉุกเฉิน");
+            }
         }
 
         // Officer & Super Admin Shared Functions for Weather, Parameters & Broadcast
@@ -2344,17 +2502,38 @@
             loadEvacueesFromLocal();
             loadCitizenReportsFromLocal();
             loadActivityLogsFromLocal();
+
             try {
-                const savedRain = localStorage.getItem('klr_rain_mm');
-                if (savedRain !== null && !isNaN(parseFloat(savedRain))) {
-                    applyRainValueUI(parseFloat(savedRain));
+                const savedMaster = localStorage.getItem('klr_master_shared_state');
+                if (savedMaster) {
+                    const parsedMaster = JSON.parse(savedMaster);
+                    applyMasterSharedState(parsedMaster, false);
+                } else {
+                    const savedRain = localStorage.getItem('klr_rain_mm');
+                    if (savedRain !== null && !isNaN(parseFloat(savedRain))) {
+                        applyRainValueUI(parseFloat(savedRain));
+                    }
+                    const savedAlert = localStorage.getItem('klr_alert_level');
+                    if (savedAlert) {
+                        applySimLevelUI(savedAlert);
+                    } else {
+                        applySimLevelUI('normal');
+                    }
+                    renderCanalsTelemetryUI();
                 }
-            } catch(e) {}
-            renderCanalsTelemetryUI();
-            applySimLevelUI('normal');
+            } catch(e) {
+                renderCanalsTelemetryUI();
+                applySimLevelUI('normal');
+            }
+
             updateLiveTime();
             fetchLiveWeather(false);
             fetchGovCanalTelemetry(false);
+
+            // Fast real-time polling (every 1.5 seconds) so citizens see any officer changes immediately
+            setInterval(() => {
+                checkMasterStatePolling();
+            }, 1500);
 
             setInterval(() => {
                 updateLiveTime();
@@ -2973,7 +3152,10 @@
             showCustomConfirm("ต้องการลบจุดวัดระดับน้ำคลองนี้ใช่หรือไม่?", () => {
                 const removed = canalsTelemetryData.splice(idx, 1);
                 renderCanalsTelemetryUI();
-                if (removed.length > 0) recordActivityLog(`ลบข้อมูลลำคลอง: ${removed[0].name}`);
+                if (removed.length > 0) {
+                    recordActivityLog(`ลบข้อมูลลำคลอง: ${removed[0].name}`);
+                    broadcastDataChange('CANAL_UPDATE', { canalsData: canalsTelemetryData }, `ลบจุดวัดน้ำคลอง: ${removed[0].name}`);
+                }
                 showToast("ลบข้อมูลคลองเรียบร้อย");
             });
         }
