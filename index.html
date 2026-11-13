@@ -21,6 +21,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts (Prompt) -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- MQTT.js for Cross-Device Cloud Realtime Sync -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     
     <script>
         tailwind.config = {
@@ -469,16 +471,19 @@
     <div class="max-w-md mx-auto px-3 pt-3 space-y-3.5">
 
         <!-- LIVE CITIZEN REALTIME SYNC BAR -->
-        <div class="bg-white/90 backdrop-blur border border-emerald-200 rounded-2xl px-3 py-2 shadow-sm flex items-center justify-between gap-2 text-[11px]">
+        <div class="bg-white/95 backdrop-blur border border-emerald-300 rounded-2xl px-3 py-2 shadow-sm flex items-center justify-between gap-2 text-[11px]">
             <div class="flex items-center gap-2 min-w-0">
                 <span class="relative flex h-2.5 w-2.5 flex-shrink-0">
                     <span id="citizen-sync-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    <span id="citizen-sync-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
-                <span class="font-bold text-slate-700 truncate">ซิงค์ข้อมูลสดจากเจ้าหน้าที่กู้ภัยอัตโนมัติ</span>
+                <div class="truncate">
+                    <span id="cloud-status-text" class="font-extrabold text-slate-800">เชื่อมต่อระบบซิงค์สดเรียลไทม์</span>
+                    <span id="last-officer-msg-preview" class="block text-[9px] text-slate-500 truncate">รับข้อมูลอัตโนมัติทันทีเมื่อเจ้าหน้าที่อัปเดต</span>
+                </div>
             </div>
-            <span id="last-officer-sync-badge" class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0">
-                พร้อมรับข้อมูลสด
+            <span id="last-officer-sync-badge" class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0">
+                ออนไลน์สด
             </span>
         </div>
 
@@ -1559,6 +1564,11 @@
 
         // Master Shared State & Real-time Synchronization Engine
         let lastKnownMasterVersion = 0;
+        const clientDeviceId = 'klr_client_' + Math.random().toString(36).substring(2, 10);
+        const CLOUD_TOPIC_STATE = 'narathiwat/bacho/baretai/ban_khlorae_moo3/live_state_v2';
+        let mqttClient = null;
+        let isCloudConnected = false;
+
         const realtimeChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('ban_khlorae_flood_channel') : null;
 
         if (realtimeChannel) {
@@ -1576,6 +1586,47 @@
                 try { applyMasterSharedState(JSON.parse(e.newValue), true); } catch(err){}
             }
         });
+
+        // Cloud Real-time Sync via WebSockets (MQTT) for Cross-Device Instant Updates
+        function initCloudRealtimeSync() {
+            if (typeof mqtt === 'undefined') return;
+            try {
+                mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+                    clientId: clientDeviceId,
+                    clean: true,
+                    connectTimeout: 5000,
+                    reconnectPeriod: 3000
+                });
+
+                mqttClient.on('connect', () => {
+                    isCloudConnected = true;
+                    const statusText = document.getElementById('cloud-status-text');
+                    if (statusText) statusText.innerText = "เชื่อมต่อศูนย์ข้อมูลสด (Cloud Live)";
+                    mqttClient.subscribe(CLOUD_TOPIC_STATE, { qos: 1 });
+                });
+
+                mqttClient.on('message', (topic, message) => {
+                    if (topic === CLOUD_TOPIC_STATE) {
+                        try {
+                            const data = JSON.parse(message.toString());
+                            if (data && data.senderDeviceId !== clientDeviceId) {
+                                if (data.masterState && data.masterState.version > lastKnownMasterVersion) {
+                                    // Save to local storage as well so page reloads keep latest state
+                                    try {
+                                        localStorage.setItem('klr_master_shared_state', JSON.stringify(data.masterState));
+                                    } catch(e) {}
+                                    applyMasterSharedState(data.masterState, true);
+                                }
+                            }
+                        } catch (err) {}
+                    }
+                });
+
+                mqttClient.on('offline', () => {
+                    isCloudConnected = false;
+                });
+            } catch (e) {}
+        }
 
         function saveMasterSharedState(messageStr = "เจ้าหน้าที่อัปเดตข้อมูลล่าสุด") {
             const nowTimeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + " น.";
@@ -1613,7 +1664,7 @@
                 localStorage.setItem('klr_weather_state', JSON.stringify(currentWeatherState));
             } catch(e) {}
 
-            updateCitizenSyncBadge(nowTimeStr);
+            updateCitizenSyncBadge(nowTimeStr, messageStr);
             return masterState;
         }
 
@@ -1658,12 +1709,75 @@
             }
 
             if (state.updatedAtTime) {
-                updateCitizenSyncBadge(state.updatedAtTime);
+                updateCitizenSyncBadge(state.updatedAtTime, state.lastMessage);
             }
 
             if (notifyCitizen) {
-                showToast(state.lastMessage || "เจ้าหน้าที่ได้อัปเดตข้อมูลสถานการณ์ล่าสุด", `ซิงค์สด (${state.sender || 'ศูนย์ควบคุม'})`);
+                showToast(state.lastMessage || "เจ้าหน้าที่ได้อัปเดตข้อมูลสถานการณ์ล่าสุด", `แจ้งเตือนสด (${state.sender || 'ศูนย์ควบคุม'})`);
                 playAlertSound();
+            }
+        }
+
+        function checkMasterStatePolling() {
+            try {
+                const raw = localStorage.getItem('klr_master_shared_state');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && parsed.version > lastKnownMasterVersion) {
+                        applyMasterSharedState(parsed, true);
+                    }
+                }
+            } catch(e) {}
+        }
+
+        function updateCitizenSyncBadge(timeStr, lastMsg = "") {
+            const badge = document.getElementById('last-officer-sync-badge');
+            const ping = document.getElementById('citizen-sync-ping');
+            const preview = document.getElementById('last-officer-msg-preview');
+            if (preview && lastMsg) {
+                preview.innerText = `ล่าสุด: ${lastMsg}`;
+                preview.className = "block text-[10px] text-emerald-700 font-semibold truncate";
+            }
+            if (badge) {
+                badge.innerText = `อัปเดต ${timeStr}`;
+                badge.className = "text-[10px] font-mono font-extrabold text-white bg-emerald-600 px-2 py-1 rounded-lg shadow-sm whitespace-nowrap flex-shrink-0 transition-all scale-105";
+                setTimeout(() => {
+                    if (badge) badge.className = "text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 whitespace-nowrap flex-shrink-0 transition-all";
+                }, 2500);
+            }
+            if (ping) {
+                ping.classList.remove('bg-emerald-400');
+                ping.classList.add('bg-cyan-400');
+                setTimeout(() => {
+                    if (ping) {
+                        ping.classList.remove('bg-cyan-400');
+                        ping.classList.add('bg-emerald-400');
+                    }
+                }, 2500);
+            }
+        }
+
+        function broadcastDataChange(type, payload, messageStr) {
+            const masterState = saveMasterSharedState(messageStr);
+            const syncData = {
+                type: type,
+                payload: payload,
+                masterState: masterState,
+                senderDeviceId: clientDeviceId,
+                sender: isSuperAdminLoggedIn ? "Super Admin" : (isOfficerLoggedIn ? "เจ้าหน้าที่กู้ภัย" : "ประชาชน"),
+                timestamp: new Date().toISOString(),
+                message: messageStr
+            };
+            if (realtimeChannel) {
+                try { realtimeChannel.postMessage(syncData); } catch(e) {}
+            }
+            try { localStorage.setItem('klr_flood_sync_event', JSON.stringify(syncData)); } catch(e) {}
+
+            // Publish retained state to Cloud MQTT Broker so all citizens on any device receive it immediately
+            if (mqttClient && isCloudConnected) {
+                try {
+                    mqttClient.publish(CLOUD_TOPIC_STATE, JSON.stringify(syncData), { qos: 1, retain: true });
+                } catch (e) {}
             }
         }
 
@@ -1821,7 +1935,6 @@
             activityLogs.unshift({ time: nowStr, actor: actor, text: actionText });
             saveActivityLogsToLocal();
             renderActivityLogs();
-            broadcastDataChange('ACTIVITY_SYNC', { logs: activityLogs }, actionText);
         }
 
         function renderActivityLogs() {
@@ -2529,8 +2642,19 @@
             updateLiveTime();
             fetchLiveWeather(false);
             fetchGovCanalTelemetry(false);
+            initCloudRealtimeSync();
 
-            // Fast real-time polling (every 1.5 seconds) so citizens see any officer changes immediately
+            // Fast real-time polling (every 1 second) + visibility check so citizens see any officer changes immediately
+            setInterval(() => {
+                checkMasterStatePolling();
+            }, 1000);
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    checkMasterStatePolling();
+                }
+            });
+
             setInterval(() => {
                 checkMasterStatePolling();
             }, 1500);
