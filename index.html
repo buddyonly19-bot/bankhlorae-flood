@@ -328,8 +328,48 @@
                     <label class="block text-[10px] text-slate-400 mb-1">ส่งข้อความบรอดแคสต์ฉุกเฉินถึงทุกคน (Push Notification)</label>
                     <div class="flex gap-1.5">
                         <input type="text" id="admin-broadcast-msg" placeholder="ข้อความแจ้งเตือนด่วนกระทันหัน..." class="flex-1 min-w-0 p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
-                        <button onclick="adminSendBroadcast()" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
-                            <i class="fa-solid fa-paper-plane"></i> ส่งประกาศ
+                        <button onclick="adminSendBroadcast('emergency')" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
+                            <i class="fa-solid fa-paper-plane"></i> ส่งฉุกเฉิน
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800">
+                    <label class="block text-[10px] text-cyan-300 mb-1">ส่งประกาศข่าวสารทั่วไป (ประชาสัมพันธ์ชุมชน)</label>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="admin-general-broadcast-msg" placeholder="ข้อความประชาสัมพันธ์ทั่วไป..." class="flex-1 min-w-0 p-2 bg-slate-900 border border-slate-700 rounded-xl text-white text-xs">
+                        <button onclick="adminSendBroadcast('general')" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
+                            <i class="fa-solid fa-bullhorn"></i> ส่งประกาศทั่วไป
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MANAGE ACTIVE ANNOUNCEMENTS IN SUPER ADMIN -->
+                <div class="pt-2 border-t border-slate-800 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-list-ul"></i> รายการป้ายประกาศที่กำลังแสดงผล
+                        </label>
+                        <button onclick="clearAllAnnouncements()" class="text-[9px] text-red-400 hover:underline">ล้างประกาศทั้งหมด</button>
+                    </div>
+                    <div id="admin-announcements-manage-list" class="max-h-28 overflow-y-auto space-y-1 bg-slate-900 p-2 rounded-xl border border-slate-800 text-[10px]">
+                        <div class="text-slate-500 text-center py-1">ไม่มีป้ายประกาศที่กำลังแสดงผล</div>
+                    </div>
+                </div>
+
+                <!-- SUPER ADMIN EMERGENCY CONTACTS MANAGEMENT -->
+                <div class="pt-2 border-t border-slate-800 space-y-1.5">
+                    <label class="block text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-phone-plus"></i> จัดการเพิ่มเบอร์โทรสายด่วนฉุกเฉิน (Super Admin)
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                        <input type="text" id="admin-contact-name" placeholder="ชื่อ/หน่วยงาน (เช่น อบต.บาเระใต้)" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                        <input type="text" id="admin-contact-sub" placeholder="รายละเอียด (เช่น ศูนย์ช่วยเหลือ 24 ชม.)" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                    </div>
+                    <div class="flex gap-1.5">
+                        <input type="tel" id="admin-contact-phone" placeholder="เบอร์โทรศัพท์ (เช่น 073-571-XXX หรือ 1669)" class="flex-1 min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                        <button onclick="adminAddEmergencyContact()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold rounded-xl whitespace-nowrap transition flex items-center gap-1 text-[11px] flex-shrink-0">
+                            <i class="fa-solid fa-plus"></i> เพิ่มเบอร์ด่วน
                         </button>
                     </div>
                 </div>
@@ -413,46 +453,37 @@
 
                 <div class="bg-slate-900/80 p-2.5 rounded-xl border border-red-500/30 space-y-1.5">
                     <label class="block text-[10px] text-red-300 font-bold flex items-center gap-1">
-                        <i class="fa-solid fa-bullhorn"></i> ส่งข้อความประกาศแจ้งเตือนฉุกเฉินถึงทุกคน
+                        <i class="fa-solid fa-triangle-exclamation"></i> ส่งข้อความประกาศแจ้งเตือนฉุกเฉินถึงทุกคน
                     </label>
                     <div class="flex gap-1.5">
                         <input type="text" id="officer-broadcast-msg" placeholder="พิมพ์ข้อความประกาศแจ้งเตือนด่วน..." class="flex-1 min-w-0 p-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-red-400">
-                        <button onclick="officerSendBroadcast()" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0 shadow">
-                            <i class="fa-solid fa-paper-plane"></i> ส่งประกาศ
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pt-2 border-t border-white/10 text-xs space-y-1.5">
-                <div class="flex items-center justify-between gap-2 bg-slate-900/90 p-2.5 rounded-xl border border-cyan-500/30 mb-2">
-                    <div class="min-w-0">
-                        <p class="font-extrabold text-cyan-300 text-[11px] flex items-center gap-1 truncate">
-                            <i class="fa-solid fa-satellite-dish"></i> โหมดซิงค์ระดับน้ำคลองจากระบบรัฐ
-                        </p>
-                        <p id="gov-sync-mode-desc" class="text-[9px] text-slate-300 truncate">ซิงค์ข้อมูลอัตโนมัติ (ThaiWater / กรมชลประทาน)</p>
-                    </div>
-                    <div class="flex items-center gap-1.5 flex-shrink-0">
-                        <button type="button" onclick="toggleGovAutoSyncMode()" id="gov-sync-toggle-btn" class="px-2.5 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-extrabold text-[10px] shadow transition whitespace-nowrap">
-                            Auto Gov: เปิด
-                        </button>
-                        <button type="button" onclick="fetchGovCanalTelemetry(true)" class="p-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold transition" title="ดึงข้อมูลรัฐเดี๋ยวนี้">
-                            <i class="fa-solid fa-rotate"></i>
+                        <button onclick="officerSendBroadcast('emergency')" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0 shadow">
+                            <i class="fa-solid fa-paper-plane"></i> ส่งฉุกเฉิน
                         </button>
                     </div>
                 </div>
 
-                <label class="block font-bold text-amber-300 text-[11px] flex items-center gap-1">
-                    <i class="fa-solid fa-water"></i> จัดการเพิ่ม / แก้ไขข้อมูลลำคลอง (Manual Override):
-                </label>
-                <div class="space-y-1">
-                    <input type="text" id="officer-canal-name" placeholder="ชื่อลำคลอง (เช่น คลองอาโลร์ฆือแล)" class="w-full min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
-                    <input type="text" id="officer-canal-desc" placeholder="คำอธิบาย/จุดเสี่ยง (เช่น ความจุสูงสุด 2.8m)" class="w-full min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
+                <div class="bg-slate-900/80 p-2.5 rounded-xl border border-cyan-500/30 space-y-1.5">
+                    <label class="block text-[10px] text-cyan-300 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-bullhorn"></i> ส่งประกาศข่าวสารทั่วไปถึงประชาชน
+                    </label>
                     <div class="flex gap-1.5">
-                        <input type="text" id="officer-canal-val" placeholder="ระดับน้ำ (เช่น 1.25)" class="flex-1 min-w-0 p-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-[11px] focus:outline-none focus:border-amber-400">
-                        <button onclick="officerAddCanal()" class="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0">
-                            <i class="fa-solid fa-plus"></i> เพิ่มคลอง
+                        <input type="text" id="officer-general-broadcast-msg" placeholder="เช่น แจกถุงยังชีพเวลา 14.00 น. ที่มัสยิด..." class="flex-1 min-w-0 p-2 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:outline-none focus:border-cyan-400">
+                        <button onclick="officerSendBroadcast('general')" class="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-extrabold rounded-xl transition whitespace-nowrap flex items-center gap-1 flex-shrink-0 shadow">
+                            <i class="fa-solid fa-bullhorn"></i> ส่งประกาศทั่วไป
                         </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700/80 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-rectangle-list"></i> จัดการป้ายประกาศปัจจุบัน
+                        </label>
+                        <button onclick="clearAllAnnouncements()" class="text-[9px] text-red-300 hover:underline">ล้างทั้งหมด</button>
+                    </div>
+                    <div id="officer-announcements-manage-list" class="max-h-28 overflow-y-auto space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800 text-[10px]">
+                        <div class="text-slate-400 text-center py-1">ไม่มีป้ายประกาศที่กำลังแสดงผล</div>
                     </div>
                 </div>
             </div>
@@ -906,80 +937,17 @@
         <!-- TAB 4: EMERGENCY CONTACTS -->
         <div id="tab-contacts" class="tab-pane space-y-3 hidden">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
-                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-phone-volume text-red-600"></i> เบอร์โทรสายด่วนฉุกเฉิน บ้านคลอแระ
-                </h3>
-
-                <div id="emergency-contacts-list" class="space-y-2 text-xs">
-                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
-                        <div class="min-w-0">
-                            <p class="font-bold text-slate-900 contact-title truncate">แบลี (ประธานเยาวชน)</p>
-                            <p class="text-[10px] text-slate-500 contact-sub truncate">ศูนย์ประสานงานฉุกเฉินเยาวชน (088-682-2347)</p>
-                        </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <a href="tel:0886822347" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
-                                <i class="fa-solid fa-phone"></i> โทรเลย
-                            </a>
-                            <button onclick="adminDeleteContact(this)" class="admin-delete-contact-btn hidden px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
-                        <div class="min-w-0">
-                            <p class="font-bold text-slate-900 contact-title truncate">นัสรี (หัวหน้าทีมกู้ภัย)</p>
-                            <p class="text-[10px] text-slate-500 contact-sub truncate">ทีมกู้ภัยเยาวชนบ้านคลอแระ 24 ชม. (062-189-1711)</p>
-                        </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <a href="tel:0621891711" class="contact-tel-link px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
-                                <i class="fa-solid fa-phone"></i> โทรเลย
-                            </a>
-                            <button onclick="adminDeleteContact(this)" class="admin-delete-contact-btn hidden px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
-                        <div class="min-w-0">
-                            <p class="font-bold text-slate-900 contact-title truncate">โรงพยาบาลส่งเสริมสุขภาพ ต.บาเระใต้</p>
-                            <p class="text-[10px] text-slate-500 contact-sub truncate">หน่วยฉุกเฉินทางการแพทย์ รพ.สต. (073-571-000)</p>
-                        </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <a href="tel:073571000" class="contact-tel-link px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
-                                <i class="fa-solid fa-phone"></i> โทรเลย
-                            </a>
-                            <button onclick="adminDeleteContact(this)" class="admin-delete-contact-btn hidden px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
-                        <div class="min-w-0">
-                            <p class="font-bold text-slate-900 contact-title truncate">สายด่วนนิรภัย กรมป้องกันและบรรเทาสาธารณภัย (ปภ.)</p>
-                            <p class="text-[10px] text-slate-500 contact-sub truncate">แจ้งเหตุสาธารณภัยและอุทกภัยทั่วประเทศ 24 ชม.</p>
-                        </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <a href="tel:1784" class="contact-tel-link px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
-                                <i class="fa-solid fa-phone"></i> โทร 1784
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
-                        <div class="min-w-0">
-                            <p class="font-bold text-slate-900 contact-title truncate">สถาบันการแพทย์ฉุกเฉินแห่งชาติ (กู้ชีพ 1669)</p>
-                            <p class="text-[10px] text-slate-500 contact-sub truncate">เรียกรถพยาบาลฉุกเฉิน เจ็บป่วยวิกฤต 24 ชม.</p>
-                        </div>
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <a href="tel:1669" class="contact-tel-link px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
-                                <i class="fa-solid fa-truck-medical"></i> โทร 1669
-                            </a>
-                        </div>
-                    </div>
+                <div class="flex items-center justify-between gap-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-phone-volume text-red-600 flex-shrink-0"></i>
+                        <span class="truncate">เบอร์โทรสายด่วนฉุกเฉิน บ้านคลอแระ</span>
+                    </h3>
+                    <button onclick="openAdminAddContactDialog()" id="tab-admin-add-contact-btn" class="admin-delete-contact-btn hidden px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold rounded-full text-[10px] shadow flex items-center gap-1 transition whitespace-nowrap flex-shrink-0">
+                        <i class="fa-solid fa-plus"></i> เพิ่มเบอร์โทรด่วน
+                    </button>
                 </div>
+
+                <div id="emergency-contacts-list" class="space-y-2 text-xs"></div>
             </div>
 
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
@@ -1366,6 +1334,48 @@
         let announcementsList = [];
         let evacueesList = [];
         let citizenReportsList = [];
+        let emergencyContactsData = [
+            {
+                id: "contact_1",
+                title: "แบลี (ประธานเยาวชน)",
+                sub: "ศูนย์ประสานงานฉุกเฉินเยาวชน (088-682-2347)",
+                phone: "0886822347",
+                btnText: "โทรเลย",
+                color: "emerald"
+            },
+            {
+                id: "contact_2",
+                title: "นัสรี (หัวหน้าทีมกู้ภัย)",
+                sub: "ทีมกู้ภัยเยาวชนบ้านคลอแระ 24 ชม. (062-189-1711)",
+                phone: "0621891711",
+                btnText: "โทรเลย",
+                color: "emerald"
+            },
+            {
+                id: "contact_3",
+                title: "โรงพยาบาลส่งเสริมสุขภาพ ต.บาเระใต้",
+                sub: "หน่วยฉุกเฉินทางการแพทย์ รพ.สต. (073-571-000)",
+                phone: "073571000",
+                btnText: "โทรเลย",
+                color: "blue"
+            },
+            {
+                id: "contact_4",
+                title: "สายด่วนนิรภัย กรมป้องกันและบรรเทาสาธารณภัย (ปภ.)",
+                sub: "แจ้งเหตุสาธารณภัยและอุทกภัยทั่วประเทศ 24 ชม.",
+                phone: "1784",
+                btnText: "โทร 1784",
+                color: "amber"
+            },
+            {
+                id: "contact_5",
+                title: "สถาบันการแพทย์ฉุกเฉินแห่งชาติ (กู้ชีพ 1669)",
+                sub: "เรียกรถพยาบาลฉุกเฉิน เจ็บป่วยวิกฤต 24 ชม.",
+                phone: "1669",
+                btnText: "โทร 1669",
+                color: "rose"
+            }
+        ];
         let currentShelterFilter = "all";
         let isGovAutoSyncEnabled = true;
         let autoRefreshSecondsLeft = 30;
@@ -1733,6 +1743,7 @@
                 zonesRiskData: zonesRiskData || [],
                 evacueesList: evacueesList || [],
                 citizenReportsList: citizenReportsList || [],
+                emergencyContactsData: emergencyContactsData || [],
                 currentWeatherState: currentWeatherState,
                 rainMm: currentRainVal,
                 sosCount: sosCount || 0,
@@ -1744,6 +1755,7 @@
                 localStorage.setItem('klr_zones_risk_data', JSON.stringify(zonesRiskData));
                 localStorage.setItem('klr_canals_telemetry_data', JSON.stringify(canalsTelemetryData));
                 localStorage.setItem('klr_announcements_data', JSON.stringify(announcementsList));
+                localStorage.setItem('klr_emergency_contacts', JSON.stringify(emergencyContactsData));
                 localStorage.setItem('klr_alert_level', currentAlertLevel);
                 localStorage.setItem('klr_weather_state', JSON.stringify(currentWeatherState));
             } catch(e) {}
@@ -1771,6 +1783,11 @@
             if (Array.isArray(state.zonesRiskData) && state.zonesRiskData.length > 0) {
                 zonesRiskData = state.zonesRiskData;
                 renderZonesListUI();
+            }
+            if (Array.isArray(state.emergencyContactsData) && state.emergencyContactsData.length > 0) {
+                emergencyContactsData = state.emergencyContactsData;
+                saveEmergencyContactsToLocal();
+                renderEmergencyContactsUI();
             }
             evacueesList = Array.isArray(state.evacueesList) ? state.evacueesList : [];
             renderEvacueesList();
@@ -1932,6 +1949,12 @@
                     saveActivityLogsToLocal();
                     renderActivityLogs();
                 }
+            } else if (data.type === 'CONTACTS_SYNC') {
+                if (data.payload && Array.isArray(data.payload.contacts)) {
+                    emergencyContactsData = data.payload.contacts;
+                    saveEmergencyContactsToLocal();
+                    renderEmergencyContactsUI();
+                }
             }
         }
 
@@ -2068,37 +2091,91 @@
         // Announcements Banner
         function renderAnnouncements() {
             const container = document.getElementById('announcement-container');
-            if (!container) return;
-            if (announcementsList.length === 0) {
-                container.classList.add('hidden');
-                container.innerHTML = '';
-                return;
+            const officerManageList = document.getElementById('officer-announcements-manage-list');
+            const adminManageList = document.getElementById('admin-announcements-manage-list');
+
+            if (container) {
+                if (announcementsList.length === 0) {
+                    container.classList.add('hidden');
+                    container.innerHTML = '';
+                } else {
+                    container.classList.remove('hidden');
+                    container.innerHTML = announcementsList.map((ann, idx) => {
+                        const isGeneral = ann.category === 'general';
+                        const boxClass = isGeneral
+                            ? "bg-gradient-to-r from-cyan-700 via-blue-700 to-indigo-700 text-white p-3 rounded-2xl shadow-lg flex items-center justify-between gap-2 border border-cyan-300"
+                            : "bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white p-3 rounded-2xl shadow-lg flex items-center justify-between gap-2 border border-red-300";
+                        const badgeTitle = isGeneral
+                            ? `📢 ประกาศข่าวสารทั่วไป (${ann.time})`
+                            : `🚨 ประกาศฉุกเฉิน (${ann.time})`;
+                        const iconClass = isGeneral ? "fa-solid fa-circle-info" : "fa-solid fa-bullhorn";
+
+                        return `
+                        <div class="${boxClass}">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 ${isGeneral ? '' : 'animate-pulse'}">
+                                    <i class="${iconClass} text-sm"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-[10px] font-extrabold ${isGeneral ? 'text-cyan-200' : 'text-amber-200'} uppercase tracking-wider">${badgeTitle}</p>
+                                    <p class="text-xs font-bold leading-snug break-words">${ann.text}</p>
+                                </div>
+                            </div>
+                            <button onclick="dismissAnnouncement(${idx})" class="text-white/80 hover:text-white px-2 py-1 text-xs flex-shrink-0" title="ซ่อน/ลบประกาศ">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        `;
+                    }).join('');
+                }
             }
-            container.classList.remove('hidden');
-            container.innerHTML = announcementsList.map((ann, idx) => `
-                <div class="bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white p-3 rounded-2xl shadow-lg flex items-center justify-between gap-2 border border-red-300">
-                    <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse">
-                            <i class="fa-solid fa-bullhorn text-sm"></i>
+
+            const renderManageHtml = () => {
+                if (announcementsList.length === 0) {
+                    return `<div class="text-slate-400 text-center py-1">ไม่มีป้ายประกาศที่กำลังแสดงผล</div>`;
+                }
+                return announcementsList.map((ann, idx) => {
+                    const tag = ann.category === 'general'
+                        ? `<span class="px-1.5 py-0.2 bg-cyan-500/20 text-cyan-300 rounded text-[9px] font-bold">ทั่วไป</span>`
+                        : `<span class="px-1.5 py-0.2 bg-red-500/20 text-red-300 rounded text-[9px] font-bold">ฉุกเฉิน</span>`;
+                    return `
+                        <div class="flex items-center justify-between gap-2 py-1 border-b border-slate-800/80">
+                            <div class="min-w-0 flex-1 truncate">
+                                ${tag} <span class="text-slate-200 ml-1">${ann.text}</span>
+                                <span class="text-[9px] text-slate-500 ml-1">(${ann.time})</span>
+                            </div>
+                            <button onclick="dismissAnnouncement(${idx})" class="text-red-400 hover:text-red-300 px-1.5 py-0.5 rounded bg-red-500/10 text-[9px] font-bold flex-shrink-0">
+                                <i class="fa-solid fa-trash-can"></i> ลบ
+                            </button>
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-[10px] font-extrabold text-amber-200 uppercase tracking-wider">ประกาศฉุกเฉิน (${ann.time})</p>
-                            <p class="text-xs font-bold leading-snug break-words">${ann.text}</p>
-                        </div>
-                    </div>
-                    <button onclick="dismissAnnouncement(${idx})" class="text-white/80 hover:text-white px-2 py-1 text-xs flex-shrink-0">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            `).join('');
+                    `;
+                }).join('');
+            };
+
+            if (officerManageList) officerManageList.innerHTML = renderManageHtml();
+            if (adminManageList) adminManageList.innerHTML = renderManageHtml();
         }
 
         function dismissAnnouncement(idx) {
             announcementsList.splice(idx, 1);
             renderAnnouncements();
             if (isOfficerLoggedIn || isSuperAdminLoggedIn) {
-                broadcastDataChange('ANNOUNCEMENT', { list: announcementsList }, "เจ้าหน้าที่อัปเดตป้ายประกาศฉุกเฉิน");
+                broadcastDataChange('ANNOUNCEMENT', { list: announcementsList }, "อัปเดตป้ายประกาศ");
             }
+        }
+
+        function clearAllAnnouncements() {
+            if (announcementsList.length === 0) {
+                showCustomMessage("ไม่มีป้ายประกาศที่กำลังแสดงผลในขณะนี้");
+                return;
+            }
+            showCustomConfirm("ต้องการล้างป้ายประกาศทั้งหมดออกจากหน้าเว็บใช่หรือไม่?", () => {
+                announcementsList = [];
+                renderAnnouncements();
+                recordActivityLog("ล้างป้ายประกาศทั้งหมดออกจากหน้าแรก");
+                broadcastDataChange('ANNOUNCEMENT', { list: [] }, "ล้างป้ายประกาศทั้งหมดแล้ว");
+                showToast("ล้างป้ายประกาศทั้งหมดเรียบร้อยแล้ว");
+            });
         }
 
         // Officer & Super Admin Shared Functions for Weather, Parameters & Broadcast
@@ -2152,20 +2229,22 @@
             showToast("อัปเดตสภาพอากาศด้วยตนเองเรียบร้อยแล้ว");
         }
 
-        function officerSendBroadcast() {
-            const msgInput = document.getElementById('officer-broadcast-msg');
+        function officerSendBroadcast(category = 'emergency') {
+            const inputId = category === 'general' ? 'officer-general-broadcast-msg' : 'officer-broadcast-msg';
+            const msgInput = document.getElementById(inputId);
             const text = msgInput ? msgInput.value.trim() : '';
             if (!text) {
-                showCustomMessage("กรุณาพิมพ์ข้อความประกาศฉุกเฉินก่อนกดส่ง");
+                showCustomMessage(category === 'general' ? "กรุณาพิมพ์ข้อความประกาศทั่วไปก่อนกดส่ง" : "กรุณาพิมพ์ข้อความประกาศฉุกเฉินก่อนกดส่ง");
                 return;
             }
             const nowStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + " น.";
-            announcementsList.unshift({ text: text, time: nowStr });
+            announcementsList.unshift({ text: text, time: nowStr, category: category });
             msgInput.value = '';
             renderAnnouncements();
-            recordActivityLog(`เจ้าหน้าที่ประกาศแจ้งเตือนฉุกเฉิน: "${text}"`);
-            broadcastDataChange('ANNOUNCEMENT', { list: announcementsList }, `📢 ประกาศด่วนจากเจ้าหน้าที่: ${text}`);
-            showToast("ส่งประกาศแจ้งเตือนฉุกเฉินถึงทุกคนแล้ว!");
+            const label = category === 'general' ? 'ประกาศข่าวสารทั่วไป' : 'ประกาศแจ้งเตือนฉุกเฉิน';
+            recordActivityLog(`เจ้าหน้าที่ส่ง${label}: "${text}"`);
+            broadcastDataChange('ANNOUNCEMENT', { list: announcementsList }, `📢 ${label}จากเจ้าหน้าที่: ${text}`);
+            showToast(`ส่ง${label}ถึงทุกคนแล้ว!`);
         }
 
         // Super Admin Functions
@@ -2212,20 +2291,22 @@
             showToast("อัปเดตสภาพอากาศด้วยตนเองเรียบร้อยแล้ว");
         }
 
-        function adminSendBroadcast() {
-            const msgInput = document.getElementById('admin-broadcast-msg');
-            const text = msgInput.value.trim();
+        function adminSendBroadcast(category = 'emergency') {
+            const inputId = category === 'general' ? 'admin-general-broadcast-msg' : 'admin-broadcast-msg';
+            const msgInput = document.getElementById(inputId);
+            const text = msgInput ? msgInput.value.trim() : '';
             if (!text) {
-                showCustomMessage("กรุณาพิมพ์ข้อความประกาศฉุกเฉินก่อนกดส่ง");
+                showCustomMessage(category === 'general' ? "กรุณาพิมพ์ข้อความประกาศทั่วไปก่อนกดส่ง" : "กรุณาพิมพ์ข้อความประกาศฉุกเฉินก่อนกดส่ง");
                 return;
             }
             const nowStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + " น.";
-            announcementsList.unshift({ text: text, time: nowStr });
+            announcementsList.unshift({ text: text, time: nowStr, category: category });
             msgInput.value = '';
             renderAnnouncements();
-            recordActivityLog(`ประกาศแจ้งเตือนฉุกเฉิน: "${text}"`);
-            broadcastDataChange('ANNOUNCEMENT', { list: announcementsList }, `📢 ประกาศด่วน: ${text}`);
-            showToast("ส่งประกาศแจ้งเตือนฉุกเฉินถึงทุกคนแล้ว!");
+            const label = category === 'general' ? 'ประกาศข่าวสารทั่วไป' : 'ประกาศแจ้งเตือนฉุกเฉิน';
+            recordActivityLog(`Super Admin ส่ง${label}: "${text}"`);
+            broadcastDataChange('ANNOUNCEMENT', { list: announcementsList }, `📢 ${label}: ${text}`);
+            showToast(`ส่ง${label}ถึงทุกคนแล้ว!`);
         }
 
         function adminExportEvacueesData() {
@@ -2666,6 +2747,7 @@
             loadEvacueesFromLocal();
             loadCitizenReportsFromLocal();
             loadActivityLogsFromLocal();
+            loadEmergencyContactsFromLocal();
 
             try {
                 const savedMaster = localStorage.getItem('klr_master_shared_state');
@@ -2804,6 +2886,7 @@
                 renderCanalsTelemetryUI();
                 renderEvacueesList();
                 renderCitizenReports();
+                renderAnnouncements();
                 recordActivityLog("เข้าสู่ระบบโหมดเจ้าหน้าที่กู้ภัย");
                 showToast("เข้าสู่โหมดเจ้าหน้าที่กู้ภัยเรียบร้อยแล้ว");
             } else {
@@ -2842,6 +2925,8 @@
                 renderCanalsTelemetryUI();
                 renderEvacueesList();
                 renderCitizenReports();
+                renderEmergencyContactsUI();
+                renderAnnouncements();
                 recordActivityLog("เข้าสู่ระบบโหมดผู้ดูแลระบบสูงสุด (Super Admin)");
                 showToast("เข้าสู่ระบบ Super Admin เรียบร้อยแล้ว!");
             } else {
@@ -2855,6 +2940,7 @@
                 document.getElementById('super-admin-panel').classList.add('hidden');
                 if (!isOfficerLoggedIn) {
                     document.getElementById('warning-level-selector').classList.add('hidden');
+                    document.getElementById('officer-action-timeline-card')?.classList.remove('hidden');
                     document.getElementById('officer-action-timeline-card')?.classList.add('hidden');
                     document.querySelectorAll('.admin-delete-contact-btn, .officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-hh-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.add('hidden'));
                     const preview = document.getElementById('last-officer-msg-preview');
@@ -2862,6 +2948,8 @@
                         preview.innerText = "ซิงค์ข้อมูลสถานการณ์น้ำอัตโนมัติแบบเรียลไทม์";
                         preview.className = "block text-[9px] text-slate-500 truncate";
                     }
+                } else {
+                    document.querySelectorAll('.admin-delete-contact-btn').forEach(b => b.classList.add('hidden'));
                 }
                 document.getElementById('admin-btn-text').innerText = "Admin";
                 document.getElementById('admin-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-800 hover:bg-slate-900 text-amber-300 text-xs font-bold border border-amber-400/40 flex items-center gap-1 transition";
@@ -2869,6 +2957,7 @@
                 renderCanalsTelemetryUI();
                 renderEvacueesList();
                 renderCitizenReports();
+                renderEmergencyContactsUI();
                 showToast("ออกจากระบบ Super Admin แล้ว");
             });
         }
@@ -3347,10 +3436,221 @@
                 showToast("ลบข้อมูลคลองเรียบร้อย");
             });
         }
-        
-        function adminDeleteContact(btn) {
-            showCustomConfirm("ต้องการลบเบอร์โทรสายด่วนนี้ใช่หรือไม่?", () => {
-                btn.closest('.contact-item').remove();
+
+        // Emergency Contacts Management (Super Admin Only)
+        function saveEmergencyContactsToLocal() {
+            try { localStorage.setItem('klr_emergency_contacts', JSON.stringify(emergencyContactsData)); } catch (e) {}
+        }
+
+        function loadEmergencyContactsFromLocal() {
+            try {
+                const saved = localStorage.getItem('klr_emergency_contacts');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        emergencyContactsData = parsed;
+                    }
+                }
+            } catch (e) {}
+            renderEmergencyContactsUI();
+        }
+
+        function renderEmergencyContactsUI() {
+            const listEl = document.getElementById('emergency-contacts-list');
+            const tabAddBtn = document.getElementById('tab-admin-add-contact-btn');
+            if (tabAddBtn) {
+                if (isSuperAdminLoggedIn) tabAddBtn.classList.remove('hidden');
+                else tabAddBtn.classList.add('hidden');
+            }
+            if (!listEl) return;
+
+            const showAdminBtns = isSuperAdminLoggedIn ? '' : 'hidden';
+
+            listEl.innerHTML = emergencyContactsData.map((c) => {
+                const cleanTel = String(c.phone || '').replace(/[^0-9+]/g, '');
+                let btnColorClass = "bg-emerald-600 hover:bg-emerald-700";
+                if (c.color === "blue") btnColorClass = "bg-blue-600 hover:bg-blue-700";
+                else if (c.color === "amber") btnColorClass = "bg-amber-600 hover:bg-amber-700";
+                else if (c.color === "rose") btnColorClass = "bg-rose-600 hover:bg-rose-700";
+
+                return `
+                    <div class="contact-item p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 contact-title truncate">${c.title}</p>
+                            <p class="text-[10px] text-slate-500 contact-sub truncate">${c.sub}</p>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0">
+                            <a href="tel:${cleanTel}" class="contact-tel-link px-3 py-1.5 ${btnColorClass} text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow transition whitespace-nowrap">
+                                <i class="fa-solid fa-phone"></i> ${c.btnText || 'โทรเลย'}
+                            </a>
+                            <button onclick="adminEditContactById('${c.id}')" class="admin-delete-contact-btn ${showAdminBtns} px-2 py-1.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg font-bold text-xs transition" title="แก้ไขเบอร์โทรด่วนนี้">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="adminDeleteContactById('${c.id}')" class="admin-delete-contact-btn ${showAdminBtns} px-2 py-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-bold text-xs transition" title="ลบเบอร์โทรด่วนนี้">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function adminEditContactById(contactId) {
+            if (!isSuperAdminLoggedIn) {
+                showCustomMessage("เฉพาะ Super Admin เท่านั้นที่สามารถแก้ไขเบอร์โทรสายด่วนได้");
+                return;
+            }
+            const target = emergencyContactsData.find(c => c.id === contactId);
+            if (!target) return;
+
+            showCustomFormDialog(
+                "แก้ไขเบอร์โทรสายด่วนฉุกเฉิน",
+                `ปรับปรุงข้อมูลของ "${target.title}"`,
+                [
+                    { id: 'edit-c-title', label: 'ชื่อผู้ติดต่อ / หน่วยงาน *', type: 'text', value: target.title },
+                    { id: 'edit-c-sub', label: 'คำอธิบาย / หน้าที่รับผิดชอบ', type: 'text', value: target.sub },
+                    { id: 'edit-c-phone', label: 'เบอร์โทรศัพท์ *', type: 'text', value: target.phone },
+                    {
+                        id: 'edit-c-color',
+                        label: 'สีปุ่มโทรออก',
+                        type: 'select',
+                        value: target.color || 'emerald',
+                        options: [
+                            { value: 'emerald', text: 'สีเขียว (กู้ภัย/ประสานงาน)' },
+                            { value: 'blue', text: 'สีน้ำเงิน (การแพทย์/รพ.)' },
+                            { value: 'amber', text: 'สีส้ม (สายด่วนภาครัฐ)' },
+                            { value: 'rose', text: 'สีแดงชมพู (ฉุกเฉินวิกฤต)' }
+                        ]
+                    }
+                ],
+                (vals) => {
+                    const title = (vals['edit-c-title'] || '').trim();
+                    const phoneRaw = (vals['edit-c-phone'] || '').trim();
+                    const sub = (vals['edit-c-sub'] || '').trim() || `สายด่วนฉุกเฉิน (${phoneRaw})`;
+                    const color = vals['edit-c-color'] || 'emerald';
+
+                    if (!title || !phoneRaw) {
+                        showCustomMessage("กรุณาระบุชื่อและเบอร์โทรศัพท์ให้ครบถ้วน");
+                        return;
+                    }
+
+                    target.title = title;
+                    target.sub = sub;
+                    target.phone = phoneRaw;
+                    target.btnText = phoneRaw.length <= 4 ? `โทร ${phoneRaw}` : 'โทรเลย';
+                    target.color = color;
+
+                    saveEmergencyContactsToLocal();
+                    renderEmergencyContactsUI();
+                    recordActivityLog(`Super Admin แก้ไขเบอร์โทรด่วน: ${title} (${phoneRaw})`);
+                    broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, `📞 อัปเดตเบอร์โทรสายด่วน: ${title}`);
+                    showToast(`แก้ไขข้อมูล "${title}" เรียบร้อยแล้ว`);
+                }
+            );
+        }
+
+        function adminAddEmergencyContact() {
+            if (!isSuperAdminLoggedIn) {
+                showCustomMessage("เฉพาะ Super Admin เท่านั้นที่สามารถเพิ่มเบอร์โทรสายด่วนได้");
+                return;
+            }
+            const nameInput = document.getElementById('admin-contact-name');
+            const subInput = document.getElementById('admin-contact-sub');
+            const phoneInput = document.getElementById('admin-contact-phone');
+
+            const title = (nameInput?.value || '').trim();
+            const phoneRaw = (phoneInput?.value || '').trim();
+            const sub = (subInput?.value || '').trim() || `สายด่วนฉุกเฉิน (${phoneRaw})`;
+
+            if (!title || !phoneRaw) {
+                showCustomMessage("กรุณากรอกชื่อผู้ติดต่อ/หน่วยงาน และเบอร์โทรศัพท์ให้ครบถ้วน");
+                return;
+            }
+
+            const newContact = {
+                id: 'contact_' + Date.now(),
+                title: title,
+                sub: sub,
+                phone: phoneRaw,
+                btnText: phoneRaw.length <= 4 ? `โทร ${phoneRaw}` : 'โทรเลย',
+                color: 'emerald'
+            };
+
+            emergencyContactsData.push(newContact);
+            if (nameInput) nameInput.value = '';
+            if (subInput) subInput.value = '';
+            if (phoneInput) phoneInput.value = '';
+
+            saveEmergencyContactsToLocal();
+            renderEmergencyContactsUI();
+            recordActivityLog(`Super Admin เพิ่มเบอร์โทรด่วน: ${title} (${phoneRaw})`);
+            broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, `📞 เพิ่มเบอร์โทรสายด่วนใหม่: ${title}`);
+            showToast(`เพิ่มเบอร์โทรด่วน "${title}" เรียบร้อยแล้ว`);
+        }
+
+        function openAdminAddContactDialog() {
+            if (!isSuperAdminLoggedIn) return;
+            showCustomFormDialog(
+                "เพิ่มเบอร์โทรสายด่วนฉุกเฉิน (Super Admin)",
+                "กรอกรายละเอียดเบอร์โทรด่วนเพื่อให้ประชาชนสามารถกดโทรออกได้ทันที",
+                [
+                    { id: 'dlg-c-title', label: 'ชื่อผู้ติดต่อ / หน่วยงาน *', type: 'text', placeholder: 'เช่น อบต.บาเระใต้ / กู้ชีพ' },
+                    { id: 'dlg-c-sub', label: 'คำอธิบาย / หน้าที่รับผิดชอบ', type: 'text', placeholder: 'เช่น ประสานงานเรือท้องแบน 24 ชม.' },
+                    { id: 'dlg-c-phone', label: 'เบอร์โทรศัพท์ *', type: 'text', placeholder: 'เช่น 08X-XXX-XXXX หรือ 1669' },
+                    {
+                        id: 'dlg-c-color',
+                        label: 'สีปุ่มโทรออก',
+                        type: 'select',
+                        value: 'emerald',
+                        options: [
+                            { value: 'emerald', text: 'สีเขียว (กู้ภัย/ประสานงาน)' },
+                            { value: 'blue', text: 'สีน้ำเงิน (การแพทย์/รพ.)' },
+                            { value: 'amber', text: 'สีส้ม (สายด่วนภาครัฐ)' },
+                            { value: 'rose', text: 'สีแดงชมพู (ฉุกเฉินวิกฤต)' }
+                        ]
+                    }
+                ],
+                (vals) => {
+                    const title = (vals['dlg-c-title'] || '').trim();
+                    const phoneRaw = (vals['dlg-c-phone'] || '').trim();
+                    const sub = (vals['dlg-c-sub'] || '').trim() || `สายด่วนฉุกเฉิน (${phoneRaw})`;
+                    const color = vals['dlg-c-color'] || 'emerald';
+
+                    if (!title || !phoneRaw) {
+                        showCustomMessage("กรุณาระบุชื่อและเบอร์โทรศัพท์ให้ครบถ้วน");
+                        return;
+                    }
+
+                    emergencyContactsData.push({
+                        id: 'contact_' + Date.now(),
+                        title: title,
+                        sub: sub,
+                        phone: phoneRaw,
+                        btnText: phoneRaw.length <= 4 ? `โทร ${phoneRaw}` : 'โทรเลย',
+                        color: color
+                    });
+
+                    saveEmergencyContactsToLocal();
+                    renderEmergencyContactsUI();
+                    recordActivityLog(`Super Admin เพิ่มเบอร์โทรด่วน: ${title} (${phoneRaw})`);
+                    broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, `📞 เพิ่มเบอร์โทรสายด่วนใหม่: ${title}`);
+                    showToast(`เพิ่มเบอร์โทรด่วน "${title}" เรียบร้อยแล้ว`);
+                }
+            );
+        }
+
+        function adminDeleteContactById(contactId) {
+            if (!isSuperAdminLoggedIn) {
+                showCustomMessage("เฉพาะ Super Admin เท่านั้นที่สามารถลบเบอร์โทรสายด่วนได้");
+                return;
+            }
+            const target = emergencyContactsData.find(c => c.id === contactId);
+            showCustomConfirm(`ต้องการลบเบอร์โทรสายด่วน "${target ? target.title : ''}" ใช่หรือไม่?`, () => {
+                emergencyContactsData = emergencyContactsData.filter(c => c.id !== contactId);
+                saveEmergencyContactsToLocal();
+                renderEmergencyContactsUI();
+                recordActivityLog(`Super Admin ลบเบอร์โทรด่วน: ${target ? target.title : contactId}`);
+                broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, "อัปเดตรายการเบอร์โทรสายด่วนฉุกเฉิน");
                 showToast("ลบรายการเบอร์โทรศัพท์เรียบร้อยแล้ว");
             });
         }
