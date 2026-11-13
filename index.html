@@ -805,97 +805,8 @@
                     </a>
                 </div>
 
-                <div id="zones-list-container" class="space-y-2 text-xs">
-                    <div id="zone-card-1" class="p-2.5 bg-red-50 border border-red-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center gap-2">
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-red-900 zone-title-text truncate" id="zone-title-1">โซน 1 - คลอแระมัสยิดกลาง</span>
-                                    <button onclick="officerEditZone(1)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                </div>
-                                <p class="text-[10px] text-red-700 zone-desc-text">พื้นที่ลุ่มต่ำริมคลอง | <span id="zone-count-1">24</span> ครัวเรือน</p>
-                            </div>
-                            <span id="zone-badge-1" class="zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงสูงมาก</span>
-                        </div>
-                    </div>
-
-                    <div id="zone-card-2" class="p-2.5 bg-red-50 border border-red-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center gap-2">
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-red-900 zone-title-text truncate" id="zone-title-2">โซน 2 - ฆือลองไอมูรา</span>
-                                    <button onclick="officerEditZone(2)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                </div>
-                                <p class="text-[10px] text-red-700 zone-desc-text">ติดลำน้ำรับน้ำทุ่งนา | <span id="zone-count-2">21</span> ครัวเรือน</p>
-                            </div>
-                            <span id="zone-badge-2" class="zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงสูงมาก</span>
-                        </div>
-                    </div>
-
-                    <div id="zone-card-3" class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center gap-2">
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-amber-900 zone-title-text truncate" id="zone-title-3">โซน 3 - ฆือแล</span>
-                                    <button onclick="officerEditZone(3)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                </div>
-                                <p class="text-[10px] text-amber-700 zone-desc-text">พื้นที่แอ่งกะทะ | <span id="zone-count-3">30</span> ครัวเรือน</p>
-                            </div>
-                            <span id="zone-badge-3" class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงปานกลาง</span>
-                        </div>
-                    </div>
-
-                    <div id="zone-card-4" class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center gap-2">
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-amber-900 zone-title-text truncate" id="zone-title-4">โซน 4 - เขตปอเนาะฆือแล</span>
-                                    <button onclick="officerEditZone(4)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                </div>
-                                <p class="text-[10px] text-amber-700 zone-desc-text">ทางน้ำไหลผ่าน | <span id="zone-count-4">28</span> ครัวเรือน</p>
-                            </div>
-                            <span id="zone-badge-4" class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงปานกลาง</span>
-                        </div>
-                    </div>
-
-                    <div id="zone-card-5" class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center gap-2">
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-amber-900 zone-title-text truncate" id="zone-title-5">โซน 5 - จาแบปะ</span>
-                                    <button onclick="officerEditZone(5)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                </div>
-                                <p class="text-[10px] text-amber-700 zone-desc-text">ใกล้นาข้าวและลำห้วย | <span id="zone-count-5">19</span> ครัวเรือน</p>
-                            </div>
-                            <span id="zone-badge-5" class="zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงปานกลาง</span>
-                        </div>
-                    </div>
-
-                    <div id="zone-card-6" class="p-2.5 bg-slate-100 border border-slate-200 rounded-xl space-y-2 zone-card">
-                        <div class="flex justify-between items-center gap-2">
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-bold text-slate-800 zone-title-text truncate" id="zone-title-6">โซน 6, 7, 8 (โตะเมาะ / เขตกูวิง / ถนนสายผู้ใหญ่)</span>
-                                    <button onclick="officerEditZone(6)" class="officer-zone-edit-btn hidden text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1 flex-shrink-0" title="แก้ไขข้อมูลโซน">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                </div>
-                                <p class="text-[10px] text-slate-500 zone-desc-text">พื้นที่ดอน | ปลอดภัยสูง | <span id="zone-count-6">65</span> ครัวเรือน</p>
-                            </div>
-                            <span id="zone-badge-6" class="zone-risk-badge px-2 py-1 bg-emerald-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0">เสี่ยงต่ำ</span>
-                        </div>
-                    </div>
-                </div>
+                <!-- DYNAMIC ZONES CONTAINER SYNCED TO ALL CITIZENS -->
+                <div id="zones-list-container" class="space-y-2 text-xs"></div>
             </div>
         </div>
 
@@ -1475,6 +1386,63 @@
             }
         ];
 
+        let zonesRiskData = [
+            {
+                id: 1,
+                title: "โซน 1 - คลอแระมัสยิดกลาง",
+                desc: "พื้นที่ลุ่มต่ำริมคลอง",
+                count: 24,
+                risk: "เสี่ยงสูงมาก",
+                note: "เฝ้าระวังน้ำเอ่อล้นตลิ่งเข้าท่วมบ้านเรือนริมคลองสายหลัก",
+                updatedAt: ""
+            },
+            {
+                id: 2,
+                title: "โซน 2 - ฆือลองไอมูรา",
+                desc: "ติดลำน้ำรับน้ำทุ่งนา",
+                count: 21,
+                risk: "เสี่ยงสูงมาก",
+                note: "จุดรับน้ำจากทุ่งนาและลำคลองสาขา ควรยกของขึ้นที่สูง",
+                updatedAt: ""
+            },
+            {
+                id: 3,
+                title: "โซน 3 - ฆือแล",
+                desc: "พื้นที่แอ่งกะทะ",
+                count: 30,
+                risk: "เสี่ยงปานกลาง",
+                note: "ระวังน้ำท่วมขังสะสมหากฝนตกหนักต่อเนื่อง",
+                updatedAt: ""
+            },
+            {
+                id: 4,
+                title: "โซน 4 - เขตปอเนาะฆือแล",
+                desc: "ทางน้ำไหลผ่าน",
+                count: 28,
+                risk: "เสี่ยงปานกลาง",
+                note: "เฝ้าระวังระดับน้ำคลองอาโลร์ฆือแลบริเวณหน้าปอเนาะ",
+                updatedAt: ""
+            },
+            {
+                id: 5,
+                title: "โซน 5 - จาแบปะ",
+                desc: "ใกล้นาข้าวและลำห้วย",
+                count: 19,
+                risk: "เสี่ยงปานกลาง",
+                note: "รับน้ำหลากจากเชิงเขาบูโดและลำห้วยจาแบปะ",
+                updatedAt: ""
+            },
+            {
+                id: 6,
+                title: "โซน 6, 7, 8 (โตะเมาะ / เขตกูวิง / ถนนสายผู้ใหญ่)",
+                desc: "พื้นที่ดอน | ปลอดภัยสูง",
+                count: 65,
+                risk: "เสี่ยงต่ำ",
+                note: "พื้นที่ดอนและจุดตั้งศูนย์ประสานงานหลัก",
+                updatedAt: ""
+            }
+        ];
+
         let currentWeatherState = {
             temp: 28,
             apparentTemp: 31,
@@ -1628,6 +1596,22 @@
             } else if (data.type === 'WEATHER_UPDATE') {
                 currentWeatherState = data.payload;
                 renderWeatherUI();
+            } else if (data.type === 'ZONE_UPDATE') {
+                if (data.payload && data.payload.zonesData) {
+                    zonesRiskData = data.payload.zonesData;
+                    saveZonesToLocal();
+                    renderZonesListUI();
+                }
+            } else if (data.type === 'RAIN_UPDATE') {
+                if (data.payload && data.payload.rainMm !== undefined) {
+                    applyRainValueUI(data.payload.rainMm);
+                }
+            } else if (data.type === 'ACTIVITY_SYNC') {
+                if (data.payload && data.payload.logs) {
+                    activityLogs = data.payload.logs;
+                    saveActivityLogsToLocal();
+                    renderActivityLogs();
+                }
             }
         }
 
@@ -1664,11 +1648,25 @@
         }
 
         // Activity Logging & Timeline
+        function saveActivityLogsToLocal() {
+            try { localStorage.setItem('klr_activity_logs', JSON.stringify(activityLogs)); } catch(e) {}
+        }
+
+        function loadActivityLogsFromLocal() {
+            try {
+                const saved = localStorage.getItem('klr_activity_logs');
+                if (saved) activityLogs = JSON.parse(saved);
+            } catch(e) {}
+            renderActivityLogs();
+        }
+
         function recordActivityLog(actionText) {
             const nowStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + " น.";
             const actor = isSuperAdminLoggedIn ? "Super Admin" : "เจ้าหน้าที่กู้ภัย";
             activityLogs.unshift({ time: nowStr, actor: actor, text: actionText });
+            saveActivityLogsToLocal();
             renderActivityLogs();
+            broadcastDataChange('ACTIVITY_SYNC', { logs: activityLogs }, actionText);
         }
 
         function renderActivityLogs() {
@@ -1709,7 +1707,9 @@
         function clearActivityLogs() {
             showCustomConfirm("ต้องการล้างประวัติการแก้ไขและบันทึกกิจกรรมทั้งหมดใช่หรือไม่?", () => {
                 activityLogs = [];
+                saveActivityLogsToLocal();
                 renderActivityLogs();
+                broadcastDataChange('ACTIVITY_SYNC', { logs: [] }, "ล้างประวัติกิจกรรมระบบ");
                 showToast("ล้างประวัติกิจกรรมเรียบร้อยแล้ว");
             });
         }
@@ -1780,6 +1780,19 @@
         }
 
         // Officer & Super Admin Shared Functions for Weather, Parameters & Broadcast
+        function applyRainValueUI(rainMm) {
+            const rainValEl = document.getElementById('stat-rain-val');
+            if (rainValEl) rainValEl.innerHTML = `${rainMm} <span class="text-[10px] font-normal text-blue-200/70">มม.</span>`;
+            const descEl = document.getElementById('stat-rain-desc');
+            if (descEl) {
+                if (rainMm >= 90) descEl.innerText = "ฝนตกหนักมาก";
+                else if (rainMm >= 35) descEl.innerText = "ฝนตกปานกลาง-หนัก";
+                else if (rainMm > 0) descEl.innerText = "ฝนตกเล็กน้อย";
+                else descEl.innerText = "ไม่มีฝนตก";
+            }
+            try { localStorage.setItem('klr_rain_mm', String(rainMm)); } catch(e) {}
+        }
+
         function officerUpdateRain() {
             const inputEl = document.getElementById('officer-input-rain');
             const val = inputEl ? inputEl.value.trim() : '';
@@ -1788,15 +1801,9 @@
                 return;
             }
             const rainMm = parseFloat(val);
-            document.getElementById('stat-rain-val').innerHTML = `${rainMm} <span class="text-[10px] font-normal text-blue-200/70">มม.</span>`;
-            const descEl = document.getElementById('stat-rain-desc');
-            if (descEl) {
-                if (rainMm >= 90) descEl.innerText = "ฝนตกหนักมาก";
-                else if (rainMm >= 35) descEl.innerText = "ฝนตกปานกลาง-หนัก";
-                else if (rainMm > 0) descEl.innerText = "ฝนตกเล็กน้อย";
-                else descEl.innerText = "ไม่มีฝนตก";
-            }
+            applyRainValueUI(rainMm);
             inputEl.value = '';
+            broadcastDataChange('RAIN_UPDATE', { rainMm: rainMm }, `อัปเดตปริมาณฝนสะสมวันนี้เป็น ${rainMm} มม.`);
             recordActivityLog(`เจ้าหน้าที่ปรับปรุงค่าปริมาณฝนสะสมวันนี้เป็น ${rainMm} มม.`);
             showToast(`บันทึกปริมาณฝนสะสม ${rainMm} มม. เรียบร้อยแล้ว`);
         }
@@ -1847,14 +1854,8 @@
                 return;
             }
             const rainMm = parseFloat(val);
-            document.getElementById('stat-rain-val').innerHTML = `${rainMm} <span class="text-[10px] font-normal text-blue-200/70">มม.</span>`;
-            const descEl = document.getElementById('stat-rain-desc');
-            if (descEl) {
-                if (rainMm >= 90) descEl.innerText = "ฝนตกหนักมาก";
-                else if (rainMm >= 35) descEl.innerText = "ฝนตกปานกลาง-หนัก";
-                else if (rainMm > 0) descEl.innerText = "ฝนตกเล็กน้อย";
-                else descEl.innerText = "ไม่มีฝนตก";
-            }
+            applyRainValueUI(rainMm);
+            broadcastDataChange('RAIN_UPDATE', { rainMm: rainMm }, `อัปเดตปริมาณฝนสะสมวันนี้เป็น ${rainMm} มม.`);
             recordActivityLog(`ปรับปรุงค่าปริมาณฝนสะสมวันนี้เป็น ${rainMm} มม.`);
             showToast(`บันทึกปริมาณฝนสะสม ${rainMm} มม. เรียบร้อยแล้ว`);
         }
@@ -2060,44 +2061,129 @@
             showToast(`เพิ่มข้อมูล "${name}" เรียบร้อยแล้ว`);
         }
 
+        // Zones Risk Management & Public Realtime Sync
+        function saveZonesToLocal() {
+            try { localStorage.setItem('klr_zones_risk_data', JSON.stringify(zonesRiskData)); } catch (e) {}
+        }
+
+        function loadZonesFromLocal() {
+            try {
+                const saved = localStorage.getItem('klr_zones_risk_data');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        zonesRiskData = parsed;
+                    }
+                }
+            } catch (e) {}
+            renderZonesListUI();
+        }
+
+        function renderZonesListUI() {
+            const container = document.getElementById('zones-list-container');
+            if (!container) return;
+
+            const showEditBtn = (isOfficerLoggedIn || isSuperAdminLoggedIn) ? '' : 'hidden';
+
+            let highRiskZonesCount = 0;
+            let highRiskHouseholdsSum = 0;
+
+            container.innerHTML = zonesRiskData.map((z) => {
+                let cardBg = "bg-slate-100 border-slate-200";
+                let titleColor = "text-slate-800";
+                let descColor = "text-slate-600";
+                let badgeClass = "bg-emerald-600 text-white";
+                let noteBg = "bg-white/80 border-slate-200 text-slate-700";
+
+                if (z.risk === "เสี่ยงสูงมาก" || z.risk === "วิกฤต/น้ำท่วมขัง") {
+                    highRiskZonesCount++;
+                    highRiskHouseholdsSum += (parseInt(z.count, 10) || 0);
+                    cardBg = "bg-red-50 border-red-200";
+                    titleColor = "text-red-900";
+                    descColor = "text-red-700";
+                    badgeClass = z.risk === "วิกฤต/น้ำท่วมขัง" ? "bg-purple-600 text-white animate-pulse" : "bg-red-600 text-white";
+                    noteBg = "bg-red-100/70 border-red-200 text-red-900";
+                } else if (z.risk === "เสี่ยงปานกลาง") {
+                    cardBg = "bg-amber-50 border-amber-200";
+                    titleColor = "text-amber-900";
+                    descColor = "text-amber-700";
+                    badgeClass = "bg-amber-500 text-white";
+                    noteBg = "bg-amber-100/70 border-amber-200 text-amber-900";
+                }
+
+                return `
+                    <div id="zone-card-${z.id}" class="p-3 ${cardBg} border rounded-xl space-y-2 zone-card transition">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="font-extrabold ${titleColor} zone-title-text truncate" id="zone-title-${z.id}">${z.title}</span>
+                                    <button onclick="officerEditZone(${z.id})" class="officer-zone-edit-btn ${showEditBtn} text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg text-[10px] font-bold px-2 py-0.5 flex items-center gap-1 flex-shrink-0 transition" title="แก้ไขข้อมูลโซน">
+                                        <i class="fa-solid fa-pen-to-square"></i> แก้ไขโซน
+                                    </button>
+                                </div>
+                                <p class="text-[10px] ${descColor} zone-desc-text mt-0.5">
+                                    ${z.desc} | <strong><span id="zone-count-${z.id}">${z.count}</span> ครัวเรือน</strong>
+                                    ${z.updatedAt ? `<span class="ml-1 opacity-75 font-mono">(อัปเดต ${z.updatedAt})</span>` : ''}
+                                </p>
+                            </div>
+                            <span id="zone-badge-${z.id}" class="zone-risk-badge px-2.5 py-1 ${badgeClass} font-bold rounded-lg text-[10px] whitespace-nowrap flex-shrink-0 shadow-sm">${z.risk}</span>
+                        </div>
+                        ${z.note ? `
+                        <div class="p-2 rounded-lg border ${noteBg} text-[11px] flex items-start gap-1.5 leading-snug">
+                            <i class="fa-solid fa-circle-info mt-0.5 flex-shrink-0"></i>
+                            <span><strong>สถานการณ์ในโซน:</strong> ${z.note}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Sync summary numbers on Hero Dashboard so citizens see updated risk zones count immediately
+            const statZonesEl = document.getElementById('stat-risk-zones');
+            const statHhEl = document.getElementById('stat-risk-households');
+            if (statZonesEl) statZonesEl.innerHTML = `${highRiskZonesCount} <span class="text-[10px] font-normal text-blue-200/70">/8 โซน</span>`;
+            if (statHhEl) statHhEl.innerText = `${highRiskHouseholdsSum} ครัวเรือน`;
+        }
+
         function officerEditZone(zoneId) {
-            const titleEl = document.getElementById(`zone-title-${zoneId}`);
-            const countEl = document.getElementById(`zone-count-${zoneId}`);
-            const badgeEl = document.getElementById(`zone-badge-${zoneId}`);
+            const targetZone = zonesRiskData.find(z => z.id === zoneId);
+            if (!targetZone) return;
 
             showCustomFormDialog(
-                `แก้ไขข้อมูลโซนพื้นที่ ${zoneId}`,
-                "ปรับปรุงจำนวนครัวเรือนและระดับความเสี่ยงของโซน",
+                `แก้ไขข้อมูลผังโซนพื้นที่ (${targetZone.title})`,
+                "เมื่อบันทึกแล้ว ข้อมูลจะแสดงผลให้ประชาชนทุกคนเห็นในหน้าแผนที่และหน้าหลักทันที",
                 [
-                    { id: 'z-title', label: 'ชื่อโซน', type: 'text', value: titleEl ? titleEl.innerText : '' },
-                    { id: 'z-count', label: 'จำนวนครัวเรือน', type: 'number', value: countEl ? countEl.innerText : '20' },
+                    { id: 'z-title', label: 'ชื่อโซนพื้นที่', type: 'text', value: targetZone.title },
+                    { id: 'z-desc', label: 'ลักษณะพื้นที่ / จุดเสี่ยง', type: 'text', value: targetZone.desc },
+                    { id: 'z-count', label: 'จำนวนครัวเรือนในโซน', type: 'number', value: String(targetZone.count) },
                     {
                         id: 'z-risk',
-                        label: 'ระดับความเสี่ยง',
+                        label: 'ระดับความเสี่ยงปัจจุบัน',
                         type: 'select',
-                        value: badgeEl ? badgeEl.innerText : 'เสี่ยงปานกลาง',
+                        value: targetZone.risk,
                         options: [
-                            { value: 'เสี่ยงสูงมาก', text: 'เสี่ยงสูงมาก' },
-                            { value: 'เสี่ยงปานกลาง', text: 'เสี่ยงปานกลาง' },
-                            { value: 'เสี่ยงต่ำ', text: 'เสี่ยงต่ำ' }
+                            { value: 'วิกฤต/น้ำท่วมขัง', text: 'วิกฤต/น้ำท่วมขัง (สีม่วงกระพริบ)' },
+                            { value: 'เสี่ยงสูงมาก', text: 'เสี่ยงสูงมาก (สีแดง)' },
+                            { value: 'เสี่ยงปานกลาง', text: 'เสี่ยงปานกลาง (สีเหลืองส้ม)' },
+                            { value: 'เสี่ยงต่ำ', text: 'เสี่ยงต่ำ / ปลอดภัย (สีเขียว)' }
                         ]
-                    }
+                    },
+                    { id: 'z-note', label: 'หมายเหตุแจ้งประชาชนในโซน (เช่น น้ำเริ่มท่วมถนน / ปลอดภัย)', type: 'text', value: targetZone.note || '' }
                 ],
                 (vals) => {
-                    if (titleEl && vals['z-title']) titleEl.innerText = vals['z-title'];
-                    if (countEl && vals['z-count']) countEl.innerText = vals['z-count'];
-                    if (badgeEl && vals['z-risk']) {
-                        badgeEl.innerText = vals['z-risk'];
-                        if (vals['z-risk'] === 'เสี่ยงสูงมาก') {
-                            badgeEl.className = "zone-risk-badge px-2 py-1 bg-red-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0";
-                        } else if (vals['z-risk'] === 'เสี่ยงปานกลาง') {
-                            badgeEl.className = "zone-risk-badge px-2 py-1 bg-amber-500 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0";
-                        } else {
-                            badgeEl.className = "zone-risk-badge px-2 py-1 bg-emerald-600 text-white font-bold rounded-md text-[10px] whitespace-nowrap flex-shrink-0";
-                        }
-                    }
-                    recordActivityLog(`อัปเดตข้อมูลโซน ${zoneId} (${vals['z-count']} ครัวเรือน - ${vals['z-risk']})`);
-                    showToast(`บันทึกการแก้ไขโซนที่ ${zoneId} เรียบร้อยแล้ว`);
+                    const nowStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + " น.";
+                    targetZone.title = (vals['z-title'] || '').trim() || targetZone.title;
+                    targetZone.desc = (vals['z-desc'] || '').trim() || targetZone.desc;
+                    targetZone.count = parseInt(vals['z-count'], 10) || 0;
+                    targetZone.risk = vals['z-risk'] || targetZone.risk;
+                    targetZone.note = (vals['z-note'] || '').trim();
+                    targetZone.updatedAt = nowStr;
+
+                    saveZonesToLocal();
+                    renderZonesListUI();
+                    recordActivityLog(`อัปเดตผังโซน "${targetZone.title}" สถานะ: ${targetZone.risk} (${targetZone.count} ครัวเรือน)`);
+                    broadcastDataChange('ZONE_UPDATE', { zonesData: zonesRiskData }, `📍 อัปเดตพื้นที่ ${targetZone.title}: ${targetZone.risk}`);
+                    showToast(`บันทึกและเผยแพร่ข้อมูล "${targetZone.title}" ให้ประชาชนเห็นเรียบร้อยแล้ว!`);
                 }
             );
         }
@@ -2254,8 +2340,16 @@
         }
 
         window.onload = function() {
+            loadZonesFromLocal();
             loadEvacueesFromLocal();
             loadCitizenReportsFromLocal();
+            loadActivityLogsFromLocal();
+            try {
+                const savedRain = localStorage.getItem('klr_rain_mm');
+                if (savedRain !== null && !isNaN(parseFloat(savedRain))) {
+                    applyRainValueUI(parseFloat(savedRain));
+                }
+            } catch(e) {}
             renderCanalsTelemetryUI();
             applySimLevelUI('normal');
             updateLiveTime();
@@ -2317,6 +2411,7 @@
                     if (!isSuperAdminLoggedIn) {
                         document.querySelectorAll('.officer-delete-hh-btn, .officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.add('hidden'));
                     }
+                    renderZonesListUI();
                     renderCanalsTelemetryUI();
                     renderEvacueesList();
                     renderCitizenReports();
@@ -2347,6 +2442,7 @@
                 document.getElementById('officer-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-amber-500 text-white text-xs font-bold border border-amber-600 flex items-center gap-1 shadow-sm";
                 
                 document.querySelectorAll('.officer-delete-hh-btn, .officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.remove('hidden'));
+                renderZonesListUI();
                 renderCanalsTelemetryUI();
                 renderEvacueesList();
                 renderCitizenReports();
@@ -2383,6 +2479,7 @@
                 document.getElementById('admin-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-bold border border-amber-500 flex items-center gap-1 shadow transition";
                 
                 document.querySelectorAll('.admin-delete-contact-btn, .officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-hh-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.remove('hidden'));
+                renderZonesListUI();
                 renderCanalsTelemetryUI();
                 renderEvacueesList();
                 renderCitizenReports();
@@ -2403,6 +2500,7 @@
                 }
                 document.getElementById('admin-btn-text').innerText = "Admin";
                 document.getElementById('admin-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-800 hover:bg-slate-900 text-amber-300 text-xs font-bold border border-amber-400/40 flex items-center gap-1 transition";
+                renderZonesListUI();
                 renderCanalsTelemetryUI();
                 renderEvacueesList();
                 renderCitizenReports();
