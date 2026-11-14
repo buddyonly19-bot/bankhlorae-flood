@@ -228,6 +228,10 @@
             </div>
 
             <div class="flex items-center gap-1 flex-shrink-0">
+                <button onclick="requestPushNotificationPermission()" id="push-notif-btn" class="p-1.5 sm:px-2 sm:py-1 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold border border-blue-300 flex items-center gap-1 transition" title="เปิดใช้งานมือถือ Notification">
+                    <i class="fa-solid fa-bell text-blue-600"></i>
+                    <span id="push-btn-text" class="hidden sm:inline">แจ้งเตือนมือถือ</span>
+                </button>
                 <button onclick="manualRefreshData()" id="refresh-btn" class="p-1.5 sm:px-2.5 sm:py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-300 flex items-center gap-1.5 transition shadow-sm" title="ซิงค์ข้อมูลอัตโนมัติแบบเรียลไทม์ (คลิกเพื่อซิงค์ทันที)">
                     <span class="relative flex h-2 w-2">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -1772,7 +1776,6 @@
                 currentAlertLevel = state.currentAlertLevel;
                 applySimLevelUI(currentAlertLevel);
             }
-            // Handle Firebase empty array behavior gracefully
             announcementsList = Array.isArray(state.announcementsList) ? state.announcementsList : [];
             renderAnnouncements();
 
@@ -1816,7 +1819,6 @@
 
             if (notifyCitizen) {
                 showToast(state.lastMessage || "เจ้าหน้าที่ได้อัปเดตข้อมูลสถานการณ์ล่าสุด", `แจ้งเตือนสด (${state.sender || 'ศูนย์ควบคุม'})`);
-                playAlertSound();
             }
         }
 
@@ -1906,7 +1908,6 @@
             }
 
             showToast(data.message || "อัปเดตข้อมูลเรียลไทม์");
-            playAlertSound();
 
             if (data.type === 'ALERT_LEVEL') {
                 applySimLevelUI(data.payload.level);
@@ -1958,7 +1959,49 @@
             }
         }
 
-        function showToast(text, title = "อัปเดตข้อมูลเรียลไทม์!") {
+        // --- พัฒนาการแจ้งเตือนพิเศษ: เสียงเตือนไซเรนแบบ Double Beep และระบบสั่น ---
+        function playAlertSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                
+                // เสียงตี๊ดครั้งที่ 1 (คลื่นฟันเลื่อยเพื่อให้คมชัดและดังเด่นชัดขึ้น)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sawtooth';
+                osc1.frequency.setValueAtTime(880, now);
+                osc1.frequency.exponentialRampToValueAtTime(1760, now + 0.15);
+                gain1.gain.setValueAtTime(0.12, now);
+                gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.15);
+
+                // เสียงตี๊ดครั้งที่ 2 (Double Beep)
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sawtooth';
+                osc2.frequency.setValueAtTime(1760, now + 0.2);
+                osc2.frequency.exponentialRampToValueAtTime(880, now + 0.35);
+                gain2.gain.setValueAtTime(0.12, now + 0.2);
+                gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.2);
+                osc2.stop(now + 0.35);
+            } catch(e) {}
+        }
+
+        function triggerVibration() {
+            try {
+                if ("vibrate" in navigator) {
+                    navigator.vibrate([200, 100, 200, 100, 400]);
+                }
+            } catch(e) {}
+        }
+
+        function showToast(text, title = "🚨 ประกาศด่วน! บ้านคลอแระ") {
             const container = document.getElementById('toast-container');
             const titleElem = document.getElementById('toast-title');
             const msgElem = document.getElementById('toast-message-text');
@@ -1966,28 +2009,56 @@
                 if (titleElem) titleElem.innerText = title;
                 msgElem.innerText = text;
                 container.classList.remove('hidden');
-                setTimeout(() => hideToast(), 4500);
+                setTimeout(() => hideToast(), 6000);
             }
+
+            triggerMobilePushNotification(title, text);
+            playAlertSound();
+            triggerVibration();
+        }
+
+        function requestPushNotificationPermission() {
+            if (!('Notification' in window)) {
+                showCustomMessage("เบราว์เซอร์ของคุณไม่รองรับระบบ Mobile Push Notification");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                const btnText = document.getElementById('push-btn-text');
+                const btnEl = document.getElementById('push-notif-btn');
+                if (permission === 'granted') {
+                    if (btnText) btnText.innerText = "แจ้งเตือนเปิดแล้ว ✓";
+                    if (btnEl) btnEl.className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-emerald-500 text-white text-xs font-bold border border-emerald-600 flex items-center gap-1 shadow transition";
+                    showToast("เปิดใช้งานแจ้งเตือนผ่านมือถือ (Mobile Push Notification) เรียบร้อยแล้ว!", "สำเร็จ");
+                    new Notification("บ้านคลอแระ หมู่ 3", {
+                        body: "ระบบเปิดใช้งานแจ้งเตือนมือถือเรียบร้อย คุณจะได้รับการแจ้งเตือนภัยทันที",
+                        icon: "https://placehold.co/192x192/0B2B4C/06B6D4?text=KLR"
+                    });
+                } else {
+                    showCustomMessage("คุณปฏิเสธการอนุญาตแจ้งเตือน หรือเบราว์เซอร์บล็อกการแจ้งเตือน");
+                }
+            });
+        }
+
+        function triggerMobilePushNotification(title, bodyText) {
+            try {
+                if (('Notification' in window) && Notification.permission === 'granted') {
+                    const notif = new Notification(`🚨 ${title}`, {
+                        body: bodyText,
+                        icon: "https://placehold.co/192x192/0B2B4C/06B6D4?text=KLR",
+                        tag: 'klr-flood-alert',
+                        badge: "https://placehold.co/96x96/0B2B4C/06B6D4?text=KLR"
+                    });
+                    notif.onclick = function() {
+                        window.focus();
+                        notif.close();
+                    };
+                }
+            } catch (e) {}
         }
 
         function hideToast() {
             const container = document.getElementById('toast-container');
             if (container) container.classList.add('hidden');
-        }
-
-        function playAlertSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-                gain.gain.setValueAtTime(0.08, ctx.currentTime);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.2);
-            } catch(e) {}
         }
 
         // Activity Logging & Timeline
@@ -2426,44 +2497,6 @@
             }
         }
 
-        function officerAddCanal() {
-            const nameInput = document.getElementById('officer-canal-name');
-            const descInput = document.getElementById('officer-canal-desc');
-            const valInput = document.getElementById('officer-canal-val');
-
-            const name = nameInput.value.trim();
-            const desc = descInput.value.trim() || "จุดเฝ้าระวังเพิ่มเติมในชุมชน";
-            const rawVal = parseFloat(valInput.value.trim());
-
-            if (!name || isNaN(rawVal)) {
-                showCustomMessage("กรุณากรอกชื่อลำคลองและระดับน้ำปัจจุบัน (ตัวเลข เช่น 1.35)");
-                return;
-            }
-
-            const nowStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + " น.";
-            canalsTelemetryData.push({
-                id: "canal_" + Date.now(),
-                code: `MANUAL: KLR-0${canalsTelemetryData.length + 1}`,
-                name: `${canalsTelemetryData.length + 1}. ${name}`,
-                desc: desc,
-                currentLevel: rawVal,
-                maxCapacity: 2.50,
-                trend: "ทรงตัว",
-                status: rawVal >= 2.0 ? "อันตราย" : (rawVal >= 1.5 ? "เฝ้าระวัง" : "ปกติ"),
-                refStation: "จุดวัดระดับน้ำชุมชนบ้านคลอแระ",
-                updatedAt: nowStr
-            });
-
-            nameInput.value = '';
-            descInput.value = '';
-            valInput.value = '';
-
-            renderCanalsTelemetryUI();
-            recordActivityLog(`เพิ่มจุดวัดระดับน้ำคลอง "${name}" (${rawVal.toFixed(2)} ม.)`);
-            broadcastDataChange('CANAL_UPDATE', { canalsData: canalsTelemetryData }, `เพิ่มข้อมูลคลอง: ${name}`);
-            showToast(`เพิ่มข้อมูล "${name}" เรียบร้อยแล้ว`);
-        }
-
         // Zones Risk Management & Public Realtime Sync
         function saveZonesToLocal() {
             try { localStorage.setItem('klr_zones_risk_data', JSON.stringify(zonesRiskData)); } catch (e) {}
@@ -2541,7 +2574,6 @@
                 `;
             }).join('');
 
-            // Sync summary numbers on Hero Dashboard so citizens see updated risk zones count immediately
             const statZonesEl = document.getElementById('stat-risk-zones');
             const statHhEl = document.getElementById('stat-risk-households');
             if (statZonesEl) statZonesEl.innerHTML = `${highRiskZonesCount} <span class="text-[10px] font-normal text-blue-200/70">/8 โซน</span>`;
@@ -2589,21 +2621,6 @@
                     showToast(`บันทึกและเผยแพร่ข้อมูล "${targetZone.title}" ให้ประชาชนเห็นเรียบร้อยแล้ว!`);
                 }
             );
-        }
-
-        function toggleGovAutoSyncMode() {
-            isGovAutoSyncEnabled = !isGovAutoSyncEnabled;
-            const btn = document.getElementById('gov-sync-toggle-btn');
-            const desc = document.getElementById('gov-sync-mode-desc');
-            if (isGovAutoSyncEnabled) {
-                if (btn) { btn.innerText = "Auto Gov: เปิด"; btn.className = "px-2.5 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-extrabold text-[10px] shadow transition whitespace-nowrap"; }
-                if (desc) desc.innerText = "ซิงค์ข้อมูลอัตโนมัติ (ThaiWater / กรมชลประทาน)";
-                fetchGovCanalTelemetry(true);
-            } else {
-                if (btn) { btn.innerText = "Manual Override"; btn.className = "px-2.5 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-extrabold text-[10px] shadow transition whitespace-nowrap"; }
-                if (desc) desc.innerText = "โหมดแก้ไขระดับน้ำด้วยตนเองโดยเจ้าหน้าที่";
-                showToast("เปลี่ยนเป็นโหมดแก้ไขระดับน้ำคลองด้วยตนเอง (Manual Override)");
-            }
         }
 
         async function fetchGovCanalTelemetry(showNotification = false) {
@@ -2778,7 +2795,6 @@
             initFirebaseRealtimeSync();
             initCloudRealtimeSync();
 
-            // Fast real-time polling (every 1 second) + visibility check so citizens see any officer changes immediately
             setInterval(() => {
                 checkMasterStatePolling();
             }, 1000);
@@ -3258,7 +3274,6 @@
             const headerDot = document.getElementById('header-status-dot');
             const headerText = document.getElementById('header-status-text');
 
-            // Reset selector borders
             ['btn-lvl-1', 'btn-lvl-2', 'btn-lvl-3', 'btn-lvl-4'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.className = "cursor-pointer bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-start gap-2.5 transition active:scale-95";
