@@ -275,14 +275,18 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 text-center text-xs">
+            <div class="grid grid-cols-3 gap-2 text-center text-xs">
                 <div class="bg-slate-900 p-2 rounded-2xl border border-slate-800">
                     <p class="text-[9px] text-slate-400">คำขอ SOS สะสม</p>
                     <p class="text-sm font-extrabold text-red-400" id="admin-stat-sos">0</p>
                 </div>
                 <div class="bg-slate-900 p-2 rounded-2xl border border-slate-800">
+                    <p class="text-[9px] text-slate-400">ผู้ป่วยลงทะเบียน</p>
+                    <p class="text-sm font-extrabold text-rose-400" id="admin-stat-patients">0</p>
+                </div>
+                <div class="bg-slate-900 p-2 rounded-2xl border border-slate-800">
                     <p class="text-[9px] text-slate-400">สถานะระบบ</p>
-                    <p class="text-xs font-bold text-emerald-400">ออนไลน์ 100%</p>
+                    <p class="text-xs font-bold text-emerald-400 mt-0.5">ออนไลน์ 100%</p>
                 </div>
             </div>
 
@@ -361,6 +365,20 @@
                     </div>
                 </div>
 
+                <!-- SUPER ADMIN SOS HOTLINE MANAGEMENT -->
+                <div class="pt-2 border-t border-slate-800 space-y-1.5">
+                    <label class="block text-[10px] text-red-300 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-truck-medical"></i> จัดการเพิ่มเบอร์โทรสายตรงในหน้าต่างแจ้ง SOS
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                        <input type="text" id="admin-sos-hotline-name" placeholder="ชื่อผู้รับแจ้ง SOS (เช่น แบลี / กู้ชีพ)" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                        <input type="tel" id="admin-sos-hotline-phone" placeholder="เบอร์โทรศัพท์ SOS (เช่น 088-682-2347)" class="w-full min-w-0 p-1.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-[11px]">
+                    </div>
+                    <button onclick="adminAddSosHotlineFromPanel()" class="w-full p-1.5 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl transition flex items-center justify-center gap-1 text-[11px]">
+                        <i class="fa-solid fa-plus"></i> เพิ่มเบอร์โทรในหน้าแจ้ง SOS
+                    </button>
+                </div>
+
                 <!-- SUPER ADMIN EMERGENCY CONTACTS MANAGEMENT -->
                 <div class="pt-2 border-t border-slate-800 space-y-1.5">
                     <label class="block text-[10px] text-amber-300 font-bold flex items-center gap-1">
@@ -380,7 +398,7 @@
 
                 <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
                     <button onclick="adminExportEvacueesData()" class="w-full p-2 bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold rounded-xl flex items-center justify-center gap-1.5 border border-amber-400/30 transition">
-                        <i class="fa-solid fa-file-csv"></i> ส่งออกข้อมูลผู้อพยพ (Export CSV)
+                        <i class="fa-solid fa-file-csv"></i> ส่งออกข้อมูลผู้อพยพและผู้ป่วย (Export CSV)
                     </button>
                 </div>
             </div>
@@ -410,12 +428,15 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <button onclick="quickUpdateStatusPrompt()" class="p-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow transition">
-                    <i class="fa-solid fa-gauge-high"></i> เปลี่ยนระดับเตือนภัย
+            <div class="grid grid-cols-3 gap-1.5 text-xs">
+                <button onclick="quickUpdateStatusPrompt()" class="p-2 bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl font-bold flex flex-col items-center justify-center gap-1 shadow transition text-[11px]">
+                    <i class="fa-solid fa-gauge-high text-sm"></i> เตือนภัย
                 </button>
-                <button onclick="openEvacueeModal()" class="p-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow transition">
-                    <i class="fa-solid fa-user-plus"></i> ลงทะเบียนผู้อพยพ
+                <button onclick="openEvacueeModal(null, false)" class="p-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl font-bold flex flex-col items-center justify-center gap-1 shadow transition text-[11px]">
+                    <i class="fa-solid fa-user-plus text-sm"></i> ผู้อพยพทั่วไป
+                </button>
+                <button onclick="openEvacueeModal(null, true)" class="p-2 bg-rose-600 hover:bg-rose-700 active:scale-95 rounded-xl font-bold flex flex-col items-center justify-center gap-1 shadow transition text-[11px]">
+                    <i class="fa-solid fa-bed-pulse text-sm"></i> ลงทะเบียนผู้ป่วย
                 </button>
             </div>
 
@@ -648,7 +669,7 @@
                     <i class="fa-solid fa-water text-blue-300 flex-shrink-0"></i> <span class="truncate">สถานการณ์น้ำ 3 คลอง</span>
                 </button>
                 <button onclick="switchBottomTab('shelter')" class="glass-subcard hover:bg-white/15 active:scale-95 text-white py-2.5 px-3 rounded-2xl text-xs font-semibold flex items-center justify-center gap-1.5 transition truncate">
-                    <i class="fa-solid fa-house-chimney-user text-emerald-300 flex-shrink-0"></i> <span class="truncate">ศูนย์อพยพ / รายชื่อ</span>
+                    <i class="fa-solid fa-house-chimney-user text-emerald-300 flex-shrink-0"></i> <span class="truncate">ศูนย์อพยพ / ผู้ป่วย</span>
                 </button>
             </div>
 
@@ -869,7 +890,7 @@
             </div>
         </div>
 
-        <!-- TAB 3: SHELTER & EVACUEES LIST -->
+        <!-- TAB 3: SHELTER, EVACUEES & PATIENTS LIST -->
         <div id="tab-shelter" class="tab-pane space-y-3 hidden">
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -882,7 +903,7 @@
                             <span class="truncate">1. โรงเรียนบ้านคลอแระ (ศูนย์หลัก)</span>
                             <span id="shelter-stat-1" class="text-[10px] bg-purple-200 text-purple-900 px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0">พักอยู่ 0 / 150 คน</span>
                         </div>
-                        <p class="text-[10px] text-purple-800">จุดประกอบอาหาร / ทีมแพทย์พยาบาลเคลื่อนที่</p>
+                        <p class="text-[10px] text-purple-800">จุดประกอบอาหาร / ทีมแพทย์พยาบาลเคลื่อนที่ดูแลผู้ป่วย</p>
                     </div>
 
                     <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
@@ -906,11 +927,14 @@
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
                 <div class="flex items-center justify-between gap-2 flex-wrap">
                     <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5 truncate">
-                        <i class="fa-solid fa-users text-blue-600 flex-shrink-0"></i> <span class="truncate">รายชื่อผู้อพยพในศูนย์พักพิง</span>
+                        <i class="fa-solid fa-users text-blue-600 flex-shrink-0"></i> <span class="truncate">รายชื่อผู้อพยพและทะเบียนผู้ป่วย</span>
                     </h3>
                     <div class="flex items-center gap-1.5 flex-shrink-0">
-                        <button onclick="openEvacueeModal()" id="shelter-add-evac-btn" class="officer-evac-ctrl-btn hidden px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full shadow flex items-center gap-1 transition active:scale-95">
-                            <i class="fa-solid fa-user-plus"></i> ลงทะเบียน/อัปเดต
+                        <button onclick="openEvacueeModal(null, false)" id="shelter-add-evac-btn" class="officer-evac-ctrl-btn hidden px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-full shadow flex items-center gap-1 transition active:scale-95">
+                            <i class="fa-solid fa-user-plus"></i> ลงทะเบียน
+                        </button>
+                        <button onclick="openEvacueeModal(null, true)" id="shelter-add-patient-btn" class="officer-evac-ctrl-btn hidden px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-full shadow flex items-center gap-1 transition active:scale-95">
+                            <i class="fa-solid fa-bed-pulse"></i> เพิ่มผู้ป่วย
                         </button>
                         <span id="evacuee-count-badge" class="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full whitespace-nowrap">
                             0 คน
@@ -918,8 +942,12 @@
                     </div>
                 </div>
 
+                <!-- FILTER BUTTONS INCLUDING PATIENT FILTER -->
                 <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5 text-[10px]">
                     <button onclick="filterEvacueesByShelter('all', this)" id="filter-shelter-all" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold whitespace-nowrap transition">ทั้งหมด</button>
+                    <button onclick="filterEvacueesByShelter('PATIENTS_ONLY', this)" id="filter-shelter-patients" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 font-bold whitespace-nowrap hover:bg-rose-100 transition flex items-center gap-1">
+                        <i class="fa-solid fa-bed-pulse"></i> เฉพาะผู้ป่วย (<span id="patient-filter-count">0</span>)
+                    </button>
                     <button onclick="filterEvacueesByShelter('โรงเรียนบ้านคลอแระ (ศูนย์หลัก)', this)" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">รร.บ้านคลอแระ</button>
                     <button onclick="filterEvacueesByShelter('ปอเนาะฆือแล', this)" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">ปอเนาะฆือแล</button>
                     <button onclick="filterEvacueesByShelter('โรงเรียนตาดีกาบ้านคลอแระ', this)" class="shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition">ตาดีกาบ้านคลอแระ</button>
@@ -927,10 +955,10 @@
 
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                    <input type="text" id="evacuee-search" onkeyup="filterEvacuees()" placeholder="ค้นหาชื่อ, เบอร์โทร, โซนบ้าน หรือสถานะ..." class="w-full min-w-0 pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500">
+                    <input type="text" id="evacuee-search" onkeyup="filterEvacuees()" placeholder="ค้นหาชื่อ, โรคประจำตัว, ประเภทผู้ป่วย, โซนบ้าน หรือเบอร์โทร..." class="w-full min-w-0 pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500">
                 </div>
 
-                <div id="evacuees-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                <div id="evacuees-list" class="space-y-2 max-h-96 overflow-y-auto pr-1">
                     <div id="no-evacuee-msg" class="p-4 text-center text-slate-400 text-xs">
                         ยังไม่มีข้อมูลผู้อพยพในระบบ
                     </div>
@@ -1047,7 +1075,7 @@
         </div>
     </div>
 
-    <!-- SOS EMERGENCY MODAL -->
+    <!-- SOS EMERGENCY MODAL WITH SUPER ADMIN HOTLINE MANAGEMENT -->
     <div id="sos-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3.5 relative max-h-[90vh] overflow-y-auto animate-fade-in">
             <button onclick="closeSosModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
@@ -1062,18 +1090,33 @@
                 <p class="text-xs text-slate-500">ข้อมูลจะถูกส่งเข้า <strong>ทีมกู้ภัยบ้านคลอแระ</strong> ทันที</p>
             </div>
 
-            <div class="p-2.5 bg-red-50 border border-red-200 rounded-2xl space-y-1.5">
-                <p class="text-[11px] font-bold text-red-800 text-center flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-phone-volume animate-bounce"></i> กรณีเร่งด่วนที่สุด! โทรสายตรงกู้ภัย 24 ชม.
-                </p>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <a href="tel:0886822347" class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-center font-bold flex items-center justify-center gap-1 shadow transition">
-                        <i class="fa-solid fa-phone"></i> แบลี
-                    </a>
-                    <a href="tel:0621891711" class="p-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-center font-bold flex items-center justify-center gap-1 shadow transition">
-                        <i class="fa-solid fa-phone"></i> นัสรี
-                    </a>
+            <!-- DYNAMIC SOS HOTLINE CALL BOX + SUPER ADMIN ADD/DELETE -->
+            <div class="p-3 bg-red-50 border border-red-200 rounded-2xl space-y-2">
+                <div class="flex items-center justify-between">
+                    <p class="text-[11px] font-bold text-red-800 flex items-center gap-1">
+                        <i class="fa-solid fa-phone-volume animate-bounce"></i> โทรสายตรงกู้ภัย 24 ชม.
+                    </p>
+                    <span id="sos-admin-badge" class="hidden text-[9px] bg-amber-400 text-slate-950 font-extrabold px-2 py-0.5 rounded-full">
+                        <i class="fa-solid fa-crown mr-0.5"></i> Super Admin
+                    </span>
                 </div>
+
+                <!-- SUPER ADMIN ADD NEW SOS HOTLINE FORM -->
+                <div id="sos-admin-controls" class="hidden p-2 bg-white border border-amber-300 rounded-xl space-y-1.5">
+                    <p class="text-[10px] font-extrabold text-amber-800 flex items-center gap-1">
+                        <i class="fa-solid fa-plus-circle text-amber-600"></i> เพิ่มเบอร์โทรสายตรงในหน้าแจ้ง SOS
+                    </p>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <input type="text" id="new-sos-hotline-name" placeholder="ชื่อผู้รับแจ้ง (เช่น แบลี)" class="w-full min-w-0 px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-[11px] focus:outline-none focus:border-red-500">
+                        <input type="tel" id="new-sos-hotline-phone" placeholder="เบอร์โทร (08X-XXX-XXXX)" class="w-full min-w-0 px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-[11px] focus:outline-none focus:border-red-500">
+                    </div>
+                    <button type="button" onclick="addSosHotlineContact()" class="w-full py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold rounded-lg text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
+                        <i class="fa-solid fa-plus"></i> บันทึกเบอร์โทรสายตรง SOS
+                    </button>
+                </div>
+
+                <!-- DYNAMIC HOTLINE BUTTONS LIST -->
+                <div id="sos-hotline-buttons-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"></div>
             </div>
 
             <form onsubmit="handleSosSubmit(event)" class="space-y-2.5 text-xs">
@@ -1121,7 +1164,8 @@
                     <label class="block font-bold text-slate-700 mb-1">สิ่งที่ต้องการความช่วยเหลือ *</label>
                     <select id="sos-type" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium focus:outline-none focus:border-red-500">
                         <option value="ยกของขึ้นที่สูง / ย้ายสิ่งของ">ยกของขึ้นที่สูง / ย้ายสิ่งของ</option>
-                        <option value="ต้องการอพยพคนชรา / เด็ก / ผู้ป่วย">ต้องการอพยพคนชรา / เด็ก / ผู้ป่วย</option>
+                        <option value="ต้องการอพยพผู้ป่วยติดเตียง / ผู้ป่วยติดบ้าน">ต้องการอพยพผู้ป่วยติดเตียง / ผู้ป่วยติดบ้าน</option>
+                        <option value="ต้องการอพยพผู้พิการ / คนชรา / เด็ก">ต้องการอพยพผู้พิการ / คนชรา / เด็ก</option>
                         <option value="ต้องการเรือรับส่ง">ต้องการเรือรับส่ง</option>
                         <option value="ต้องการอาหาร / น้ำดื่ม / ถุงยังชีพ">ต้องการอาหาร / น้ำดื่ม / ถุงยังชีพ</option>
                         <option value="เจ็บป่วยฉุกเฉิน">เจ็บป่วยฉุกเฉิน</option>
@@ -1144,86 +1188,143 @@
         </div>
     </div>
 
-    <!-- EVACUEE REGISTRATION MODAL -->
+    <!-- EVACUEE & SEPARATED PATIENT REGISTRATION MODAL -->
     <div id="evacuee-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3.5 relative max-h-[90vh] overflow-y-auto animate-fade-in">
             <button onclick="closeEvacueeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <div class="text-center">
-                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mx-auto mb-1">
+                <div id="evac-modal-icon-wrap" class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mx-auto mb-1">
                     <i id="evac-modal-icon" class="fa-solid fa-user-plus"></i>
                 </div>
                 <h3 id="evac-modal-title" class="font-extrabold text-slate-900 text-base">ลงทะเบียน / อัปเดตข้อมูลผู้อพยพ</h3>
                 <p class="text-xs text-slate-500">ข้อมูลจะซิงค์แสดงผลในหน้าศูนย์พักพิงแบบเรียลไทม์</p>
             </div>
 
-            <form onsubmit="handleEvacueeSubmit(event)" class="space-y-2.5 text-xs">
+            <form onsubmit="handleEvacueeSubmit(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="evac-edit-id" value="">
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">ศูนย์อพยพที่เข้าพัก *</label>
-                    <select id="evac-shelter" required class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
-                        <option value="โรงเรียนบ้านคลอแระ (ศูนย์หลัก)">โรงเรียนบ้านคลอแระ (ศูนย์หลัก)</option>
-                        <option value="ปอเนาะฆือแล">ปอเนาะฆือแล</option>
-                        <option value="โรงเรียนตาดีกาบ้านคลอแระ">โรงเรียนตาดีกาบ้านคลอแระ</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">ชื่อ-นามสกุล ผู้อพยพ *</label>
-                    <input type="text" id="evac-name" required placeholder="เช่น นายมาหะมะ ยูโซ๊ะ" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
+
+                <!-- SECTION 1: ข้อมูลทั่วไปของผู้อพยพ -->
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
+                    <h4 class="font-extrabold text-slate-800 text-[11px] flex items-center gap-1.5 border-b border-slate-200 pb-1.5">
+                        <i class="fa-solid fa-id-card text-blue-600"></i> ส่วนที่ 1: ข้อมูลทั่วไปและการเข้าพัก
+                    </h4>
+
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">อายุ (ปี)</label>
-                        <input type="number" id="evac-age" placeholder="เช่น 45" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">กลุ่มเปราะบาง</label>
-                        <select id="evac-group" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
-                            <option value="ทั่วไป">ทั่วไป</option>
-                            <option value="ผู้สูงอายุ">ผู้สูงอายุ</option>
-                            <option value="เด็ก">เด็ก</option>
-                            <option value="ผู้ป่วย/ผู้พิการ">ผู้ป่วย / ผู้พิการ</option>
-                            <option value="หญิงตั้งครรภ์">หญิงตั้งครรภ์</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">มาจากโซน *</label>
-                        <select id="evac-zone" required class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
-                            <option value="โซน 1 คลอแระมัสยิดกลาง">โซน 1 มัสยิดกลาง</option>
-                            <option value="โซน 2 ฆือลองไอมูรา">โซน 2 ฆือลองไอมูรา</option>
-                            <option value="โซน 3 ฆือแล">โซน 3 ฆือแล</option>
-                            <option value="โซน 4 เขตปอเนาะฆือแล">โซน 4 ปอเนาะฆือแล</option>
-                            <option value="โซน 5 จาแบปะ">โซน 5 จาแบปะ</option>
-                            <option value="โซน 6 โตะเมาะ">โซน 6 โตะเมาะ</option>
-                            <option value="โซน 7 เขตกูวิง">โซน 7 เขตกูวิง</option>
-                            <option value="โซน 8 ถนนสายบ้านผู้ใหญ่">โซน 8 สายบ้านผู้ใหญ่</option>
+                        <label class="block font-bold text-slate-700 mb-1">ศูนย์อพยพที่เข้าพัก *</label>
+                        <select id="evac-shelter" required class="w-full min-w-0 p-2 border border-slate-300 rounded-xl bg-white font-medium">
+                            <option value="โรงเรียนบ้านคลอแระ (ศูนย์หลัก)">โรงเรียนบ้านคลอแระ (ศูนย์หลัก)</option>
+                            <option value="ปอเนาะฆือแล">ปอเนาะฆือแล</option>
+                            <option value="โรงเรียนตาดีกาบ้านคลอแระ">โรงเรียนตาดีกาบ้านคลอแระ</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">เลขห้อง / จุดนอน</label>
-                        <input type="text" id="evac-room" placeholder="เช่น อาคาร 1 ห้อง 2" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl">
+                        <label class="block font-bold text-slate-700 mb-1">ชื่อ-นามสกุล *</label>
+                        <input type="text" id="evac-name" required placeholder="เช่น นายมาหะมะ ยูโซ๊ะ" class="w-full min-w-0 p-2 border border-slate-300 rounded-xl bg-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">อายุ (ปี)</label>
+                            <input type="number" id="evac-age" placeholder="เช่น 65" class="w-full min-w-0 p-2 border border-slate-300 rounded-xl bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">กลุ่มบุคคล / เปราะบาง</label>
+                            <select id="evac-group" onchange="handleGroupChangeAutoPatient()" class="w-full min-w-0 p-2 border border-slate-300 rounded-xl bg-white font-medium">
+                                <option value="ทั่วไป">ทั่วไป</option>
+                                <option value="ผู้ป่วยติดเตียง">ผู้ป่วยติดเตียง</option>
+                                <option value="ผู้ป่วยติดบ้าน">ผู้ป่วยติดบ้าน</option>
+                                <option value="ผู้พิการไม่สามารถช่วยตัวเองได้">ผู้พิการไม่สามารถช่วยตัวเองได้</option>
+                                <option value="ผู้สูงอายุ">ผู้สูงอายุ</option>
+                                <option value="เด็ก">เด็ก</option>
+                                <option value="หญิงตั้งครรภ์">หญิงตั้งครรภ์</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">มาจากโซน *</label>
+                            <select id="evac-zone" required class="w-full min-w-0 p-2 border border-slate-300 rounded-xl bg-white font-medium">
+                                <option value="โซน 1 คลอแระมัสยิดกลาง">โซน 1 มัสยิดกลาง</option>
+                                <option value="โซน 2 ฆือลองไอมูรา">โซน 2 ฆือลองไอมูรา</option>
+                                <option value="โซน 3 ฆือแล">โซน 3 ฆือแล</option>
+                                <option value="โซน 4 เขตปอเนาะฆือแล">โซน 4 ปอเนาะฆือแล</option>
+                                <option value="โซน 5 จาแบปะ">โซน 5 จาแบปะ</option>
+                                <option value="โซน 6 โตะเมาะ">โซน 6 โตะเมาะ</option>
+                                <option value="โซน 7 เขตกูวิง">โซน 7 เขตกูวิง</option>
+                                <option value="โซน 8 ถนนสายบ้านผู้ใหญ่">โซน 8 สายบ้านผู้ใหญ่</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">เลขห้อง / จุดนอน</label>
+                            <input type="text" id="evac-room" placeholder="เช่น อาคาร 1 ห้อง 2" class="w-full min-w-0 p-2 border border-slate-300 rounded-xl bg-white">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">เบอร์โทรติดต่อ/ญาติ *</label>
+                            <input type="tel" id="evac-phone" required placeholder="08X-XXX-XXXX" class="w-full min-w-0 p-2 border border-slate-300 rounded-xl bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">สถานะการพักพิง</label>
+                            <select id="evac-status" class="w-full min-w-0 p-2 border border-slate-300 rounded-xl bg-white font-medium">
+                                <option value="กำลังพักพิง">กำลังพักพิง</option>
+                                <option value="ต้องการยา/ดูแลพิเศษ">ต้องการยา/ดูแลพิเศษ</option>
+                                <option value="กลับบ้านแล้ว">กลับบ้านแล้ว</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อ *</label>
-                        <input type="tel" id="evac-phone" required placeholder="08X-XXX-XXXX" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl">
+
+                <!-- SECTION 2: ข้อมูลเฉพาะผู้ป่วย (แยกส่วนชัดเจน) -->
+                <div class="p-3 bg-rose-50/80 border-2 border-rose-200 rounded-2xl space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <label for="evac-is-patient" class="font-extrabold text-rose-900 text-[11px] flex items-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-bed-pulse text-rose-600 text-sm"></i>
+                            <span>ส่วนที่ 2: ข้อมูลผู้ป่วย (แยกบันทึกทางการแพทย์)</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="evac-is-patient" onchange="togglePatientDetailsSection()" class="sr-only peer">
+                            <div class="relative w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
+                            <span class="ms-1.5 text-[10px] font-bold text-rose-800">เป็นผู้ป่วย</span>
+                        </label>
                     </div>
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">สถานะการพักพิง</label>
-                        <select id="evac-status" class="w-full min-w-0 p-2.5 border border-slate-300 rounded-xl bg-white font-medium">
-                            <option value="กำลังพักพิง">กำลังพักพิง</option>
-                            <option value="ต้องการยา/ดูแลพิเศษ">ต้องการยา/ดูแลพิเศษ</option>
-                            <option value="กลับบ้านแล้ว">กลับบ้านแล้ว</option>
-                        </select>
+
+                    <div id="patient-details-fields" class="hidden space-y-2 pt-1.5 border-t border-rose-200/80 animate-fade-in">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block font-bold text-rose-900 mb-1">ประเภทผู้ป่วย *</label>
+                                <select id="patient-type" class="w-full min-w-0 p-2 border border-rose-300 rounded-xl bg-white font-semibold text-rose-950">
+                                    <option value="ผู้ป่วยติดเตียง">ผู้ป่วยติดเตียง</option>
+                                    <option value="ผู้ป่วยติดบ้าน">ผู้ป่วยติดบ้าน</option>
+                                    <option value="ผู้พิการไม่สามารถช่วยตัวเองได้">ผู้พิการไม่สามารถช่วยตัวเองได้</option>
+                                    <option value="ผู้ป่วยโรคเรื้อรัง (เบาหวาน/ความดัน/หัวใจ)">ผู้ป่วยโรคเรื้อรัง</option>
+                                    <option value="ผู้ป่วยฟอกไต / ใช้ออกซิเจน">ผู้ป่วยฟอกไต / ใช้ออกซิเจน</option>
+                                    <option value="ผู้ป่วยทั่วไป / บาดเจ็บ">ผู้ป่วยทั่วไป / บาดเจ็บ</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-bold text-rose-900 mb-1">ระดับความเร่งด่วน</label>
+                                <select id="patient-urgency" class="w-full min-w-0 p-2 border border-rose-300 rounded-xl bg-white font-semibold text-rose-950">
+                                    <option value="เร่งด่วนมาก (สีแดง)">เร่งด่วนมาก (สีแดง)</option>
+                                    <option value="เฝ้าระวังใกล้ชิด (สีเหลือง)">เฝ้าระวังใกล้ชิด (สีเหลือง)</option>
+                                    <option value="อาการคงที่ (สีเขียว)">อาการคงที่ (สีเขียว)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-rose-900 mb-1">โรคประจำตัว / อาการป่วยปัจจุบัน *</label>
+                            <input type="text" id="patient-condition" placeholder="เช่น ความดันสูง เบาหวาน อัมพฤกษ์ แผลกดทับ" class="w-full min-w-0 p-2 border border-rose-300 rounded-xl bg-white focus:outline-none focus:border-rose-500">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-rose-900 mb-1">ยาประจำตัว / อุปกรณ์การแพทย์ที่ต้องการ</label>
+                            <input type="text" id="patient-equipment" placeholder="เช่น ถังออกซิเจน ที่นอนลม แพมเพิส ยาอินซูลิน" class="w-full min-w-0 p-2 border border-rose-300 rounded-xl bg-white focus:outline-none focus:border-rose-500">
+                        </div>
                     </div>
                 </div>
 
                 <button type="submit" id="evac-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl shadow transition text-sm flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลผู้อพยพ
+                    <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลลงระบบ
                 </button>
             </form>
         </div>
@@ -1338,6 +1439,14 @@
         let announcementsList = [];
         let evacueesList = [];
         let citizenReportsList = [];
+        
+        // เบอร์โทรสายตรงในหน้าต่าง SOS (Super Admin เพิ่ม/ลบได้)
+        let sosHotlineContactsData = [
+            { id: "sos_hot_1", name: "แบลี", phone: "0886822347", color: "red" },
+            { id: "sos_hot_2", name: "นัสรี", phone: "0621891711", color: "rose" }
+        ];
+
+        // เบอร์โทรสายด่วนฉุกเฉินในแท็บโทรด่วน
         let emergencyContactsData = [
             {
                 id: "contact_1",
@@ -1622,7 +1731,6 @@
                     firebaseDb = firebase.database();
                     floodStateRef = firebaseDb.ref('ban_khlorae_flood_state');
 
-                    // Listen for Firebase connection status (.info/connected)
                     firebaseDb.ref('.info/connected').on('value', (snap) => {
                         isFirebaseConnected = (snap.val() === true);
                         const statusText = document.getElementById('cloud-status-text');
@@ -1637,7 +1745,6 @@
                         }
                     });
 
-                    // Real-time listener on 'ban_khlorae_flood_state'
                     floodStateRef.on('value', (snapshot) => {
                         const cloudData = snapshot.val();
                         if (cloudData && cloudData.version) {
@@ -1651,7 +1758,6 @@
                             applyMasterSharedState(cloudData, shouldNotify);
                         } else if (isInitialFirebaseLoad) {
                             isInitialFirebaseLoad = false;
-                            // Seed initial state to Firebase if database node is empty
                             const initialState = saveMasterSharedState("เริ่มต้นระบบฐานข้อมูลน้ำท่วมบ้านคลอแระ");
                             floodStateRef.set(initialState).catch(() => {});
                         }
@@ -1682,7 +1788,6 @@
             }
         });
 
-        // Cloud Real-time Sync via WebSockets (MQTT) for Backup Cross-Device Instant Updates
         function initCloudRealtimeSync() {
             if (typeof mqtt === 'undefined') return;
             try {
@@ -1748,6 +1853,7 @@
                 evacueesList: evacueesList || [],
                 citizenReportsList: citizenReportsList || [],
                 emergencyContactsData: emergencyContactsData || [],
+                sosHotlineContactsData: sosHotlineContactsData || [],
                 currentWeatherState: currentWeatherState,
                 rainMm: currentRainVal,
                 sosCount: sosCount || 0,
@@ -1760,6 +1866,7 @@
                 localStorage.setItem('klr_canals_telemetry_data', JSON.stringify(canalsTelemetryData));
                 localStorage.setItem('klr_announcements_data', JSON.stringify(announcementsList));
                 localStorage.setItem('klr_emergency_contacts', JSON.stringify(emergencyContactsData));
+                localStorage.setItem('klr_sos_hotline_contacts', JSON.stringify(sosHotlineContactsData));
                 localStorage.setItem('klr_alert_level', currentAlertLevel);
                 localStorage.setItem('klr_weather_state', JSON.stringify(currentWeatherState));
             } catch(e) {}
@@ -1791,6 +1898,11 @@
                 emergencyContactsData = state.emergencyContactsData;
                 saveEmergencyContactsToLocal();
                 renderEmergencyContactsUI();
+            }
+            if (Array.isArray(state.sosHotlineContactsData)) {
+                sosHotlineContactsData = state.sosHotlineContactsData;
+                saveSosHotlineContactsToLocal();
+                renderSosHotlineContactsUI();
             }
             evacueesList = Array.isArray(state.evacueesList) ? state.evacueesList : [];
             renderEvacueesList();
@@ -1869,7 +1981,6 @@
         function broadcastDataChange(type, payload, messageStr) {
             const masterState = saveMasterSharedState(messageStr);
 
-            // 1. Push directly to Firebase Realtime Database (ming-2d05c)
             if (floodStateRef) {
                 try {
                     floodStateRef.set(masterState).catch((err) => {
@@ -1878,7 +1989,6 @@
                 } catch (e) {}
             }
 
-            // 2. Push to local BroadcastChannel & localStorage for instant multi-tab sync
             const syncData = {
                 type: type,
                 payload: payload,
@@ -1893,7 +2003,6 @@
             }
             try { localStorage.setItem('klr_flood_sync_event', JSON.stringify(syncData)); } catch(e) {}
 
-            // 3. Publish retained state to Cloud MQTT Broker as secondary real-time layer
             if (mqttClient && isCloudConnected) {
                 try {
                     mqttClient.publish(CLOUD_TOPIC_STATE, JSON.stringify(syncData), { qos: 1, retain: true });
@@ -1956,16 +2065,20 @@
                     saveEmergencyContactsToLocal();
                     renderEmergencyContactsUI();
                 }
+            } else if (data.type === 'SOS_HOTLINES_SYNC') {
+                if (data.payload && Array.isArray(data.payload.hotlines)) {
+                    sosHotlineContactsData = data.payload.hotlines;
+                    saveSosHotlineContactsToLocal();
+                    renderSosHotlineContactsUI();
+                }
             }
         }
 
-        // --- พัฒนาการแจ้งเตือนพิเศษ: เสียงเตือนไซเรนแบบ Double Beep และระบบสั่น ---
         function playAlertSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const now = ctx.currentTime;
                 
-                // เสียงตี๊ดครั้งที่ 1 (คลื่นฟันเลื่อยเพื่อให้คมชัดและดังเด่นชัดขึ้น)
                 const osc1 = ctx.createOscillator();
                 const gain1 = ctx.createGain();
                 osc1.type = 'sawtooth';
@@ -1978,7 +2091,6 @@
                 osc1.start(now);
                 osc1.stop(now + 0.15);
 
-                // เสียงตี๊ดครั้งที่ 2 (Double Beep)
                 const osc2 = ctx.createOscillator();
                 const gain2 = ctx.createGain();
                 osc2.type = 'sawtooth';
@@ -2249,7 +2361,6 @@
             });
         }
 
-        // Officer & Super Admin Shared Functions for Weather, Parameters & Broadcast
         function applyRainValueUI(rainMm) {
             const rainValEl = document.getElementById('stat-rain-val');
             if (rainValEl) rainValEl.innerHTML = `${rainMm} <span class="text-[10px] font-normal text-blue-200/70">มม.</span>`;
@@ -2382,33 +2493,54 @@
 
         function adminExportEvacueesData() {
             if (evacueesList.length === 0) {
-                showCustomMessage("ยังไม่มีรายชื่อผู้อพยพในระบบสำหรับการส่งออกไฟล์ CSV");
+                showCustomMessage("ยังไม่มีรายชื่อผู้อพยพและผู้ป่วยในระบบสำหรับการส่งออกไฟล์ CSV");
                 return;
             }
-            const headers = ["ลำดับ", "ชื่อ-นามสกุล", "อายุ", "กลุ่มเปราะบาง", "มาจากโซน", "ศูนย์พักพิง", "ห้อง/จุดพัก", "เบอร์โทรศัพท์", "สถานะ", "เวลาบันทึก"];
+            const headers = [
+                "ลำดับ",
+                "ชื่อ-นามสกุล",
+                "อายุ",
+                "กลุ่มบุคคล",
+                "เป็นผู้ป่วย",
+                "ประเภทผู้ป่วย",
+                "ระดับความเร่งด่วน",
+                "โรคประจำตัว/อาการป่วย",
+                "ยา/อุปกรณ์การแพทย์ที่ต้องการ",
+                "มาจากโซน",
+                "ศูนย์พักพิง",
+                "ห้อง/จุดพัก",
+                "เบอร์โทรศัพท์",
+                "สถานะการพักพิง",
+                "เวลาบันทึก"
+            ];
             const rows = evacueesList.map((e, i) => [
                 i + 1,
                 `"${(e.name || '').replace(/"/g, '""')}"`,
                 e.age || '-',
-                `"${e.group || ''}"`,
-                `"${e.zone || ''}"`,
-                `"${e.shelter || ''}"`,
-                `"${e.room || ''}"`,
-                `"${e.phone || ''}"`,
-                `"${e.status || ''}"`,
-                `"${e.updatedAt || ''}"`
+                `"${(e.group || '').replace(/"/g, '""')}"`,
+                e.isPatient ? '"ใช่ (ผู้ป่วย)"' : '"ไม่ใช่"',
+                `"${(e.isPatient ? (e.patientType || '-') : '-').replace(/"/g, '""')}"`,
+                `"${(e.isPatient ? (e.patientUrgency || '-') : '-').replace(/"/g, '""')}"`,
+                `"${(e.isPatient ? (e.patientCondition || '-') : '-').replace(/"/g, '""')}"`,
+                `"${(e.isPatient ? (e.patientEquipment || '-') : '-').replace(/"/g, '""')}"`,
+                `"${(e.zone || '').replace(/"/g, '""')}"`,
+                `"${(e.shelter || '').replace(/"/g, '""')}"`,
+                `"${(e.room || '').replace(/"/g, '""')}"`,
+                `"${(e.phone || '').replace(/"/g, '""')}"`,
+                `"${(e.status || '').replace(/"/g, '""')}"`,
+                `"${(e.updatedAt || '').replace(/"/g, '""')}"`
             ]);
             const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `รายชื่อผู้อพยพ_บ้านคลอแระ_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `ทะเบียนผู้อพยพและผู้ป่วย_บ้านคลอแระ_${new Date().toISOString().slice(0,10)}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            showToast("ดาวน์โหลดไฟล์ CSV ข้อมูลผู้อพยพเรียบร้อยแล้ว");
+            showToast("ดาวน์โหลดไฟล์ CSV ทะเบียนผู้อพยพและผู้ป่วยเรียบร้อยแล้ว");
         }
 
         // Canals Telemetry Rendering & Officer Controls
@@ -2765,6 +2897,7 @@
             loadCitizenReportsFromLocal();
             loadActivityLogsFromLocal();
             loadEmergencyContactsFromLocal();
+            loadSosHotlineContactsFromLocal();
 
             try {
                 const savedMaster = localStorage.getItem('klr_master_shared_state');
@@ -2942,6 +3075,7 @@
                 renderEvacueesList();
                 renderCitizenReports();
                 renderEmergencyContactsUI();
+                renderSosHotlineContactsUI();
                 renderAnnouncements();
                 recordActivityLog("เข้าสู่ระบบโหมดผู้ดูแลระบบสูงสุด (Super Admin)");
                 showToast("เข้าสู่ระบบ Super Admin เรียบร้อยแล้ว!");
@@ -2956,7 +3090,6 @@
                 document.getElementById('super-admin-panel').classList.add('hidden');
                 if (!isOfficerLoggedIn) {
                     document.getElementById('warning-level-selector').classList.add('hidden');
-                    document.getElementById('officer-action-timeline-card')?.classList.remove('hidden');
                     document.getElementById('officer-action-timeline-card')?.classList.add('hidden');
                     document.querySelectorAll('.admin-delete-contact-btn, .officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-hh-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.add('hidden'));
                     const preview = document.getElementById('last-officer-msg-preview');
@@ -2974,17 +3107,56 @@
                 renderEvacueesList();
                 renderCitizenReports();
                 renderEmergencyContactsUI();
+                renderSosHotlineContactsUI();
                 showToast("ออกจากระบบ Super Admin แล้ว");
             });
         }
 
-        // Evacuee Management & Filtering
-        function openEvacueeModal(editId = null) {
+        // ============================================================================
+        // EVACUEE & SEPARATED PATIENT REGISTRATION MANAGEMENT
+        // ============================================================================
+        function togglePatientDetailsSection() {
+            const isPatientCheckbox = document.getElementById('evac-is-patient');
+            const detailsFields = document.getElementById('patient-details-fields');
+            const conditionInput = document.getElementById('patient-condition');
+            if (isPatientCheckbox && detailsFields) {
+                if (isPatientCheckbox.checked) {
+                    detailsFields.classList.remove('hidden');
+                    if (conditionInput) conditionInput.required = true;
+                } else {
+                    detailsFields.classList.add('hidden');
+                    if (conditionInput) conditionInput.required = false;
+                }
+            }
+        }
+
+        function handleGroupChangeAutoPatient() {
+            const groupVal = document.getElementById('evac-group')?.value || '';
+            const patientGroups = ["ผู้ป่วยติดเตียง", "ผู้ป่วยติดบ้าน", "ผู้พิการไม่สามารถช่วยตัวเองได้"];
+            if (patientGroups.includes(groupVal)) {
+                const isPatientCheckbox = document.getElementById('evac-is-patient');
+                const patientTypeSelect = document.getElementById('patient-type');
+                if (isPatientCheckbox && !isPatientCheckbox.checked) {
+                    isPatientCheckbox.checked = true;
+                    togglePatientDetailsSection();
+                }
+                if (patientTypeSelect) {
+                    patientTypeSelect.value = groupVal;
+                }
+            }
+        }
+
+        function openEvacueeModal(editId = null, forcePatientMode = false) {
             if (!isOfficerLoggedIn && !isSuperAdminLoggedIn) {
-                showCustomMessage("เฉพาะเจ้าหน้าที่หรือผู้ดูแลระบบเท่านั้นที่สามารถลงทะเบียนผู้อพยพได้");
+                showCustomMessage("เฉพาะเจ้าหน้าที่หรือผู้ดูแลระบบเท่านั้นที่สามารถลงทะเบียนผู้อพยพและผู้ป่วยได้");
                 return;
             }
             const editInput = document.getElementById('evac-edit-id');
+            const modalTitle = document.getElementById('evac-modal-title');
+            const modalIcon = document.getElementById('evac-modal-icon');
+            const modalIconWrap = document.getElementById('evac-modal-icon-wrap');
+            const isPatientCheckbox = document.getElementById('evac-is-patient');
+
             if (editId) {
                 const target = evacueesList.find(e => e.id === editId);
                 if (target) {
@@ -2992,11 +3164,30 @@
                     document.getElementById('evac-shelter').value = target.shelter;
                     document.getElementById('evac-name').value = target.name;
                     document.getElementById('evac-age').value = target.age !== '-' ? target.age : '';
-                    document.getElementById('evac-group').value = target.group;
+                    document.getElementById('evac-group').value = target.group || 'ทั่วไป';
                     document.getElementById('evac-zone').value = target.zone;
                     document.getElementById('evac-room').value = target.room !== 'ไม่ระบุ' ? target.room : '';
                     document.getElementById('evac-phone').value = target.phone;
                     document.getElementById('evac-status').value = target.status;
+
+                    if (target.isPatient) {
+                        isPatientCheckbox.checked = true;
+                        document.getElementById('patient-type').value = target.patientType || 'ผู้ป่วยติดเตียง';
+                        document.getElementById('patient-urgency').value = target.patientUrgency || 'เฝ้าระวังใกล้ชิด (สีเหลือง)';
+                        document.getElementById('patient-condition').value = target.patientCondition || '';
+                        document.getElementById('patient-equipment').value = target.patientEquipment || '';
+                        modalTitle.innerText = "แก้ไขข้อมูลผู้ป่วยและผู้อพยพ";
+                        modalIcon.className = "fa-solid fa-bed-pulse";
+                        modalIconWrap.className = "w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xl mx-auto mb-1";
+                    } else {
+                        isPatientCheckbox.checked = false;
+                        document.getElementById('patient-condition').value = '';
+                        document.getElementById('patient-equipment').value = '';
+                        modalTitle.innerText = "แก้ไขข้อมูลผู้อพยพ";
+                        modalIcon.className = "fa-solid fa-user-pen";
+                        modalIconWrap.className = "w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mx-auto mb-1";
+                    }
+                    togglePatientDetailsSection();
                 }
             } else {
                 editInput.value = '';
@@ -3004,7 +3195,27 @@
                 document.getElementById('evac-age').value = '';
                 document.getElementById('evac-room').value = '';
                 document.getElementById('evac-phone').value = '';
-                document.getElementById('evac-status').value = 'กำลังพักพิง';
+                document.getElementById('patient-condition').value = '';
+                document.getElementById('patient-equipment').value = '';
+
+                if (forcePatientMode) {
+                    document.getElementById('evac-group').value = 'ผู้ป่วยติดเตียง';
+                    document.getElementById('evac-status').value = 'ต้องการยา/ดูแลพิเศษ';
+                    isPatientCheckbox.checked = true;
+                    document.getElementById('patient-type').value = 'ผู้ป่วยติดเตียง';
+                    document.getElementById('patient-urgency').value = 'เร่งด่วนมาก (สีแดง)';
+                    modalTitle.innerText = "ลงทะเบียนข้อมูลผู้ป่วย (แยกเฉพาะ)";
+                    modalIcon.className = "fa-solid fa-bed-pulse";
+                    modalIconWrap.className = "w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xl mx-auto mb-1";
+                } else {
+                    document.getElementById('evac-group').value = 'ทั่วไป';
+                    document.getElementById('evac-status').value = 'กำลังพักพิง';
+                    isPatientCheckbox.checked = false;
+                    modalTitle.innerText = "ลงทะเบียนข้อมูลผู้อพยพ";
+                    modalIcon.className = "fa-solid fa-user-plus";
+                    modalIconWrap.className = "w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mx-auto mb-1";
+                }
+                togglePatientDetailsSection();
             }
             document.getElementById('evacuee-modal').classList.remove('hidden');
         }
@@ -3028,6 +3239,8 @@
         function handleEvacueeSubmit(e) {
             e.preventDefault();
             const editId = document.getElementById('evac-edit-id').value;
+            const isPatient = document.getElementById('evac-is-patient').checked;
+
             const recordData = {
                 id: editId || ('evac_' + Date.now()),
                 shelter: document.getElementById('evac-shelter').value,
@@ -3038,43 +3251,58 @@
                 room: document.getElementById('evac-room').value.trim() || 'ไม่ระบุ',
                 phone: document.getElementById('evac-phone').value.trim(),
                 status: document.getElementById('evac-status').value || 'กำลังพักพิง',
+                isPatient: isPatient,
+                patientType: isPatient ? document.getElementById('patient-type').value : '',
+                patientUrgency: isPatient ? document.getElementById('patient-urgency').value : '',
+                patientCondition: isPatient ? (document.getElementById('patient-condition').value.trim() || 'ไม่ระบุอาการ') : '',
+                patientEquipment: isPatient ? (document.getElementById('patient-equipment').value.trim() || 'ไม่มี') : '',
                 updatedAt: `${new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.`
             };
+
+            const roleLabel = isPatient ? `ผู้ป่วย (${recordData.patientType})` : "ผู้อพยพ";
 
             if (editId) {
                 const idx = evacueesList.findIndex(item => item.id === editId);
                 if (idx !== -1) evacueesList[idx] = recordData;
-                recordActivityLog(`อัปเดตข้อมูลผู้อพยพ: ${recordData.name} (${recordData.status})`);
+                recordActivityLog(`อัปเดตข้อมูล${roleLabel}: ${recordData.name} (${recordData.status})`);
             } else {
                 evacueesList.unshift(recordData);
-                recordActivityLog(`ลงทะเบียนผู้อพยพใหม่: ${recordData.name} เข้าพักที่ ${recordData.shelter}`);
+                recordActivityLog(`ลงทะเบียน${roleLabel}ใหม่: ${recordData.name} เข้าพักที่ ${recordData.shelter}`);
             }
 
             saveEvacueesToLocal();
             renderEvacueesList();
-            broadcastDataChange('EVACUEE_SYNC', { list: evacueesList }, `อัปเดตข้อมูลผู้อพยพ: ${recordData.name}`);
+            broadcastDataChange('EVACUEE_SYNC', { list: evacueesList }, `อัปเดตทะเบียน${roleLabel}: ${recordData.name}`);
             closeEvacueeModal();
-            showToast(`บันทึกข้อมูลคุณ "${recordData.name}" เรียบร้อยแล้ว!`);
+            showToast(`บันทึกข้อมูล${roleLabel} "${recordData.name}" เรียบร้อยแล้ว!`);
             switchBottomTab('shelter');
         }
 
         function deleteEvacueeRecord(id) {
-            showCustomConfirm("ต้องการลบรายชื่อผู้อพยพรายนี้ใช่หรือไม่?", () => {
+            showCustomConfirm("ต้องการลบรายชื่อนี้ใช่หรือไม่?", () => {
                 evacueesList = evacueesList.filter(e => e.id !== id);
                 saveEvacueesToLocal();
                 renderEvacueesList();
-                broadcastDataChange('EVACUEE_SYNC', { list: evacueesList }, "ลบรายชื่อผู้อพยพ 1 รายการ");
-                showToast("ลบรายชื่อผู้อพยพเรียบร้อยแล้ว");
+                broadcastDataChange('EVACUEE_SYNC', { list: evacueesList }, "ลบรายชื่อในทะเบียนศูนย์พักพิง 1 รายการ");
+                showToast("ลบรายชื่อเรียบร้อยแล้ว");
             });
         }
 
-        function filterEvacueesByShelter(shelterName, btnEl) {
-            currentShelterFilter = shelterName;
+        function filterEvacueesByShelter(filterKey, btnEl) {
+            currentShelterFilter = filterKey;
             document.querySelectorAll('.shelter-filter-btn').forEach(b => {
-                b.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition";
+                if (b.id === 'filter-shelter-patients') {
+                    b.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 font-bold whitespace-nowrap hover:bg-rose-100 transition flex items-center gap-1";
+                } else {
+                    b.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold whitespace-nowrap hover:bg-slate-200 transition";
+                }
             });
             if (btnEl) {
-                btnEl.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold whitespace-nowrap transition";
+                if (filterKey === 'PATIENTS_ONLY') {
+                    btnEl.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold whitespace-nowrap transition flex items-center gap-1 shadow-sm";
+                } else {
+                    btnEl.className = "shelter-filter-btn px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold whitespace-nowrap transition";
+                }
             }
             renderEvacueesList();
         }
@@ -3096,6 +3324,12 @@
             if (s1) s1.innerText = `พักอยู่ ${c1} / 150 คน`;
             if (s2) s2.innerText = `พักอยู่ ${c2} / 80 คน`;
             if (s3) s3.innerText = `พักอยู่ ${c3} / 60 คน`;
+
+            const patientsTotal = evacueesList.filter(e => e.isPatient).length;
+            const patientFilterCountEl = document.getElementById('patient-filter-count');
+            const adminStatPatientsEl = document.getElementById('admin-stat-patients');
+            if (patientFilterCountEl) patientFilterCountEl.innerText = patientsTotal;
+            if (adminStatPatientsEl) adminStatPatientsEl.innerText = patientsTotal;
         }
 
         function renderEvacueesList() {
@@ -3111,17 +3345,26 @@
             const searchKeyword = (document.getElementById('evacuee-search')?.value || '').trim().toLowerCase();
 
             const filtered = evacueesList.filter(item => {
-                const matchShelter = (currentShelterFilter === 'all') || (item.shelter === currentShelterFilter);
+                let matchCategory = true;
+                if (currentShelterFilter === 'PATIENTS_ONLY') {
+                    matchCategory = Boolean(item.isPatient);
+                } else if (currentShelterFilter !== 'all') {
+                    matchCategory = (item.shelter === currentShelterFilter);
+                }
+
                 const matchSearch = !searchKeyword ||
                     (item.name && item.name.toLowerCase().includes(searchKeyword)) ||
                     (item.phone && item.phone.toLowerCase().includes(searchKeyword)) ||
                     (item.zone && item.zone.toLowerCase().includes(searchKeyword)) ||
-                    (item.status && item.status.toLowerCase().includes(searchKeyword));
-                return matchShelter && matchSearch;
+                    (item.status && item.status.toLowerCase().includes(searchKeyword)) ||
+                    (item.patientType && item.patientType.toLowerCase().includes(searchKeyword)) ||
+                    (item.patientCondition && item.patientCondition.toLowerCase().includes(searchKeyword)) ||
+                    (item.patientEquipment && item.patientEquipment.toLowerCase().includes(searchKeyword));
+                return matchCategory && matchSearch;
             });
 
             if (filtered.length === 0) {
-                list.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">ไม่พบรายชื่อผู้อพยพตามเงื่อนไขที่ค้นหา</div>`;
+                list.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">ไม่พบรายชื่อตามเงื่อนไขที่ค้นหา</div>`;
                 return;
             }
 
@@ -3132,8 +3375,33 @@
                 if (data.status === 'ต้องการยา/ดูแลพิเศษ') statusBadge = "bg-red-100 text-red-800 animate-pulse";
                 else if (data.status === 'กลับบ้านแล้ว') statusBadge = "bg-slate-200 text-slate-600";
 
+                const cardBorder = data.isPatient ? "bg-rose-50/40 border-rose-200" : "bg-slate-50 border-slate-200";
+
+                let patientBlockHtml = '';
+                if (data.isPatient) {
+                    let urgencyBadge = "bg-amber-100 text-amber-800 border-amber-300";
+                    if (data.patientUrgency && data.patientUrgency.includes("สีแดง")) {
+                        urgencyBadge = "bg-red-600 text-white border-red-700";
+                    } else if (data.patientUrgency && data.patientUrgency.includes("สีเขียว")) {
+                        urgencyBadge = "bg-emerald-100 text-emerald-800 border-emerald-300";
+                    }
+
+                    patientBlockHtml = `
+                        <div class="mt-1.5 p-2 bg-rose-100/70 border border-rose-200 rounded-xl space-y-1 text-[10px] text-rose-950">
+                            <div class="flex items-center justify-between gap-1 flex-wrap">
+                                <span class="font-extrabold text-rose-800 flex items-center gap-1">
+                                    <i class="fa-solid fa-bed-pulse text-rose-600"></i> ${data.patientType || 'ผู้ป่วย'}
+                                </span>
+                                <span class="px-1.5 py-0.2 rounded border text-[9px] font-bold ${urgencyBadge}">${data.patientUrgency || 'เฝ้าระวัง'}</span>
+                            </div>
+                            <p class="leading-snug"><strong>อาการ/โรคประจำตัว:</strong> ${data.patientCondition || '-'}</p>
+                            <p class="leading-snug text-rose-900"><strong>ยา/อุปกรณ์ที่ต้องการ:</strong> ${data.patientEquipment || '-'}</p>
+                        </div>
+                    `;
+                }
+
                 return `
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between items-start gap-2 evacuee-item">
+                    <div class="p-3 ${cardBorder} border rounded-xl text-xs flex justify-between items-start gap-2 evacuee-item">
                         <div class="min-w-0 space-y-1 flex-1">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="font-extrabold text-slate-900">${data.name} (${data.age} ปี)</span>
@@ -3141,7 +3409,8 @@
                                 <span class="${statusBadge} text-[9px] font-bold px-1.5 py-0.5 rounded">${data.status}</span>
                             </div>
                             <p class="text-[10px] text-slate-600">มาจาก: ${data.zone} | <strong>พักที่: ${data.shelter}</strong> (${data.room})</p>
-                            <p class="text-[10px] text-slate-400 font-mono"><i class="fa-solid fa-phone mr-1"></i>${data.phone} • อัปเดต ${data.updatedAt}</p>
+                            ${patientBlockHtml}
+                            <p class="text-[10px] text-slate-400 font-mono pt-0.5"><i class="fa-solid fa-phone mr-1"></i>${data.phone} • อัปเดต ${data.updatedAt}</p>
                         </div>
                         <div class="flex items-center gap-1 flex-shrink-0 ${showCtrl} officer-evac-ctrl-btn">
                             <button onclick="openEvacueeModal('${data.id}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-[10px]" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
@@ -3338,8 +3607,148 @@
             }
         }
 
+        // ============================================================================
+        // SOS MODAL & SUPER ADMIN SOS HOTLINE ADD / DELETE MANAGEMENT
+        // ============================================================================
+        function saveSosHotlineContactsToLocal() {
+            try { localStorage.setItem('klr_sos_hotline_contacts', JSON.stringify(sosHotlineContactsData)); } catch (e) {}
+        }
+
+        function loadSosHotlineContactsFromLocal() {
+            try {
+                const saved = localStorage.getItem('klr_sos_hotline_contacts');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) {
+                        sosHotlineContactsData = parsed;
+                    }
+                }
+            } catch (e) {}
+            renderSosHotlineContactsUI();
+        }
+
+        function renderSosHotlineContactsUI() {
+            const listEl = document.getElementById('sos-hotline-buttons-list');
+            const adminControls = document.getElementById('sos-admin-controls');
+            const adminBadge = document.getElementById('sos-admin-badge');
+
+            if (adminControls) {
+                if (isSuperAdminLoggedIn) adminControls.classList.remove('hidden');
+                else adminControls.classList.add('hidden');
+            }
+            if (adminBadge) {
+                if (isSuperAdminLoggedIn) adminBadge.classList.remove('hidden');
+                else adminBadge.classList.add('hidden');
+            }
+
+            if (!listEl) return;
+
+            if (sosHotlineContactsData.length === 0) {
+                listEl.innerHTML = `<div class="col-span-full text-center text-[11px] text-slate-400 py-2">ยังไม่มีเบอร์โทรสายตรงในหน้าแจ้ง SOS</div>`;
+                return;
+            }
+
+            listEl.innerHTML = sosHotlineContactsData.map((item, idx) => {
+                const cleanTel = String(item.phone || '').replace(/[^0-9+]/g, '');
+                const btnBg = (idx % 2 === 0) ? "bg-red-600 hover:bg-red-700" : "bg-rose-600 hover:bg-rose-700";
+                const deleteBtnHtml = isSuperAdminLoggedIn
+                    ? `<button type="button" onclick="deleteSosHotlineContact('${item.id}')" class="px-2 py-2 bg-slate-900 hover:bg-black text-red-400 hover:text-red-300 rounded-xl flex items-center justify-center shadow transition flex-shrink-0" title="ลบเบอร์โทร SOS นี้">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                       </button>`
+                    : '';
+
+                return `
+                    <div class="flex items-center gap-1 min-w-0">
+                        <a href="tel:${cleanTel}" class="flex-1 min-w-0 p-2 ${btnBg} text-white rounded-xl text-center font-bold flex items-center justify-center gap-1.5 shadow transition truncate" title="โทร ${item.name} (${item.phone})">
+                            <i class="fa-solid fa-phone flex-shrink-0"></i>
+                            <span class="truncate">${item.name}</span>
+                        </a>
+                        ${deleteBtnHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addSosHotlineContact() {
+            if (!isSuperAdminLoggedIn) {
+                showCustomMessage("เฉพาะ Super Admin เท่านั้นที่สามารถเพิ่มเบอร์โทรในหน้าแจ้ง SOS ได้");
+                return;
+            }
+            const nameInput = document.getElementById('new-sos-hotline-name');
+            const phoneInput = document.getElementById('new-sos-hotline-phone');
+            const name = (nameInput?.value || '').trim();
+            const phone = (phoneInput?.value || '').trim();
+
+            if (!name || !phone) {
+                showCustomMessage("กรุณากรอกชื่อผู้รับแจ้ง SOS และเบอร์โทรศัพท์ให้ครบถ้วน");
+                return;
+            }
+
+            sosHotlineContactsData.push({
+                id: 'sos_hot_' + Date.now(),
+                name: name,
+                phone: phone,
+                color: 'red'
+            });
+
+            if (nameInput) nameInput.value = '';
+            if (phoneInput) phoneInput.value = '';
+
+            saveSosHotlineContactsToLocal();
+            renderSosHotlineContactsUI();
+            recordActivityLog(`Super Admin เพิ่มเบอร์โทรสายตรง SOS: ${name} (${phone})`);
+            broadcastDataChange('SOS_HOTLINES_SYNC', { hotlines: sosHotlineContactsData }, `📞 เพิ่มเบอร์โทรสายตรง SOS: ${name}`);
+            showToast(`เพิ่มเบอร์โทร SOS "${name}" เรียบร้อยแล้ว`);
+        }
+
+        function adminAddSosHotlineFromPanel() {
+            if (!isSuperAdminLoggedIn) return;
+            const nameInput = document.getElementById('admin-sos-hotline-name');
+            const phoneInput = document.getElementById('admin-sos-hotline-phone');
+            const name = (nameInput?.value || '').trim();
+            const phone = (phoneInput?.value || '').trim();
+
+            if (!name || !phone) {
+                showCustomMessage("กรุณากรอกชื่อผู้รับแจ้ง SOS และเบอร์โทรศัพท์ให้ครบถ้วน");
+                return;
+            }
+
+            sosHotlineContactsData.push({
+                id: 'sos_hot_' + Date.now(),
+                name: name,
+                phone: phone,
+                color: 'red'
+            });
+
+            if (nameInput) nameInput.value = '';
+            if (phoneInput) phoneInput.value = '';
+
+            saveSosHotlineContactsToLocal();
+            renderSosHotlineContactsUI();
+            recordActivityLog(`Super Admin เพิ่มเบอร์โทรสายตรง SOS: ${name} (${phone})`);
+            broadcastDataChange('SOS_HOTLINES_SYNC', { hotlines: sosHotlineContactsData }, `📞 เพิ่มเบอร์โทรสายตรง SOS: ${name}`);
+            showToast(`เพิ่มเบอร์โทรในหน้าแจ้ง SOS "${name}" เรียบร้อยแล้ว`);
+        }
+
+        function deleteSosHotlineContact(id) {
+            if (!isSuperAdminLoggedIn) {
+                showCustomMessage("เฉพาะ Super Admin เท่านั้นที่สามารถลบเบอร์โทรในหน้าแจ้ง SOS ได้");
+                return;
+            }
+            const target = sosHotlineContactsData.find(item => item.id === id);
+            showCustomConfirm(`ต้องการลบเบอร์โทรสายตรง SOS "${target ? target.name : ''}" ใช่หรือไม่?`, () => {
+                sosHotlineContactsData = sosHotlineContactsData.filter(item => item.id !== id);
+                saveSosHotlineContactsToLocal();
+                renderSosHotlineContactsUI();
+                recordActivityLog(`Super Admin ลบเบอร์โทรสายตรง SOS: ${target ? target.name : id}`);
+                broadcastDataChange('SOS_HOTLINES_SYNC', { hotlines: sosHotlineContactsData }, "อัปเดตรายการเบอร์โทรสายตรง SOS");
+                showToast("ลบเบอร์โทรในหน้าแจ้ง SOS เรียบร้อยแล้ว");
+            });
+        }
+
         function openSosModal() {
             document.getElementById('sos-coords-text').innerText = "กดเพื่อระบุพิกัด GPS เรียลไทม์";
+            renderSosHotlineContactsUI();
             document.getElementById('sos-modal').classList.remove('hidden');
         }
         function closeSosModal() { document.getElementById('sos-modal').classList.add('hidden'); }
@@ -3574,8 +3983,8 @@
             const phoneInput = document.getElementById('admin-contact-phone');
 
             const title = (nameInput?.value || '').trim();
+            const sub = (subInput?.value || '').trim();
             const phoneRaw = (phoneInput?.value || '').trim();
-            const sub = (subInput?.value || '').trim() || `สายด่วนฉุกเฉิน (${phoneRaw})`;
 
             if (!title || !phoneRaw) {
                 showCustomMessage("กรุณากรอกชื่อผู้ติดต่อ/หน่วยงาน และเบอร์โทรศัพท์ให้ครบถ้วน");
@@ -3585,35 +3994,36 @@
             const newContact = {
                 id: 'contact_' + Date.now(),
                 title: title,
-                sub: sub,
+                sub: sub || `สายด่วนฉุกเฉิน (${phoneRaw})`,
                 phone: phoneRaw,
                 btnText: phoneRaw.length <= 4 ? `โทร ${phoneRaw}` : 'โทรเลย',
                 color: 'emerald'
             };
 
             emergencyContactsData.push(newContact);
+            saveEmergencyContactsToLocal();
+            renderEmergencyContactsUI();
+
             if (nameInput) nameInput.value = '';
             if (subInput) subInput.value = '';
             if (phoneInput) phoneInput.value = '';
 
-            saveEmergencyContactsToLocal();
-            renderEmergencyContactsUI();
             recordActivityLog(`Super Admin เพิ่มเบอร์โทรด่วน: ${title} (${phoneRaw})`);
             broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, `📞 เพิ่มเบอร์โทรสายด่วนใหม่: ${title}`);
-            showToast(`เพิ่มเบอร์โทรด่วน "${title}" เรียบร้อยแล้ว`);
+            showToast(`เพิ่มเบอร์โทร "${title}" เรียบร้อยแล้ว`);
         }
 
         function openAdminAddContactDialog() {
             if (!isSuperAdminLoggedIn) return;
             showCustomFormDialog(
-                "เพิ่มเบอร์โทรสายด่วนฉุกเฉิน (Super Admin)",
-                "กรอกรายละเอียดเบอร์โทรด่วนเพื่อให้ประชาชนสามารถกดโทรออกได้ทันที",
+                "เพิ่มเบอร์โทรสายด่วนฉุกเฉิน",
+                "เพิ่มรายการเบอร์โทรฉุกเฉินเพื่อให้ประชาชนกดโทรออกได้ทันที",
                 [
-                    { id: 'dlg-c-title', label: 'ชื่อผู้ติดต่อ / หน่วยงาน *', type: 'text', placeholder: 'เช่น อบต.บาเระใต้ / กู้ชีพ' },
-                    { id: 'dlg-c-sub', label: 'คำอธิบาย / หน้าที่รับผิดชอบ', type: 'text', placeholder: 'เช่น ประสานงานเรือท้องแบน 24 ชม.' },
-                    { id: 'dlg-c-phone', label: 'เบอร์โทรศัพท์ *', type: 'text', placeholder: 'เช่น 08X-XXX-XXXX หรือ 1669' },
+                    { id: 'c-title', label: 'ชื่อผู้ติดต่อ / หน่วยงาน *', type: 'text', placeholder: 'เช่น อบต.บาเระใต้ / กู้ภัย' },
+                    { id: 'c-sub', label: 'คำอธิบาย / หน้าที่รับผิดชอบ', type: 'text', placeholder: 'เช่น ศูนย์ประสานงานช่วยเหลือ 24 ชม.' },
+                    { id: 'c-phone', label: 'เบอร์โทรศัพท์ *', type: 'text', placeholder: 'เช่น 08X-XXX-XXXX หรือ 1669' },
                     {
-                        id: 'dlg-c-color',
+                        id: 'c-color',
                         label: 'สีปุ่มโทรออก',
                         type: 'select',
                         value: 'emerald',
@@ -3626,10 +4036,10 @@
                     }
                 ],
                 (vals) => {
-                    const title = (vals['dlg-c-title'] || '').trim();
-                    const phoneRaw = (vals['dlg-c-phone'] || '').trim();
-                    const sub = (vals['dlg-c-sub'] || '').trim() || `สายด่วนฉุกเฉิน (${phoneRaw})`;
-                    const color = vals['dlg-c-color'] || 'emerald';
+                    const title = (vals['c-title'] || '').trim();
+                    const phoneRaw = (vals['c-phone'] || '').trim();
+                    const sub = (vals['c-sub'] || '').trim() || `สายด่วนฉุกเฉิน (${phoneRaw})`;
+                    const color = vals['c-color'] || 'emerald';
 
                     if (!title || !phoneRaw) {
                         showCustomMessage("กรุณาระบุชื่อและเบอร์โทรศัพท์ให้ครบถ้วน");
@@ -3649,7 +4059,7 @@
                     renderEmergencyContactsUI();
                     recordActivityLog(`Super Admin เพิ่มเบอร์โทรด่วน: ${title} (${phoneRaw})`);
                     broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, `📞 เพิ่มเบอร์โทรสายด่วนใหม่: ${title}`);
-                    showToast(`เพิ่มเบอร์โทรด่วน "${title}" เรียบร้อยแล้ว`);
+                    showToast(`เพิ่มเบอร์โทร "${title}" เรียบร้อยแล้ว`);
                 }
             );
         }
@@ -3665,8 +4075,8 @@
                 saveEmergencyContactsToLocal();
                 renderEmergencyContactsUI();
                 recordActivityLog(`Super Admin ลบเบอร์โทรด่วน: ${target ? target.title : contactId}`);
-                broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, "อัปเดตรายการเบอร์โทรสายด่วนฉุกเฉิน");
-                showToast("ลบรายการเบอร์โทรศัพท์เรียบร้อยแล้ว");
+                broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, "อัปเดตรายการเบอร์โทรสายด่วน");
+                showToast("ลบเบอร์โทรสายด่วนเรียบร้อยแล้ว");
             });
         }
     </script>
