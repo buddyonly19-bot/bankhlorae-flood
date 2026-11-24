@@ -1046,31 +1046,43 @@
                     <div class="p-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 text-[10px]">
                         <div class="flex items-center gap-1.5 min-w-0">
                             <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0"></span>
-                            <span id="cctv-active-code" class="font-mono font-bold text-cyan-300 truncate">CAM-01 • เรดาร์ฝน & กล้องตรวจอากาศสด อ.บาเจาะ</span>
+                            <span id="cctv-active-code" class="font-mono font-bold text-cyan-300 truncate">LIVE-01 • ระบบเช็กน้ำท่วมภาคใต้ & กล้อง CCTV (ikhwarn)</span>
                         </div>
                         <span id="cctv-live-clock" class="font-mono text-slate-400 flex-shrink-0">--:--:--</span>
                     </div>
 
                     <!-- REAL EMBED / IMAGE VIEWPORT THAT ACTUALLY DISPLAYS LIVE VISUALS -->
-                    <div id="cctv-viewport-container" class="relative h-64 bg-slate-900 flex flex-col justify-between overflow-hidden">
-                        <!-- Live Windy Weather & Rain Radar Embed centered on Ban Khlo Rae, Bacho, Narathiwat (6.5167, 101.5167) -->
+                    <div id="cctv-viewport-container" class="relative h-80 sm:h-96 bg-slate-900 flex flex-col justify-between overflow-hidden">
+                        <!-- Live DDPM CCTV & Flood Check Embed -->
                         <iframe id="cctv-live-iframe"
-                            src="https://embed.windy.com/embed2.html?lat=6.517&lon=101.517&detailLat=6.517&detailLon=101.517&width=650&height=450&zoom=11&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"
-                            class="w-full h-full border-0"
+                            src="https://cctv.disaster.go.th/"
+                            class="w-full h-full border-0 bg-white relative z-10"
                             loading="lazy"
                             allowfullscreen>
                         </iframe>
 
+                        <!-- Fallback Guide Layer Behind Iframe (Visible if Gov Site Blocks Iframe Embedding) -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-gradient-to-b from-slate-900 via-blue-950 to-slate-950 z-0">
+                            <div class="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 text-xl mb-2">
+                                <i class="fa-solid fa-video"></i>
+                            </div>
+                            <p class="font-extrabold text-xs sm:text-sm text-white">ระบบกล้อง CCTV เฝ้าระวังภัยพิบัติ ปภ.</p>
+                            <p class="text-[10px] text-slate-300 mt-1 max-w-xs">หากหน้าจอด้านบนไม่แสดงภาพเนื่องจากระบบความปลอดภัยของเว็บไซต์ราชการ สามารถกดปุ่มด้านล่างเพื่อเปิดดูกล้องสดของ ปภ. ได้โดยตรง</p>
+                            <a href="https://cctv.disaster.go.th/" target="_blank" rel="noopener noreferrer" class="mt-3 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs shadow-lg flex items-center gap-1.5 transition">
+                                <i class="fa-solid fa-up-right-from-square"></i> เปิดดูกล้อง CCTV ปภ. ทันที
+                            </a>
+                        </div>
+
                         <!-- Image Snapshot Viewer (Used when selecting CCTV snapshot image URL) -->
-                        <img id="cctv-live-image" src="" alt="ภาพกล้อง CCTV สด" class="hidden w-full h-full object-cover bg-slate-950" onerror="handleCctvImageError()">
+                        <img id="cctv-live-image" src="" alt="ภาพกล้อง CCTV สด" class="hidden w-full h-full object-cover bg-slate-950 relative z-20" onerror="handleCctvImageError()">
 
                         <!-- Top Overlay Status Badge -->
-                        <div class="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 pointer-events-none z-10">
+                        <div class="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 pointer-events-none z-30">
                             <span class="px-2 py-0.5 rounded bg-black/75 backdrop-blur text-[9px] font-mono text-emerald-300 border border-emerald-500/40 shadow">
-                                <i class="fa-solid fa-circle-dot text-red-500 mr-1 animate-pulse"></i>LIVE FEED • บาเจาะ
+                                <i class="fa-solid fa-circle-dot text-red-500 mr-1 animate-pulse"></i>LIVE FEED • ภาคใต้ / นราธิวาส
                             </span>
                             <span id="cctv-water-status-tag" class="px-2 py-0.5 rounded bg-blue-900/85 backdrop-blur text-cyan-200 border border-cyan-400/30 text-[9px] font-bold shadow">
-                                เรดาร์กลุ่มฝนเรียลไทม์ ต.บาเระใต้
+                                กล้อง CCTV ของรัฐ (ปภ.)
                             </span>
                         </div>
                     </div>
@@ -1078,17 +1090,26 @@
                     <!-- Bottom Info & Action Bar -->
                     <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-2 text-[10px]">
                         <div class="min-w-0">
-                            <p id="cctv-active-title" class="font-bold text-white truncate">เรดาร์กลุ่มฝนและทิศทางลมสด อ.บาเจาะ</p>
-                            <p id="cctv-active-desc" class="text-[9px] text-slate-400 truncate">ซูมและเลื่อนดูกลุ่มฝนที่กำลังเคลื่อนเข้าสู่บ้านคลอแระได้ทันที</p>
+                            <p id="cctv-active-title" class="font-bold text-white truncate">1. ระบบกล้อง CCTV เฝ้าระวังภัยพิบัติ ปภ. (cctv.disaster.go.th)</p>
+                            <p id="cctv-active-desc" class="text-[9px] text-slate-400 truncate">กล้องเฝ้าระวังภัยพิบัติทางธรรมชาติตามลุ่มน้ำและชุมชน กรมป้องกันและบรรเทาสาธารณภัย</p>
                         </div>
                         <div class="flex items-center gap-1.5 flex-shrink-0">
                             <button onclick="refreshCurrentCctvFeed()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold border border-slate-700 transition" title="รีเฟรชภาพกล้อง">
                                 <i class="fa-solid fa-rotate"></i>
                             </button>
-                            <a id="cctv-external-link" href="https://www.thaiwater.net/water" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold transition flex items-center gap-1 shadow whitespace-nowrap">
-                                <i class="fa-solid fa-up-right-from-square"></i> เปิดเว็บต้นทาง
+                            <a id="cctv-external-link" href="https://cctv.disaster.go.th/" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold transition flex items-center gap-1 shadow whitespace-nowrap">
+                                <i class="fa-solid fa-up-right-from-square"></i> เปิดเว็บต้นทาง ปภ.
                             </a>
                         </div>
+                    </div>
+                </div>
+
+                <!-- DDPM MAINTENANCE NOTICE BANNER -->
+                <div class="p-3 bg-rose-50 border border-rose-300 rounded-2xl text-[10px] text-rose-950 flex items-start gap-2 leading-relaxed shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm mt-0.5 flex-shrink-0"></i>
+                    <div class="space-y-0.5">
+                        <p class="font-extrabold text-rose-900">แจ้งเตือนกำหนดปิดปรับปรุงระบบกล้อง CCTV ของ ปภ.</p>
+                        <p><strong>วันศุกร์ที่ 27 พฤศจิกายน 2569 เวลา 17.00 น. ถึงวันเสาร์ที่ 28 พฤศจิกายน 2569 เวลา 03.00 น.</strong> ในช่วงเวลาดังกล่าวแนะนำให้สลับดูเรดาร์ฝนสดหรือรายงานสถานการณ์น้ำในพื้นที่บ้านคลอแระควบคู่กันครับ</p>
                     </div>
                 </div>
 
@@ -1542,20 +1563,42 @@
         let citizenReportsList = [];
         let customCctvCameras = [
             {
+                id: "cam_ddpm_cctv_main",
+                code: "GOV-01 • กล้อง CCTV เฝ้าระวังภัยพิบัติ ปภ. (cctv.disaster.go.th)",
+                title: "1. ระบบกล้อง CCTV เฝ้าระวังภัยพิบัติ ปภ. (cctv.disaster.go.th)",
+                desc: "กล้องเฝ้าระวังภัยพิบัติทางธรรมชาติตามลุ่มน้ำและชุมชน กรมป้องกันและบรรเทาสาธารณภัย",
+                statusTag: "กล้อง CCTV ของรัฐ (ปภ.)",
+                mode: "iframe",
+                mediaUrl: "https://cctv.disaster.go.th/",
+                externalUrl: "https://cctv.disaster.go.th/",
+                badge: "กล้อง ปภ."
+            },
+            {
+                id: "cam_ikhwarn_south",
+                code: "LIVE-02 • ระบบเช็กน้ำท่วมภาคใต้ & กล้อง CCTV (ikhwarn)",
+                title: "2. ระบบเช็กน้ำท่วมภาคใต้และกล้อง CCTV (ikhwarn)",
+                desc: "ดูกล้อง CCTV จุดเสี่ยงน้ำท่วมและระดับน้ำภาคใต้แบบเรียลไทม์",
+                statusTag: "เช็กน้ำท่วมภาคใต้ & CCTV สด",
+                mode: "iframe",
+                mediaUrl: "https://ikhwarn.com/south-flood-check/",
+                externalUrl: "https://ikhwarn.com/south-flood-check/",
+                badge: "เช็กน้ำท่วม"
+            },
+            {
                 id: "cam_radar_rain",
-                code: "LIVE-01 • เรดาร์ฝนสด ต.บาเระใต้ อ.บาเจาะ",
-                title: "1. เรดาร์ตรวจกลุ่มฝนสด อ.บาเจาะ (ดูได้ทันทีบนจอ)",
+                code: "LIVE-03 • เรดาร์ฝนสด ต.บาเระใต้ อ.บาเจาะ",
+                title: "3. เรดาร์ตรวจกลุ่มฝนสด อ.บาเจาะ (Windy Radar)",
                 desc: "แสดงกลุ่มฝนที่กำลังตกและเคลื่อนตัวเข้าพื้นที่บ้านคลอแระแบบเรียลไทม์",
                 statusTag: "เรดาร์ฝนสด • ซูมดูได้ทันที",
                 mode: "iframe",
                 mediaUrl: "https://embed.windy.com/embed2.html?lat=6.517&lon=101.517&detailLat=6.517&detailLon=101.517&width=650&height=450&zoom=11&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
                 externalUrl: "https://weather.tmd.go.th/sngLoop.php",
-                badge: "ดูสดได้ทันที"
+                badge: "เรดาร์ฝน"
             },
             {
                 id: "cam_tmd_radar",
-                code: "LIVE-02 • เรดาร์ตรวจอากาศ กรมอุตุนิยมวิทยา (สทิงพระ/นราธิวาส)",
-                title: "2. เรดาร์ตรวจอากาศภาคใต้ตอนล่าง (กรมอุตุฯ)",
+                code: "LIVE-04 • เรดาร์ตรวจอากาศ กรมอุตุนิยมวิทยา (สทิงพระ/นราธิวาส)",
+                title: "4. เรดาร์ตรวจอากาศภาคใต้ตอนล่าง (กรมอุตุฯ)",
                 desc: "ภาพเรดาร์ตรวจกลุ่มฝนครอบคลุม จ.นราธิวาส และ อ.บาเจาะ",
                 statusTag: "เรดาร์กรมอุตุนิยมวิทยา",
                 mode: "image",
@@ -1564,20 +1607,9 @@
                 badge: "กรมอุตุฯ"
             },
             {
-                id: "cam_ddpm_1784",
-                code: "GOV-03 • ระบบติดตามสถานการณ์น้ำและกล้อง ปภ. (DDPM 1784)",
-                title: "3. ศูนย์เฝ้าระวังอุทกภัย ปภ. (กรมป้องกันและบรรเทาสาธารณภัย)",
-                desc: "ติดตามสถานการณ์น้ำท่วมและกล้องเฝ้าระวังสาธารณภัย ปภ. 1784",
-                statusTag: "กรมป้องกันและบรรเทาสาธารณภัย",
-                mode: "iframe",
-                mediaUrl: "https://embed.windy.com/embed2.html?lat=6.425&lon=101.823&detailLat=6.425&detailLon=101.823&width=650&height=450&zoom=10&level=surface&overlay=rainAccu&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
-                externalUrl: "https://www.disaster.go.th",
-                badge: "ปภ. 1784"
-            },
-            {
                 id: "cam_thaiwater",
-                code: "GOV-04 • คลังข้อมูลน้ำแห่งชาติ ThaiWater (สสน.)",
-                title: "4. สถานีโทรมาตรวัดระดับน้ำ จ.นราธิวาส (ThaiWater)",
+                code: "GOV-05 • คลังข้อมูลน้ำแห่งชาติ ThaiWater (สสน.)",
+                title: "5. สถานีโทรมาตรวัดระดับน้ำ จ.นราธิวาส (ThaiWater)",
                 desc: "ดูกราฟระดับน้ำในคลองและปริมาณฝนรายชั่วโมงจากสถานีวัดจริง",
                 statusTag: "คลังข้อมูลน้ำแห่งชาติ สสน.",
                 mode: "iframe",
@@ -1587,8 +1619,8 @@
             },
             {
                 id: "cam_doh_highway",
-                code: "GOV-05 • กล้องจราจรและน้ำท่วมทางหลวง ทล.42 อ.บาเจาะ",
-                title: "5. กล้องกรมทางหลวง (ทล.42 เส้นทาง อ.บาเจาะ - นราธิวาส)",
+                code: "GOV-06 • กล้องจราจรและน้ำท่วมทางหลวง ทล.42 อ.บาเจาะ",
+                title: "6. กล้องกรมทางหลวง (ทล.42 เส้นทาง อ.บาเจาะ - นราธิวาส)",
                 desc: "ตรวจสอบสภาพการจราจรและน้ำท่วมผิวทางบนถนนสายหลัก",
                 statusTag: "กรมทางหลวง (DOH)",
                 mode: "iframe",
@@ -1597,8 +1629,8 @@
                 badge: "กรมทางหลวง"
             }
         ];
-        let activeCctvId = "cam_radar_rain";
-        
+        let activeCctvId = "cam_ddpm_cctv_main";
+
         // เบอร์โทรสายตรงในหน้าต่าง SOS (Super Admin เพิ่ม/ลบได้)
         let sosHotlineContactsData = [
             { id: "sos_hot_1", name: "แบลี", phone: "0886822347", color: "red" },
@@ -3149,7 +3181,8 @@
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     if (Array.isArray(parsed) && parsed.length > 0) {
-                        customCctvCameras = parsed;
+                        const customOnly = parsed.filter(c => c.isCustom);
+                        customCctvCameras = [...customCctvCameras, ...customOnly];
                     }
                 }
             } catch (e) {}
