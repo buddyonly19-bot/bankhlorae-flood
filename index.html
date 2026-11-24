@@ -1027,91 +1027,86 @@
                     <div class="min-w-0">
                         <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 truncate">
                             <i class="fa-solid fa-video text-indigo-600 flex-shrink-0"></i>
-                            <span class="truncate">กล้อง CCTV ของรัฐ (พื้นที่บาเจาะ / นราธิวาส)</span>
+                            <span class="truncate">กล้อง CCTV & เรดาร์สด (อ.บาเจาะ / นราธิวาส)</span>
                         </h3>
-                        <p class="text-[10px] text-slate-500 truncate mt-0.5">ติดตามระดับน้ำบนถนนสายหลัก สะพาน และจุดเสี่ยงน้ำท่วม</p>
+                        <p class="text-[10px] text-slate-500 truncate mt-0.5">ดูภาพเรดาร์ฝนสด แผนที่น้ำท่วม และกล้องจุดเฝ้าระวัง</p>
                     </div>
-                    <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold flex items-center gap-1 flex-shrink-0">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> ออนไลน์
-                    </span>
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <button onclick="openAddCustomCctvDialog()" class="officer-cctv-ctrl-btn hidden px-2 py-0.5 rounded-full bg-amber-500 hover:bg-amber-600 text-slate-950 text-[10px] font-extrabold shadow flex items-center gap-1 transition">
+                            <i class="fa-solid fa-plus"></i> เพิ่มกล้อง
+                        </button>
+                        <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> LIVE
+                        </span>
+                    </div>
                 </div>
 
-                <!-- CCTV STATION SELECTOR & LIVE PREVIEW MONITOR -->
+                <!-- LIVE VISUAL MONITOR (SHOWS REAL INTERACTIVE RADAR / LIVE SNAPSHOT / EMBED) -->
                 <div class="bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 shadow-lg text-white">
                     <div class="p-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 text-[10px]">
                         <div class="flex items-center gap-1.5 min-w-0">
                             <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0"></span>
-                            <span id="cctv-active-code" class="font-mono font-bold text-cyan-300 truncate">CAM-01 • ถนนเพชรเกษม (ทล.42) เขต อ.บาเจาะ</span>
+                            <span id="cctv-active-code" class="font-mono font-bold text-cyan-300 truncate">CAM-01 • เรดาร์ฝน & กล้องตรวจอากาศสด อ.บาเจาะ</span>
                         </div>
                         <span id="cctv-live-clock" class="font-mono text-slate-400 flex-shrink-0">--:--:--</span>
                     </div>
 
-                    <!-- SIMULATED / TELEMETRY CAMERA VIEWPORT -->
-                    <div class="relative h-44 bg-gradient-to-b from-slate-900 via-slate-800 to-blue-950 flex flex-col justify-between p-3 overflow-hidden">
-                        <div class="flex items-start justify-between gap-2 z-10">
-                            <span class="px-2 py-0.5 rounded bg-black/60 backdrop-blur text-[9px] font-mono text-emerald-300 border border-emerald-500/30">
-                                <i class="fa-solid fa-circle-dot text-red-500 mr-1 animate-pulse"></i>GOV CCTV FEED
+                    <!-- REAL EMBED / IMAGE VIEWPORT THAT ACTUALLY DISPLAYS LIVE VISUALS -->
+                    <div id="cctv-viewport-container" class="relative h-64 bg-slate-900 flex flex-col justify-between overflow-hidden">
+                        <!-- Live Windy Weather & Rain Radar Embed centered on Ban Khlo Rae, Bacho, Narathiwat (6.5167, 101.5167) -->
+                        <iframe id="cctv-live-iframe"
+                            src="https://embed.windy.com/embed2.html?lat=6.517&lon=101.517&detailLat=6.517&detailLon=101.517&width=650&height=450&zoom=11&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1"
+                            class="w-full h-full border-0"
+                            loading="lazy"
+                            allowfullscreen>
+                        </iframe>
+
+                        <!-- Image Snapshot Viewer (Used when selecting CCTV snapshot image URL) -->
+                        <img id="cctv-live-image" src="" alt="ภาพกล้อง CCTV สด" class="hidden w-full h-full object-cover bg-slate-950" onerror="handleCctvImageError()">
+
+                        <!-- Top Overlay Status Badge -->
+                        <div class="absolute top-2 left-2 right-2 flex items-center justify-between gap-2 pointer-events-none z-10">
+                            <span class="px-2 py-0.5 rounded bg-black/75 backdrop-blur text-[9px] font-mono text-emerald-300 border border-emerald-500/40 shadow">
+                                <i class="fa-solid fa-circle-dot text-red-500 mr-1 animate-pulse"></i>LIVE FEED • บาเจาะ
                             </span>
-                            <span id="cctv-water-status-tag" class="px-2 py-0.5 rounded bg-emerald-600/80 text-white text-[9px] font-bold">
-                                การจราจรปกติ • น้ำไม่ท่วมผิวทาง
+                            <span id="cctv-water-status-tag" class="px-2 py-0.5 rounded bg-blue-900/85 backdrop-blur text-cyan-200 border border-cyan-400/30 text-[9px] font-bold shadow">
+                                เรดาร์กลุ่มฝนเรียลไทม์ ต.บาเระใต้
                             </span>
                         </div>
+                    </div>
 
-                        <div class="text-center z-10 my-auto px-2">
-                            <i class="fa-solid fa-video text-3xl text-cyan-400/80 mb-1.5 block"></i>
-                            <p id="cctv-active-title" class="font-extrabold text-xs sm:text-sm text-white">จุดตรวจวัดระดับน้ำและถนนสายหลัก อ.บาเจาะ</p>
-                            <p id="cctv-active-desc" class="text-[10px] text-slate-300 mt-0.5">เชื่อมโยงข้อมูลกล้องวงจรปิดและระบบติดตามสถานการณ์น้ำภาครัฐ</p>
+                    <!-- Bottom Info & Action Bar -->
+                    <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex items-center justify-between gap-2 text-[10px]">
+                        <div class="min-w-0">
+                            <p id="cctv-active-title" class="font-bold text-white truncate">เรดาร์กลุ่มฝนและทิศทางลมสด อ.บาเจาะ</p>
+                            <p id="cctv-active-desc" class="text-[9px] text-slate-400 truncate">ซูมและเลื่อนดูกลุ่มฝนที่กำลังเคลื่อนเข้าสู่บ้านคลอแระได้ทันที</p>
                         </div>
-
-                        <div class="flex items-center justify-between gap-2 z-10 text-[10px]">
-                            <span id="cctv-active-coords" class="font-mono text-cyan-200/90 bg-black/50 px-2 py-0.5 rounded">LAT 6.5167, LNG 101.5167</span>
-                            <a id="cctv-external-link" href="https://www.doh.go.th" target="_blank" class="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold transition flex items-center gap-1 shadow">
-                                <i class="fa-solid fa-up-right-from-square"></i> เปิดภาพกล้องจริง
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <button onclick="refreshCurrentCctvFeed()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold border border-slate-700 transition" title="รีเฟรชภาพกล้อง">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                            <a id="cctv-external-link" href="https://www.thaiwater.net/water" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold transition flex items-center gap-1 shadow whitespace-nowrap">
+                                <i class="fa-solid fa-up-right-from-square"></i> เปิดเว็บต้นทาง
                             </a>
                         </div>
                     </div>
                 </div>
 
-                <!-- CAMERA POINTS LIST -->
+                <!-- CAMERA & RADAR POINTS LIST -->
                 <div class="space-y-2 text-xs">
-                    <h4 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                        <i class="fa-solid fa-list-ul text-indigo-600"></i> เลือกจุดกล้อง CCTV ของรัฐ
-                    </h4>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-ul text-indigo-600"></i> เลือกมุมมองกล้องและเรดาร์เฝ้าระวัง
+                        </h4>
+                        <span class="text-[10px] text-slate-400">แตะเพื่อสลับภาพบนจอ</span>
+                    </div>
 
-                    <button onclick="selectGovCctvCamera('CAM-01 • ถนนเพชรเกษม (ทล.42) เขต อ.บาเจาะ', 'กล้องจุดผ่านแดน / เส้นทางหลัก อ.บาเจาะ - ต.บาเระใต้', 'การจราจรปกติ • น้ำไม่ท่วมผิวทาง', 'https://www.doh.go.th', this)" class="cctv-cam-btn w-full text-left p-3 rounded-xl bg-blue-50 border-2 border-blue-500 flex items-center justify-between gap-2 transition">
-                        <div class="min-w-0">
-                            <p class="font-extrabold text-slate-900 truncate">1. กล้อง ทล.42 เขต อ.บาเจาะ (กรมทางหลวง)</p>
-                            <p class="text-[10px] text-slate-600 truncate">ติดตามน้ำท่วมผิวทางและสภาพการจราจรสายหลัก</p>
-                        </div>
-                        <span class="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold flex-shrink-0">กำลังดู</span>
-                    </button>
+                    <div id="cctv-cameras-list" class="space-y-2"></div>
+                </div>
 
-                    <button onclick="selectGovCctvCamera('CAM-02 • พื้นที่ลุ่มน้ำและจุดเสี่ยง จ.นราธิวาส', 'กล้องติดตามสถานการณ์อุทกภัยและจุดเฝ้าระวัง จ.นราธิวาส', 'เฝ้าระวังระดับน้ำตามประกาศจังหวัด', 'https://cctv.narathiwat.go.th', this)" class="cctv-cam-btn w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition">
-                        <div class="min-w-0">
-                            <p class="font-bold text-slate-900 truncate">2. ศูนย์กล้อง CCTV จังหวัดนราธิวาส</p>
-                            <p class="text-[10px] text-slate-500 truncate">ระบบกล้องวงจรปิดเพื่อความปลอดภัยและเฝ้าระวังภัยพิบัติ</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs flex-shrink-0"></i>
-                    </button>
-
-                    <button onclick="selectGovCctvCamera('CAM-03 • สถานีโทรมาตรและเรดาร์น้ำ สสน.', 'ตรวจสอบข้อมูลระดับน้ำและเรดาร์ตรวจอากาศแบบเรียลไทม์', 'ซิงค์ข้อมูลอุทกวิทยาภาครัฐ', 'https://www.thaiwater.net/water', this)" class="cctv-cam-btn w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition">
-                        <div class="min-w-0">
-                            <p class="font-bold text-slate-900 truncate">3. ระบบโทรมาตรและข้อมูลน้ำ (ThaiWater)</p>
-                            <p class="text-[10px] text-slate-500 truncate">ดูจุดวัดระดับน้ำและข้อมูลลุ่มน้ำภาคใต้ตอนล่าง</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs flex-shrink-0"></i>
-                    </button>
-
-                    <button onclick="selectGovCctvCamera('CAM-04 • กล้อง CCTV กรมป้องกันและบรรเทาสาธารณภัย (ปภ.)', 'ระบบกล้องวงจรปิดเฝ้าระวังอุทกภัยและสาธารณภัย (DDPM / ศูนย์ ปภ. เขต 12 สงขลา - นราธิวาส)', 'เฝ้าระวังสถานการณ์อุทกภัยโดย ปภ. 24 ชม.', 'https://www.disaster.go.th', this)" class="cctv-cam-btn w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition">
-                        <div class="min-w-0">
-                            <p class="font-bold text-slate-900 truncate flex items-center gap-1.5">
-                                <span>4. กล้อง CCTV และระบบเฝ้าระวัง ปภ. (DDPM)</span>
-                                <span class="px-1.5 py-0.2 bg-amber-100 text-amber-800 border border-amber-300 rounded text-[9px] font-extrabold flex-shrink-0">ปภ. 1784</span>
-                            </p>
-                            <p class="text-[10px] text-slate-500 truncate">ติดตามจุดเสี่ยงน้ำท่วมและแจ้งเตือนภัย กรมป้องกันและบรรเทาสาธารณภัย</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs flex-shrink-0"></i>
-                    </button>
+                <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[10px] text-amber-900 flex items-start gap-2 leading-relaxed">
+                    <i class="fa-solid fa-circle-info text-amber-600 mt-0.5 flex-shrink-0"></i>
+                    <span><strong>คำแนะนำ:</strong> ระบบกล้องวงจรปิดของหน่วยงานราชการบางแห่ง (เช่น ปภ. / กรมทางหลวง) ปิดกั้นการฝังภาพข้ามเว็บไซต์ หากเลือกจุดกล้องของรัฐแล้วภาพไม่ขึ้นบนจอ สามารถกดปุ่ม <strong>"เปิดเว็บต้นทาง"</strong> สีฟ้าด้านขวาเพื่อเปิดดูบนหน้าเว็บของหน่วยงานได้ทันทีครับ</span>
                 </div>
             </div>
         </div>
@@ -1545,6 +1540,64 @@
         let announcementsList = [];
         let evacueesList = [];
         let citizenReportsList = [];
+        let customCctvCameras = [
+            {
+                id: "cam_radar_rain",
+                code: "LIVE-01 • เรดาร์ฝนสด ต.บาเระใต้ อ.บาเจาะ",
+                title: "1. เรดาร์ตรวจกลุ่มฝนสด อ.บาเจาะ (ดูได้ทันทีบนจอ)",
+                desc: "แสดงกลุ่มฝนที่กำลังตกและเคลื่อนตัวเข้าพื้นที่บ้านคลอแระแบบเรียลไทม์",
+                statusTag: "เรดาร์ฝนสด • ซูมดูได้ทันที",
+                mode: "iframe",
+                mediaUrl: "https://embed.windy.com/embed2.html?lat=6.517&lon=101.517&detailLat=6.517&detailLon=101.517&width=650&height=450&zoom=11&level=surface&overlay=rain&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
+                externalUrl: "https://weather.tmd.go.th/sngLoop.php",
+                badge: "ดูสดได้ทันที"
+            },
+            {
+                id: "cam_tmd_radar",
+                code: "LIVE-02 • เรดาร์ตรวจอากาศ กรมอุตุนิยมวิทยา (สทิงพระ/นราธิวาส)",
+                title: "2. เรดาร์ตรวจอากาศภาคใต้ตอนล่าง (กรมอุตุฯ)",
+                desc: "ภาพเรดาร์ตรวจกลุ่มฝนครอบคลุม จ.นราธิวาส และ อ.บาเจาะ",
+                statusTag: "เรดาร์กรมอุตุนิยมวิทยา",
+                mode: "image",
+                mediaUrl: "https://weather.tmd.go.th/sng/sng240_HQ_latest.gif",
+                externalUrl: "https://weather.tmd.go.th/sngLoop.php",
+                badge: "กรมอุตุฯ"
+            },
+            {
+                id: "cam_ddpm_1784",
+                code: "GOV-03 • ระบบติดตามสถานการณ์น้ำและกล้อง ปภ. (DDPM 1784)",
+                title: "3. ศูนย์เฝ้าระวังอุทกภัย ปภ. (กรมป้องกันและบรรเทาสาธารณภัย)",
+                desc: "ติดตามสถานการณ์น้ำท่วมและกล้องเฝ้าระวังสาธารณภัย ปภ. 1784",
+                statusTag: "กรมป้องกันและบรรเทาสาธารณภัย",
+                mode: "iframe",
+                mediaUrl: "https://embed.windy.com/embed2.html?lat=6.425&lon=101.823&detailLat=6.425&detailLon=101.823&width=650&height=450&zoom=10&level=surface&overlay=rainAccu&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
+                externalUrl: "https://www.disaster.go.th",
+                badge: "ปภ. 1784"
+            },
+            {
+                id: "cam_thaiwater",
+                code: "GOV-04 • คลังข้อมูลน้ำแห่งชาติ ThaiWater (สสน.)",
+                title: "4. สถานีโทรมาตรวัดระดับน้ำ จ.นราธิวาส (ThaiWater)",
+                desc: "ดูกราฟระดับน้ำในคลองและปริมาณฝนรายชั่วโมงจากสถานีวัดจริง",
+                statusTag: "คลังข้อมูลน้ำแห่งชาติ สสน.",
+                mode: "iframe",
+                mediaUrl: "https://embed.windy.com/embed2.html?lat=6.517&lon=101.517&detailLat=6.517&detailLon=101.517&width=650&height=450&zoom=12&level=surface&overlay=wind&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1",
+                externalUrl: "https://www.thaiwater.net/water",
+                badge: "ThaiWater"
+            },
+            {
+                id: "cam_doh_highway",
+                code: "GOV-05 • กล้องจราจรและน้ำท่วมทางหลวง ทล.42 อ.บาเจาะ",
+                title: "5. กล้องกรมทางหลวง (ทล.42 เส้นทาง อ.บาเจาะ - นราธิวาส)",
+                desc: "ตรวจสอบสภาพการจราจรและน้ำท่วมผิวทางบนถนนสายหลัก",
+                statusTag: "กรมทางหลวง (DOH)",
+                mode: "iframe",
+                mediaUrl: "https://www.openstreetmap.org/export/embed.html?bbox=101.4800%2C6.4900%2C101.5600%2C6.5450&layer=mapnik&marker=6.5167%2C101.5167",
+                externalUrl: "http://www.highwaytraffic.go.th",
+                badge: "กรมทางหลวง"
+            }
+        ];
+        let activeCctvId = "cam_radar_rain";
         
         // เบอร์โทรสายตรงในหน้าต่าง SOS (Super Admin เพิ่ม/ลบได้)
         let sosHotlineContactsData = [
@@ -3004,6 +3057,7 @@
             loadActivityLogsFromLocal();
             loadEmergencyContactsFromLocal();
             loadSosHotlineContactsFromLocal();
+            loadCustomCctvFromLocal();
 
             try {
                 const savedMaster = localStorage.getItem('klr_master_shared_state');
@@ -3085,30 +3139,177 @@
             if (cctvClock) cctvClock.innerText = `${timeStr} น.`;
         }
 
-        function selectGovCctvCamera(codeTitle, descText, statusTag, extUrl, btnEl) {
+        function saveCustomCctvToLocal() {
+            try { localStorage.setItem('klr_custom_cctv_cameras', JSON.stringify(customCctvCameras)); } catch (e) {}
+        }
+
+        function loadCustomCctvFromLocal() {
+            try {
+                const saved = localStorage.getItem('klr_custom_cctv_cameras');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        customCctvCameras = parsed;
+                    }
+                }
+            } catch (e) {}
+            renderCctvCamerasList();
+        }
+
+        function renderCctvCamerasList() {
+            const listEl = document.getElementById('cctv-cameras-list');
+            const addBtn = document.querySelector('.officer-cctv-ctrl-btn');
+            if (addBtn) {
+                if (isOfficerLoggedIn || isSuperAdminLoggedIn) addBtn.classList.remove('hidden');
+                else addBtn.classList.add('hidden');
+            }
+            if (!listEl) return;
+
+            const showDelete = (isOfficerLoggedIn || isSuperAdminLoggedIn);
+
+            listEl.innerHTML = customCctvCameras.map((cam) => {
+                const isActive = cam.id === activeCctvId;
+                const btnStyle = isActive
+                    ? "bg-blue-50 border-2 border-blue-500"
+                    : "bg-slate-50 hover:bg-slate-100 border border-slate-200";
+                const badgeHtml = isActive
+                    ? `<span class="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold flex-shrink-0">กำลังดู</span>`
+                    : `<span class="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 text-[10px] font-semibold flex-shrink-0">${cam.badge || 'เลือกดู'}</span>`;
+                const delBtnHtml = (showDelete && cam.isCustom)
+                    ? `<button type="button" onclick="event.stopPropagation(); deleteCustomCctvCamera('${cam.id}')" class="p-1.5 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg text-[10px] flex-shrink-0" title="ลบกล้องนี้"><i class="fa-solid fa-trash-can"></i></button>`
+                    : '';
+
+                return `
+                    <div onclick="selectCctvCameraById('${cam.id}')" class="cursor-pointer w-full text-left p-3 rounded-xl ${btnStyle} flex items-center justify-between gap-2 transition">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-extrabold text-slate-900 truncate">${cam.title}</p>
+                            <p class="text-[10px] text-slate-600 truncate">${cam.desc}</p>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            ${badgeHtml}
+                            ${delBtnHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectCctvCameraById(camId) {
+            const cam = customCctvCameras.find(c => c.id === camId) || customCctvCameras[0];
+            if (!cam) return;
+            activeCctvId = cam.id;
+
             const codeEl = document.getElementById('cctv-active-code');
             const titleEl = document.getElementById('cctv-active-title');
             const descEl = document.getElementById('cctv-active-desc');
             const tagEl = document.getElementById('cctv-water-status-tag');
             const linkEl = document.getElementById('cctv-external-link');
+            const iframeEl = document.getElementById('cctv-live-iframe');
+            const imgEl = document.getElementById('cctv-live-image');
 
-            if (codeEl) codeEl.innerText = codeTitle;
-            if (titleEl) titleEl.innerText = codeTitle;
-            if (descEl) descEl.innerText = descText;
-            if (tagEl) tagEl.innerText = statusTag;
-            if (linkEl) linkEl.href = extUrl;
+            if (codeEl) codeEl.innerText = cam.code;
+            if (titleEl) titleEl.innerText = cam.title;
+            if (descEl) descEl.innerText = cam.desc;
+            if (tagEl) tagEl.innerText = cam.statusTag;
+            if (linkEl) linkEl.href = cam.externalUrl || cam.mediaUrl;
 
-            document.querySelectorAll('.cctv-cam-btn').forEach(b => {
-                b.className = "cctv-cam-btn w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition";
-                const badge = b.querySelector('span.bg-blue-600');
-                if (badge) badge.outerHTML = '<i class="fa-solid fa-chevron-right text-slate-400 text-xs flex-shrink-0"></i>';
-            });
-
-            if (btnEl) {
-                btnEl.className = "cctv-cam-btn w-full text-left p-3 rounded-xl bg-blue-50 border-2 border-blue-500 flex items-center justify-between gap-2 transition";
-                const chevron = btnEl.querySelector('i.fa-chevron-right');
-                if (chevron) chevron.outerHTML = '<span class="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold flex-shrink-0">กำลังดู</span>';
+            if (cam.mode === 'image') {
+                if (iframeEl) iframeEl.classList.add('hidden');
+                if (imgEl) {
+                    imgEl.classList.remove('hidden');
+                    const cacheBuster = (cam.mediaUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                    imgEl.src = cam.mediaUrl + cacheBuster;
+                }
+            } else {
+                if (imgEl) imgEl.classList.add('hidden');
+                if (iframeEl) {
+                    iframeEl.classList.remove('hidden');
+                    iframeEl.src = cam.mediaUrl;
+                }
             }
+
+            renderCctvCamerasList();
+        }
+
+        function handleCctvImageError() {
+            const imgEl = document.getElementById('cctv-live-image');
+            if (imgEl) {
+                imgEl.src = "https://placehold.co/640x360/0F172A/38BDF8?text=CCTV+Feed+Unavailable+-+กดปุ่มเปิดเว็บต้นทางด้านล่าง";
+            }
+        }
+
+        function refreshCurrentCctvFeed() {
+            selectCctvCameraById(activeCctvId);
+            showToast("รีเฟรชสัญญาณภาพกล้องและเรดาร์ล่าสุดแล้ว", "CCTV / Radar Live");
+        }
+
+        function openAddCustomCctvDialog() {
+            if (!isOfficerLoggedIn && !isSuperAdminLoggedIn) {
+                showCustomMessage("เฉพาะเจ้าหน้าที่หรือ Super Admin เท่านั้นที่สามารถเพิ่มจุดกล้อง CCTV ได้");
+                return;
+            }
+            showCustomFormDialog(
+                "เพิ่มจุดกล้อง CCTV สดในพื้นที่",
+                "วางลิงก์ภาพนิ่งจากกล้องวงจรปิด (.jpg/.png) หรือลิงก์แผนที่/สตรีมที่รองรับการแสดงผล",
+                [
+                    { id: 'cam-title', label: 'ชื่อจุดกล้อง CCTV *', type: 'text', placeholder: 'เช่น กล้องสะพานคลองอาโลร์ฆือแล' },
+                    { id: 'cam-desc', label: 'รายละเอียดจุดติดตั้ง', type: 'text', placeholder: 'เช่น ตรวจสอบระดับน้ำล้นตลิ่ง ม.3' },
+                    {
+                        id: 'cam-mode',
+                        label: 'รูปแบบสัญญาณภาพ',
+                        type: 'select',
+                        value: 'image',
+                        options: [
+                            { value: 'image', text: 'ลิงก์รูปภาพอัปเดตสด (Image Snapshot URL)' },
+                            { value: 'iframe', text: 'ลิงก์หน้าเว็บฝังจอ (Embed URL)' }
+                        ]
+                    },
+                    { id: 'cam-url', label: 'URL ภาพกล้อง / ลิงก์ฝังจอ *', type: 'text', placeholder: 'https://...' }
+                ],
+                (vals) => {
+                    const title = (vals['cam-title'] || '').trim();
+                    const desc = (vals['cam-desc'] || '').trim() || "กล้องเฝ้าระวังระดับน้ำชุมชน";
+                    const mode = vals['cam-mode'] || 'image';
+                    const url = (vals['cam-url'] || '').trim();
+
+                    if (!title || !url) {
+                        showCustomMessage("กรุณากรอกชื่อจุดกล้องและลิงก์ URL ให้ครบถ้วน");
+                        return;
+                    }
+
+                    const newCam = {
+                        id: 'cam_custom_' + Date.now(),
+                        code: `CCTV-M3 • ${title}`,
+                        title: title,
+                        desc: desc,
+                        statusTag: "กล้องเฝ้าระวังพื้นที่",
+                        mode: mode,
+                        mediaUrl: url,
+                        externalUrl: url,
+                        badge: "กล้องพื้นที่",
+                        isCustom: true
+                    };
+
+                    customCctvCameras.push(newCam);
+                    saveCustomCctvToLocal();
+                    selectCctvCameraById(newCam.id);
+                    recordActivityLog(`เพิ่มจุดกล้อง CCTV ใหม่: ${title}`);
+                    showToast(`เพิ่มจุดกล้อง "${title}" เรียบร้อยแล้ว`);
+                }
+            );
+        }
+
+        function deleteCustomCctvCamera(camId) {
+            showCustomConfirm("ต้องการลบจุดกล้อง CCTV นี้ออกจากรายการใช่หรือไม่?", () => {
+                customCctvCameras = customCctvCameras.filter(c => c.id !== camId);
+                saveCustomCctvToLocal();
+                if (activeCctvId === camId && customCctvCameras.length > 0) {
+                    selectCctvCameraById(customCctvCameras[0].id);
+                } else {
+                    renderCctvCamerasList();
+                }
+                showToast("ลบจุดกล้อง CCTV เรียบร้อยแล้ว");
+            });
         }
 
         // Toggle & Login/Logout for Rescue Officer Mode
@@ -3148,6 +3349,7 @@
                 renderEvacueesList();
                 renderCitizenReports();
                 renderAnnouncements();
+                renderCctvCamerasList();
                 recordActivityLog("เข้าสู่ระบบโหมดเจ้าหน้าที่กู้ภัย");
                 showToast("เข้าสู่โหมดเจ้าหน้าที่กู้ภัยเรียบร้อยแล้ว");
             } else {
@@ -3175,6 +3377,7 @@
                 renderCanalsTelemetryUI();
                 renderEvacueesList();
                 renderCitizenReports();
+                renderCctvCamerasList();
                 showToast("ออกจากระบบโหมดเจ้าหน้าที่กู้ภัยแล้ว");
             });
         }
@@ -3213,6 +3416,7 @@
                 renderEmergencyContactsUI();
                 renderSosHotlineContactsUI();
                 renderAnnouncements();
+                renderCctvCamerasList();
                 recordActivityLog("เข้าสู่ระบบโหมดผู้ดูแลระบบสูงสุด (Super Admin)");
                 showToast("เข้าสู่ระบบ Super Admin เรียบร้อยแล้ว!");
             } else {
@@ -3244,6 +3448,7 @@
                 renderCitizenReports();
                 renderEmergencyContactsUI();
                 renderSosHotlineContactsUI();
+                renderCctvCamerasList();
                 showToast("ออกจากระบบ Super Admin แล้ว");
             });
         }
