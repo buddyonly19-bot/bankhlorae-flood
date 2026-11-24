@@ -415,7 +415,12 @@
                         <i class="fa-solid fa-sliders"></i> แผงควบคุมเจ้าหน้าที่ / ทีมกู้ภัย
                     </h3>
                 </div>
-                <span class="text-[9px] bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded-md font-mono border border-amber-400/30 flex-shrink-0">AUTHORIZED</span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span class="text-[9px] bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded-md font-mono border border-amber-400/30 hidden sm:inline">AUTHORIZED</span>
+                    <button onclick="logoutRescueOfficer()" class="text-[10px] bg-red-600 hover:bg-red-700 text-white px-2 py-0.5 rounded-lg font-bold transition whitespace-nowrap">
+                        ออกจากระบบ
+                    </button>
+                </div>
             </div>
 
             <div class="bg-amber-500/10 border border-amber-400/30 p-2.5 rounded-xl flex items-center justify-between gap-2">
@@ -1015,6 +1020,102 @@
             </div>
         </div>
 
+        <!-- TAB 5: GOVERNMENT CCTV CAMERAS -->
+        <div id="tab-cctv" class="tab-pane space-y-3 hidden animate-fade-in">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 truncate">
+                            <i class="fa-solid fa-video text-indigo-600 flex-shrink-0"></i>
+                            <span class="truncate">กล้อง CCTV ของรัฐ (พื้นที่บาเจาะ / นราธิวาส)</span>
+                        </h3>
+                        <p class="text-[10px] text-slate-500 truncate mt-0.5">ติดตามระดับน้ำบนถนนสายหลัก สะพาน และจุดเสี่ยงน้ำท่วม</p>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold flex items-center gap-1 flex-shrink-0">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> ออนไลน์
+                    </span>
+                </div>
+
+                <!-- CCTV STATION SELECTOR & LIVE PREVIEW MONITOR -->
+                <div class="bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 shadow-lg text-white">
+                    <div class="p-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 text-[10px]">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0"></span>
+                            <span id="cctv-active-code" class="font-mono font-bold text-cyan-300 truncate">CAM-01 • ถนนเพชรเกษม (ทล.42) เขต อ.บาเจาะ</span>
+                        </div>
+                        <span id="cctv-live-clock" class="font-mono text-slate-400 flex-shrink-0">--:--:--</span>
+                    </div>
+
+                    <!-- SIMULATED / TELEMETRY CAMERA VIEWPORT -->
+                    <div class="relative h-44 bg-gradient-to-b from-slate-900 via-slate-800 to-blue-950 flex flex-col justify-between p-3 overflow-hidden">
+                        <div class="flex items-start justify-between gap-2 z-10">
+                            <span class="px-2 py-0.5 rounded bg-black/60 backdrop-blur text-[9px] font-mono text-emerald-300 border border-emerald-500/30">
+                                <i class="fa-solid fa-circle-dot text-red-500 mr-1 animate-pulse"></i>GOV CCTV FEED
+                            </span>
+                            <span id="cctv-water-status-tag" class="px-2 py-0.5 rounded bg-emerald-600/80 text-white text-[9px] font-bold">
+                                การจราจรปกติ • น้ำไม่ท่วมผิวทาง
+                            </span>
+                        </div>
+
+                        <div class="text-center z-10 my-auto px-2">
+                            <i class="fa-solid fa-video text-3xl text-cyan-400/80 mb-1.5 block"></i>
+                            <p id="cctv-active-title" class="font-extrabold text-xs sm:text-sm text-white">จุดตรวจวัดระดับน้ำและถนนสายหลัก อ.บาเจาะ</p>
+                            <p id="cctv-active-desc" class="text-[10px] text-slate-300 mt-0.5">เชื่อมโยงข้อมูลกล้องวงจรปิดและระบบติดตามสถานการณ์น้ำภาครัฐ</p>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2 z-10 text-[10px]">
+                            <span id="cctv-active-coords" class="font-mono text-cyan-200/90 bg-black/50 px-2 py-0.5 rounded">LAT 6.5167, LNG 101.5167</span>
+                            <a id="cctv-external-link" href="https://www.doh.go.th" target="_blank" class="px-2.5 py-1 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold transition flex items-center gap-1 shadow">
+                                <i class="fa-solid fa-up-right-from-square"></i> เปิดภาพกล้องจริง
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CAMERA POINTS LIST -->
+                <div class="space-y-2 text-xs">
+                    <h4 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-ul text-indigo-600"></i> เลือกจุดกล้อง CCTV ของรัฐ
+                    </h4>
+
+                    <button onclick="selectGovCctvCamera('CAM-01 • ถนนเพชรเกษม (ทล.42) เขต อ.บาเจาะ', 'กล้องจุดผ่านแดน / เส้นทางหลัก อ.บาเจาะ - ต.บาเระใต้', 'การจราจรปกติ • น้ำไม่ท่วมผิวทาง', 'https://www.doh.go.th', this)" class="cctv-cam-btn w-full text-left p-3 rounded-xl bg-blue-50 border-2 border-blue-500 flex items-center justify-between gap-2 transition">
+                        <div class="min-w-0">
+                            <p class="font-extrabold text-slate-900 truncate">1. กล้อง ทล.42 เขต อ.บาเจาะ (กรมทางหลวง)</p>
+                            <p class="text-[10px] text-slate-600 truncate">ติดตามน้ำท่วมผิวทางและสภาพการจราจรสายหลัก</p>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold flex-shrink-0">กำลังดู</span>
+                    </button>
+
+                    <button onclick="selectGovCctvCamera('CAM-02 • พื้นที่ลุ่มน้ำและจุดเสี่ยง จ.นราธิวาส', 'กล้องติดตามสถานการณ์อุทกภัยและจุดเฝ้าระวัง จ.นราธิวาส', 'เฝ้าระวังระดับน้ำตามประกาศจังหวัด', 'https://cctv.narathiwat.go.th', this)" class="cctv-cam-btn w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 truncate">2. ศูนย์กล้อง CCTV จังหวัดนราธิวาส</p>
+                            <p class="text-[10px] text-slate-500 truncate">ระบบกล้องวงจรปิดเพื่อความปลอดภัยและเฝ้าระวังภัยพิบัติ</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs flex-shrink-0"></i>
+                    </button>
+
+                    <button onclick="selectGovCctvCamera('CAM-03 • สถานีโทรมาตรและเรดาร์น้ำ สสน.', 'ตรวจสอบข้อมูลระดับน้ำและเรดาร์ตรวจอากาศแบบเรียลไทม์', 'ซิงค์ข้อมูลอุทกวิทยาภาครัฐ', 'https://www.thaiwater.net/water', this)" class="cctv-cam-btn w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 truncate">3. ระบบโทรมาตรและข้อมูลน้ำ (ThaiWater)</p>
+                            <p class="text-[10px] text-slate-500 truncate">ดูจุดวัดระดับน้ำและข้อมูลลุ่มน้ำภาคใต้ตอนล่าง</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs flex-shrink-0"></i>
+                    </button>
+
+                    <button onclick="selectGovCctvCamera('CAM-04 • กล้อง CCTV กรมป้องกันและบรรเทาสาธารณภัย (ปภ.)', 'ระบบกล้องวงจรปิดเฝ้าระวังอุทกภัยและสาธารณภัย (DDPM / ศูนย์ ปภ. เขต 12 สงขลา - นราธิวาส)', 'เฝ้าระวังสถานการณ์อุทกภัยโดย ปภ. 24 ชม.', 'https://www.disaster.go.th', this)" class="cctv-cam-btn w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-900 truncate flex items-center gap-1.5">
+                                <span>4. กล้อง CCTV และระบบเฝ้าระวัง ปภ. (DDPM)</span>
+                                <span class="px-1.5 py-0.2 bg-amber-100 text-amber-800 border border-amber-300 rounded text-[9px] font-extrabold flex-shrink-0">ปภ. 1784</span>
+                            </p>
+                            <p class="text-[10px] text-slate-500 truncate">ติดตามจุดเสี่ยงน้ำท่วมและแจ้งเตือนภัย กรมป้องกันและบรรเทาสาธารณภัย</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-400 text-xs flex-shrink-0"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- OFFICER LOGIN MODAL -->
@@ -1396,13 +1497,13 @@
     <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40 px-2 py-1.5 shadow-lg">
         <div class="max-w-md mx-auto flex items-center justify-around text-center">
             
-            <button onclick="switchBottomTab('overview')" id="nav-btn-overview" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-blue-600 font-bold">
-                <i class="fa-solid fa-chart-pie text-lg"></i>
+            <button onclick="switchBottomTab('overview')" id="nav-btn-overview" class="nav-btn flex flex-col items-center justify-center w-12 py-1 text-blue-600 font-bold">
+                <i class="fa-solid fa-chart-pie text-base"></i>
                 <span class="text-[10px] mt-0.5 whitespace-nowrap">ภาพรวม</span>
             </button>
 
-            <button onclick="switchBottomTab('map')" id="nav-btn-map" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-slate-600">
-                <i class="fa-solid fa-map-location-dot text-lg"></i>
+            <button onclick="switchBottomTab('map')" id="nav-btn-map" class="nav-btn flex flex-col items-center justify-center w-12 py-1 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-map-location-dot text-base"></i>
                 <span class="text-[10px] font-medium mt-0.5 whitespace-nowrap">แผนที่</span>
             </button>
 
@@ -1413,13 +1514,18 @@
                 <span class="block text-[10px] font-extrabold text-red-600 mt-0.5 text-center whitespace-nowrap">แจ้ง SOS</span>
             </div>
 
-            <button onclick="switchBottomTab('shelter')" id="nav-btn-shelter" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-slate-600">
-                <i class="fa-solid fa-house-chimney-window text-lg"></i>
-                <span class="text-[10px] font-medium mt-0.5 whitespace-nowrap">ศูนย์อพยพ</span>
+            <button onclick="switchBottomTab('shelter')" id="nav-btn-shelter" class="nav-btn flex flex-col items-center justify-center w-12 py-1 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-house-chimney-window text-base"></i>
+                <span class="text-[10px] font-medium mt-0.5 whitespace-nowrap">อพยพ</span>
             </button>
 
-            <button onclick="switchBottomTab('contacts')" id="nav-btn-contacts" class="nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-slate-600">
-                <i class="fa-solid fa-phone text-lg"></i>
+            <button onclick="switchBottomTab('cctv')" id="nav-btn-cctv" class="nav-btn flex flex-col items-center justify-center w-12 py-1 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-video text-base"></i>
+                <span class="text-[10px] font-medium mt-0.5 whitespace-nowrap">CCTV</span>
+            </button>
+
+            <button onclick="switchBottomTab('contacts')" id="nav-btn-contacts" class="nav-btn flex flex-col items-center justify-center w-12 py-1 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-phone text-base"></i>
                 <span class="text-[10px] font-medium mt-0.5 whitespace-nowrap">โทรด่วน</span>
             </button>
 
@@ -2975,36 +3081,42 @@
             const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const dateStr = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
             document.getElementById('live-time-str').innerHTML = `<i class="fa-regular fa-calendar-days mr-1 text-cyan-300"></i>${dateStr} <i class="fa-regular fa-clock ml-1 mr-0.5 text-cyan-300"></i>${timeStr} น.`;
+            const cctvClock = document.getElementById('cctv-live-clock');
+            if (cctvClock) cctvClock.innerText = `${timeStr} น.`;
         }
 
+        function selectGovCctvCamera(codeTitle, descText, statusTag, extUrl, btnEl) {
+            const codeEl = document.getElementById('cctv-active-code');
+            const titleEl = document.getElementById('cctv-active-title');
+            const descEl = document.getElementById('cctv-active-desc');
+            const tagEl = document.getElementById('cctv-water-status-tag');
+            const linkEl = document.getElementById('cctv-external-link');
+
+            if (codeEl) codeEl.innerText = codeTitle;
+            if (titleEl) titleEl.innerText = codeTitle;
+            if (descEl) descEl.innerText = descText;
+            if (tagEl) tagEl.innerText = statusTag;
+            if (linkEl) linkEl.href = extUrl;
+
+            document.querySelectorAll('.cctv-cam-btn').forEach(b => {
+                b.className = "cctv-cam-btn w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 transition";
+                const badge = b.querySelector('span.bg-blue-600');
+                if (badge) badge.outerHTML = '<i class="fa-solid fa-chevron-right text-slate-400 text-xs flex-shrink-0"></i>';
+            });
+
+            if (btnEl) {
+                btnEl.className = "cctv-cam-btn w-full text-left p-3 rounded-xl bg-blue-50 border-2 border-blue-500 flex items-center justify-between gap-2 transition";
+                const chevron = btnEl.querySelector('i.fa-chevron-right');
+                if (chevron) chevron.outerHTML = '<span class="px-2 py-0.5 rounded-md bg-blue-600 text-white text-[10px] font-bold flex-shrink-0">กำลังดู</span>';
+            }
+        }
+
+        // Toggle & Login/Logout for Rescue Officer Mode
         function toggleRescueOfficerMode() {
-            if (!isOfficerLoggedIn) {
-                openOfficerLoginModal();
+            if (isOfficerLoggedIn) {
+                document.getElementById('officer-panel').classList.toggle('hidden');
             } else {
-                showCustomConfirm("ต้องการออกจากโหมดเจ้าหน้าที่ใช่หรือไม่?", () => {
-                    isOfficerLoggedIn = false;
-                    document.getElementById('officer-panel').classList.add('hidden');
-                    if (!isSuperAdminLoggedIn) {
-                        document.getElementById('warning-level-selector').classList.add('hidden');
-                        document.getElementById('officer-action-timeline-card')?.classList.add('hidden');
-                    }
-                    document.getElementById('officer-btn-text').innerText = "เจ้าหน้าที่";
-                    document.getElementById('officer-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition";
-                    
-                    if (!isSuperAdminLoggedIn) {
-                        document.querySelectorAll('.officer-delete-hh-btn, .officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.add('hidden'));
-                    }
-                    const preview = document.getElementById('last-officer-msg-preview');
-                    if (preview && !isSuperAdminLoggedIn) {
-                        preview.innerText = "ซิงค์ข้อมูลสถานการณ์น้ำอัตโนมัติแบบเรียลไทม์";
-                        preview.className = "block text-[9px] text-slate-500 truncate";
-                    }
-                    renderZonesListUI();
-                    renderCanalsTelemetryUI();
-                    renderEvacueesList();
-                    renderCitizenReports();
-                    showToast("ออกจากโหมดเจ้าหน้าที่แล้ว");
-                });
+                openOfficerLoginModal();
             }
         }
 
@@ -3041,6 +3153,30 @@
             } else {
                 document.getElementById('officer-login-error').classList.remove('hidden');
             }
+        }
+
+        function logoutRescueOfficer() {
+            showCustomConfirm("ต้องการออกจากระบบโหมดเจ้าหน้าที่กู้ภัยหรือไม่?", () => {
+                isOfficerLoggedIn = false;
+                document.getElementById('officer-panel').classList.add('hidden');
+                if (!isSuperAdminLoggedIn) {
+                    document.getElementById('warning-level-selector').classList.add('hidden');
+                    document.getElementById('officer-action-timeline-card')?.classList.add('hidden');
+                    document.querySelectorAll('.officer-canal-ctrl-btn, .officer-zone-edit-btn, .officer-delete-hh-btn, .officer-delete-evac-btn, .officer-evac-ctrl-btn, .officer-cit-ctrl-btn').forEach(b => b.classList.add('hidden'));
+                    const preview = document.getElementById('last-officer-msg-preview');
+                    if (preview) {
+                        preview.innerText = "ซิงค์ข้อมูลสถานการณ์น้ำอัตโนมัติแบบเรียลไทม์";
+                        preview.className = "block text-[9px] text-slate-500 truncate";
+                    }
+                }
+                document.getElementById('officer-btn-text').innerText = "เจ้าหน้าที่";
+                document.getElementById('officer-mode-btn').className = "p-1.5 sm:px-2 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-300 flex items-center gap-1 transition";
+                renderZonesListUI();
+                renderCanalsTelemetryUI();
+                renderEvacueesList();
+                renderCitizenReports();
+                showToast("ออกจากระบบโหมดเจ้าหน้าที่กู้ภัยแล้ว");
+            });
         }
 
         function openSuperAdminLoginModal() {
@@ -3518,9 +3654,9 @@
             const target = document.getElementById('tab-' + tabName);
             if (target) target.classList.remove('hidden');
 
-            document.querySelectorAll('.nav-btn').forEach(b => b.className = "nav-btn flex flex-col items-center justify-center w-14 py-1 text-slate-400 hover:text-slate-600");
+            document.querySelectorAll('.nav-btn').forEach(b => b.className = "nav-btn flex flex-col items-center justify-center w-12 py-1 text-slate-400 hover:text-slate-600");
             const activeNav = document.getElementById('nav-btn-' + tabName);
-            if (activeNav) activeNav.className = "nav-btn flex flex-col items-center justify-center w-14 py-1 text-blue-600 font-bold";
+            if (activeNav) activeNav.className = "nav-btn flex flex-col items-center justify-center w-12 py-1 text-blue-600 font-bold";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -3983,43 +4119,45 @@
             const phoneInput = document.getElementById('admin-contact-phone');
 
             const title = (nameInput?.value || '').trim();
-            const sub = (subInput?.value || '').trim();
+            const sub = (subInput?.value || '').trim() || "สายด่วนช่วยเหลือฉุกเฉิน 24 ชม.";
             const phoneRaw = (phoneInput?.value || '').trim();
 
             if (!title || !phoneRaw) {
-                showCustomMessage("กรุณากรอกชื่อผู้ติดต่อ/หน่วยงาน และเบอร์โทรศัพท์ให้ครบถ้วน");
+                showCustomMessage("กรุณากรอกชื่อหน่วยงาน/ผู้ติดต่อ และเบอร์โทรศัพท์ให้ครบถ้วน");
                 return;
             }
 
             const newContact = {
                 id: 'contact_' + Date.now(),
                 title: title,
-                sub: sub || `สายด่วนฉุกเฉิน (${phoneRaw})`,
+                sub: `${sub} (${phoneRaw})`,
                 phone: phoneRaw,
                 btnText: phoneRaw.length <= 4 ? `โทร ${phoneRaw}` : 'โทรเลย',
                 color: 'emerald'
             };
 
             emergencyContactsData.push(newContact);
-            saveEmergencyContactsToLocal();
-            renderEmergencyContactsUI();
-
             if (nameInput) nameInput.value = '';
             if (subInput) subInput.value = '';
             if (phoneInput) phoneInput.value = '';
 
-            recordActivityLog(`Super Admin เพิ่มเบอร์โทรด่วน: ${title} (${phoneRaw})`);
+            saveEmergencyContactsToLocal();
+            renderEmergencyContactsUI();
+            recordActivityLog(`Super Admin เพิ่มเบอร์โทรสายด่วนฉุกเฉิน: ${title} (${phoneRaw})`);
             broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, `📞 เพิ่มเบอร์โทรสายด่วนใหม่: ${title}`);
-            showToast(`เพิ่มเบอร์โทร "${title}" เรียบร้อยแล้ว`);
+            showToast(`เพิ่มเบอร์โทรสายด่วน "${title}" เรียบร้อยแล้ว`);
         }
 
         function openAdminAddContactDialog() {
-            if (!isSuperAdminLoggedIn) return;
+            if (!isSuperAdminLoggedIn) {
+                showCustomMessage("เฉพาะ Super Admin เท่านั้นที่สามารถเพิ่มเบอร์โทรสายด่วนได้");
+                return;
+            }
             showCustomFormDialog(
                 "เพิ่มเบอร์โทรสายด่วนฉุกเฉิน",
-                "เพิ่มรายการเบอร์โทรฉุกเฉินเพื่อให้ประชาชนกดโทรออกได้ทันที",
+                "กรอกรายละเอียดผู้ติดต่อหรือหน่วยงานฉุกเฉินสำหรับประชาชนโทรออกได้ทันที",
                 [
-                    { id: 'c-title', label: 'ชื่อผู้ติดต่อ / หน่วยงาน *', type: 'text', placeholder: 'เช่น อบต.บาเระใต้ / กู้ภัย' },
+                    { id: 'c-title', label: 'ชื่อผู้ติดต่อ / หน่วยงาน *', type: 'text', placeholder: 'เช่น อบต.บาเระใต้ / ผู้ใหญ่บ้าน ม.3' },
                     { id: 'c-sub', label: 'คำอธิบาย / หน้าที่รับผิดชอบ', type: 'text', placeholder: 'เช่น ศูนย์ประสานงานช่วยเหลือ 24 ชม.' },
                     { id: 'c-phone', label: 'เบอร์โทรศัพท์ *', type: 'text', placeholder: 'เช่น 08X-XXX-XXXX หรือ 1669' },
                     {
@@ -4038,7 +4176,7 @@
                 (vals) => {
                     const title = (vals['c-title'] || '').trim();
                     const phoneRaw = (vals['c-phone'] || '').trim();
-                    const sub = (vals['c-sub'] || '').trim() || `สายด่วนฉุกเฉิน (${phoneRaw})`;
+                    const sub = (vals['c-sub'] || '').trim() || "สายด่วนช่วยเหลือฉุกเฉิน";
                     const color = vals['c-color'] || 'emerald';
 
                     if (!title || !phoneRaw) {
@@ -4046,20 +4184,21 @@
                         return;
                     }
 
-                    emergencyContactsData.push({
+                    const newContact = {
                         id: 'contact_' + Date.now(),
                         title: title,
-                        sub: sub,
+                        sub: `${sub} (${phoneRaw})`,
                         phone: phoneRaw,
                         btnText: phoneRaw.length <= 4 ? `โทร ${phoneRaw}` : 'โทรเลย',
                         color: color
-                    });
+                    };
 
+                    emergencyContactsData.push(newContact);
                     saveEmergencyContactsToLocal();
                     renderEmergencyContactsUI();
-                    recordActivityLog(`Super Admin เพิ่มเบอร์โทรด่วน: ${title} (${phoneRaw})`);
+                    recordActivityLog(`Super Admin เพิ่มเบอร์โทรสายด่วนฉุกเฉิน: ${title} (${phoneRaw})`);
                     broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, `📞 เพิ่มเบอร์โทรสายด่วนใหม่: ${title}`);
-                    showToast(`เพิ่มเบอร์โทร "${title}" เรียบร้อยแล้ว`);
+                    showToast(`เพิ่มเบอร์โทรสายด่วน "${title}" เรียบร้อยแล้ว`);
                 }
             );
         }
@@ -4070,12 +4209,12 @@
                 return;
             }
             const target = emergencyContactsData.find(c => c.id === contactId);
-            showCustomConfirm(`ต้องการลบเบอร์โทรสายด่วน "${target ? target.title : ''}" ใช่หรือไม่?`, () => {
+            showCustomConfirm(`ต้องการลบเบอร์โทรสายด่วน "${target ? target.title : ''}" ออกจากรายการใช่หรือไม่?`, () => {
                 emergencyContactsData = emergencyContactsData.filter(c => c.id !== contactId);
                 saveEmergencyContactsToLocal();
                 renderEmergencyContactsUI();
-                recordActivityLog(`Super Admin ลบเบอร์โทรด่วน: ${target ? target.title : contactId}`);
-                broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, "อัปเดตรายการเบอร์โทรสายด่วน");
+                recordActivityLog(`Super Admin ลบเบอร์โทรสายด่วนฉุกเฉิน: ${target ? target.title : contactId}`);
+                broadcastDataChange('CONTACTS_SYNC', { contacts: emergencyContactsData }, "อัปเดตรายการเบอร์โทรสายด่วนฉุกเฉิน");
                 showToast("ลบเบอร์โทรสายด่วนเรียบร้อยแล้ว");
             });
         }
